@@ -24,8 +24,8 @@ class ProudLibaries {
       'js' => [
         'lodash' => $path . 'lodash/lodash.min.js'
       ],
-      'dequeue' => ['underscore'],
-      'js_footer' => false
+      'deps' => ['underscore'],
+      'js_footer' => true
     ];
 
     self::$libraries['proud-common'] = [
