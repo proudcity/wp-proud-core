@@ -24,6 +24,7 @@ class ProudLibaries {
       'js' => [
         'lodash' => $path . 'lodash/lodash.min.js'
       ],
+      'dequeue' => ['underscore'],
       'js_footer' => false
     ];
 
@@ -141,6 +142,11 @@ class ProudLibaries {
         if(!empty($options['js'])) {
           foreach($options['js'] as $name => $file) {
             wp_enqueue_script($name);
+          }
+          if(!empty($options['dequeue'])) {
+            foreach($options['dequeue'] as $name) {
+              wp_dequeue_script($name);
+            }
           }
         }
         if(!empty($options['css'])) {
