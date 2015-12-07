@@ -21,7 +21,7 @@ use Proud\Core\Libraries;
 class Proudcore {
 
   // proud libraries
-  public static $libaries;
+  public static $libraries;
 
   function __construct() {
     // Init on plugins loaded
@@ -31,13 +31,13 @@ class Proudcore {
   }
 
   public function init() {
-    self::$libaries = new Libraries\ProudLibaries;
+    self::$libraries = new Libraries\ProudLibaries;
   }
 
   public function loadLibraries() {
     $path = plugins_url('includes/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
-    self::$libaries->loadLibraries();
+    self::$libraries->loadLibraries();
   }
 }
 

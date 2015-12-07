@@ -27,33 +27,15 @@ class ProudLibaries {
       'js_footer' => false
     ];
 
-    self::$libraries['waitForImages'] = [
-      'title' => 'Wait for images',
-      'website' => 'https://github.com/alexanderdickson/waitForImages',
-      'js' => [
-        'waitForImages' => $path . 'waitForImages/dist/jquery.waitforimages.min.js'
-      ],
-      'js_footer' => true,
-      'deps' => ['jquery']
-    ];
-
-    self::$libraries['equalizeHeight'] = [
-      'title' => 'Equalize Height',
-      'website' => 'https://github.com/aschmoe/jquery.equalizeHeight',
-      'js' => [
-        'equalizeHeight' => $path . 'jquery.equalizeHeight/jquery.equalizeHeight.js'
-      ],
-      'js_footer' => true,
-      'deps' => ['jquery','waitForImages']
-    ];
-
     self::$libraries['proud-common'] = [
       'title' => 'Proud Common',
       'js' => [
+        'waitForImages' => $path . 'waitForImages/dist/jquery.waitforimages.min.js',
+        'equalizeHeight' => $path . 'jquery.equalizeHeight/jquery.equalizeHeight.js',
         'proud-common' => $path . 'proud-common.js'
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud','waitForImages']
+      'deps' => ['jquery','proud']
     ];
 
     // Angular.js
