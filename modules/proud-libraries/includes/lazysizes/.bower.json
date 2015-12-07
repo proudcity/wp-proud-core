@@ -1,0 +1,58 @@
+{
+  "name": "lazysizes",
+  "repo": "afarkas/lazysizes",
+  "main": "lazysizes.js",
+  "scripts": [
+    "lazysizes.js",
+    "lazysizes.min.js"
+  ],
+  "license": "MIT",
+  "authors": [
+    "Alexander Farkas <info@corrupt-system.de>"
+  ],
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "description": "High performance (jankfree) lazy loader for images (including responsive images), iframes and scripts (widgets).",
+  "keywords": [
+    "lazy",
+    "lazyloader",
+    "performance",
+    "responsive",
+    "image",
+    "responsive images",
+    "picture",
+    "srcset"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "/assets",
+    "/maxdpr",
+    "/rias",
+    "/include",
+    "/optimumx",
+    "bower_components",
+    "/test",
+    "/tests",
+    "index.html",
+    "no-src.html",
+    "animate.html",
+    "Gruntfile.js",
+    "component.json",
+    "package.json",
+    "plato-report"
+  ],
+  "homepage": "https://github.com/aFarkas/lazysizes",
+  "version": "1.3.1",
+  "_release": "1.3.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.3.1",
+    "commit": "f2191c629686a33396d488aa8af33fcfd8fcfd27"
+  },
+  "_source": "git://github.com/aFarkas/lazysizes.git",
+  "_target": "~1.3.1",
+  "_originalSource": "lazysizes"
+}

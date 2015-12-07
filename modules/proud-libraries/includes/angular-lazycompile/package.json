@@ -1,0 +1,21 @@
+{
+  "name": "angular-angular-lazycompile",
+  "version": "1.0.0",
+  "description": "Angular lazy-compiling directive",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aschmoe/angular-lazycompile.git"
+  },
+  "author": "Alex Schmoe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aschmoe/angular-lazycompile/issues"
+  },
+  "homepage": "https://github.com/aschmoe/angular-lazycompile#readme",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-uglify": "~0.6.0",
+    "load-grunt-tasks": "^3.3.0"
+  }
+}

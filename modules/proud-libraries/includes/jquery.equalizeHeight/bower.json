@@ -1,0 +1,28 @@
+{
+  "name": "jquery.equalizeHeight",
+  "version": "0.1",
+  "homepage": "https://github.com/aschmoe/jquery.equalizeHeight",
+  "authors": [
+    "Alex Schmoe <aschmoe@gmail.com>"
+  ],
+  "description": "Simple jquery height equalizer",
+  "main": "jquery.equalizeHeight.js",
+  "moduleType": [],
+  "keywords": [
+    "jquery",
+    "helpers",
+    "height",
+    "equal"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "waitForImages": "~2.1.0"
+  }
+}

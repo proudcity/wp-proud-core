@@ -1,0 +1,25 @@
+{
+  "name": "angular-lazycompile",
+  "version": "0.0.1",
+  "homepage": "https://github.com/aschmoe/angular-lazycompile",
+  "authors": [
+    "Alex Schmoe <aschmoe@gmail.com>"
+  ],
+  "description": "Angular lazy-compiling directive",
+  "main": "./src/angular-lazycompile.js",
+  "moduleType": [],
+  "keywords": [
+    "angular",
+    "lazy",
+    "directive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ]
+}
