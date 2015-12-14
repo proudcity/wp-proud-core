@@ -46,7 +46,7 @@ class ProudLibaries {
         'fontawesome-iconpicker' => $path . 'fontawesome-iconpicker/dist/js/fontawesome-iconpicker.js',
       ],
       'css' => [
-        $path . 'fontawesome-iconpicker/dist/css/fontawesome-iconpicker.min.css',
+        'fontawesome-iconpicker.css' => $path . 'fontawesome-iconpicker/dist/css/fontawesome-iconpicker.css',
       ],
       'js_footer' => true,
       'deps' => ['jquery','proud']
@@ -59,8 +59,8 @@ class ProudLibaries {
         'leaflet.locatecontrol' => $path . 'leaflet.locatecontrol/src/L.Control.Locate.js'
       ],
       'css' => [
-        $path . 'mapbox.js/mapbox.css',
-        $path . 'leaflet.locatecontrol/dist/L.Control.Locate.mapbox.css'
+        'mapbox.css' => $path . 'mapbox.js/mapbox.css',
+        'L.Control.Locate.mapbox.css' => $path . 'leaflet.locatecontrol/dist/L.Control.Locate.mapbox.css'
       ],
       'js_footer' => true,
       'deps' => ['jquery','proud']
@@ -185,8 +185,9 @@ class ProudLibaries {
           }
         }
         if(!empty($options['css'])) {
-          foreach($options['css'] as $file) {
-            wp_enqueue_style($file);
+          foreach($options['css'] as $name => $file) {
+            print $file;
+            wp_enqueue_style($name, $file, false, null);
           }
         }
       }

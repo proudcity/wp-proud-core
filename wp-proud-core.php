@@ -46,6 +46,7 @@ class Proudcore {
   public function loadLibraries() {
     $path = plugins_url('includes/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
+    wp_enqueue_script('proud');
     self::$libraries->loadLibraries();
   }
 
@@ -53,6 +54,7 @@ class Proudcore {
   public function loadAdminLibraries() {
     $path = plugins_url('includes/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
+    wp_enqueue_script('proud');
     self::$libraries->loadLibraries('true');
   }
 
