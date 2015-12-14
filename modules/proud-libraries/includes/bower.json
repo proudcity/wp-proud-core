@@ -13,6 +13,9 @@
     "lazysizes": "~1.3.1",
     "select2": "~3.5.4",
     "waitForImages": "~2.1.0",
-    "jquery.equalizeHeight": "git@github.com:aschmoe/jquery.equalizeHeight#master"
+    "jquery.equalizeHeight": "git@github.com:aschmoe/jquery.equalizeHeight#master",
+    "mapbox.js": "~2.2.3",
+    "leaflet.locatecontrol": "~0.45.1",
+    "fontawesome-iconpicker": "~1.2.0"
   }
 }
