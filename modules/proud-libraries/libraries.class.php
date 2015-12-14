@@ -186,7 +186,6 @@ class ProudLibaries {
         }
         if(!empty($options['css'])) {
           foreach($options['css'] as $name => $file) {
-            print $file;
             wp_enqueue_style($name, $file, false, null);
           }
         }
