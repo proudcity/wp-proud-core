@@ -19,8 +19,6 @@ abstract class ProudWidget extends \WP_Widget {
     add_action( 'init', [$this,'registerLibraries'] );
     // Add admin scripts
     add_action( 'init', [$this,'registerAdminLibraries']);
-    // Enqueue local frontend
-    add_action('wp_enqueue_scripts', [$this,'enqueueFrontend']);
   }
 
   /**
@@ -37,6 +35,13 @@ abstract class ProudWidget extends \WP_Widget {
 
   }
 
+  /**
+   * Enqueue scripts and styles
+   */
+  public function enqueueFrontend() {
+    
+  }
+
 
   /**
    * Register admin libraries from Proud\Core\Libraries
@@ -50,13 +55,6 @@ abstract class ProudWidget extends \WP_Widget {
         }
       }
     }
-  }
-
-  /**
-   * Enqueue scripts and styles
-   */
-  public function enqueueFrontend() {
-    
   }
 
   /**
@@ -296,5 +294,32 @@ abstract class ProudWidget extends \WP_Widget {
    */
   public function update( $new_instance, $old_instance ) {
     return $this->updateWidgetConfig($new_instance, $old_instance);
+  }
+
+   /**
+   * Front-end display of widget.
+   *
+   * @see WP_Widget::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function printWidget( $args, $instance ) {
+
+  }
+
+   /**
+   * Front-end display of widget.
+   *
+   * @see WP_Widget::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function widget( $args, $instance ) {
+    // Add JS Settings
+    $this->addJsSettings($instance);
+    $this->enqueueFrontend();
+    $this->printWidget($args, $instance);
   }
 }

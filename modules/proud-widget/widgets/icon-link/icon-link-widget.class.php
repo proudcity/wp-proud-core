@@ -51,7 +51,7 @@ class IconLink extends Core\ProudWidget {
    * @param array $args     Widget arguments.
    * @param array $instance Saved values from database.
    */
-  public function widget( $args, $instance ) {
+  public function printWidget( $args, $instance ) {
     ?>
     <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block">
       <i class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
