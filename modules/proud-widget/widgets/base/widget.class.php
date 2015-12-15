@@ -58,9 +58,26 @@ abstract class ProudWidget extends \WP_Widget {
   }
 
   /**
+   * Register admin libraries from Proud\Core\Libraries
+   */
+  public function getSettingDefaults() {
+    $return = [];
+    foreach ($this->settings as $key => $value) {
+      if(!empty($value['#default_value'])) {
+        $return[$key] = $value['#default_value'];
+      }
+    }
+    return $return;
+  }
+
+
+  /**
    * Print out js settings for scripts in footer
    */
   public function addJsSettings($instance = false) {
+    if(empty($instance)) {
+      $instance = $this->getSettingDefaults();
+    }
     if(!empty($instance)) {
       global $proudcore;
       $settings = [];
