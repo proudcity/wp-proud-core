@@ -16,6 +16,7 @@ namespace Proud\Core;
 
 require_once plugin_dir_path(__FILE__) . '/modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-widget/proud-widgets.php';
+require_once plugin_dir_path(__FILE__) . '/modules/proud-navbar/proud-navbar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -51,7 +52,7 @@ class Proudcore {
   }
 
     // Load common libraries
-  public function loadAdminLibraries() {
+  public function loadAdminLibraries($hi) {
     $path = plugins_url('includes/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');

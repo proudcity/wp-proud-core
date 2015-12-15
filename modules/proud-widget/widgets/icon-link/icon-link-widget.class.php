@@ -40,7 +40,6 @@ class IconLink extends Core\ProudWidget {
         '#admin_libraries' => ['fontawesome-iconpicker']
       ]
     ];
-    parent::initialize();
   }
 
   /**

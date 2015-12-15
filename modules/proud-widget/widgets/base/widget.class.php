@@ -71,7 +71,9 @@ abstract class ProudWidget extends \WP_Widget {
         }
       }
       $proudcore->addJsSettings([
-        $this->id_base => $settings
+        $this->id_base => [
+          $this->id => $settings
+        ]
       ]);
     }
   }
@@ -320,6 +322,10 @@ abstract class ProudWidget extends \WP_Widget {
     // Add JS Settings
     $this->addJsSettings($instance);
     $this->enqueueFrontend();
-    $this->printWidget($args, $instance);
+    ?>
+    <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
+      <?php $this->printWidget($args, $instance); ?>
+    </section>
+    <?php
   }
 }
