@@ -1,0 +1,22 @@
+{
+    "name" : "proudcity/wp-proud-core",
+    "description" : "ProudCity distribution",
+    "type" : "wordpress-plugin",
+    "keywords" : [ "wordpress", "proudcity" ],
+    "license" : "GPL-2.0+",
+    "authors" : [
+        {
+            "name" : "Jeff Lyon",
+            "email" : "jeff@proudcity.com",
+        },
+        {
+            "name" : "Alex Schmoe",
+            "email" : "jeff@proudcity.com",
+        },
+    ],
+    "require" : {
+        "composer/installers" : "~1.0.0",
+        "php" : ">=5.2.4"
+    },
+    "homepage" : "http://proudcity.com",
+}
