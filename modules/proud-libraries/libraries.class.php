@@ -147,6 +147,13 @@ class ProudLibaries {
   }
 
   /**
+   * Helper function loads common map scripts + styles().
+   */
+  public function addMaps() {
+    $this->addBundleToLoad('maps');
+  }
+
+  /**
    * Helper function loads common proud scripts().
    */
   public function addAngular($core, $router_animate, $lazy) {
