@@ -73,25 +73,45 @@ abstract class ProudWidget extends \WP_Widget {
 
   /**
    * Print out js settings for scripts in footer
+   * if $app_wide is passed, its a setting for the whole app,
+   * otherwise, its a per-instance setting
    */
-  public function addJsSettings($instance = false) {
-    if(empty($instance)) {
-      $instance = $this->getSettingDefaults();
+  public function addJsSettings($instance = false, $app_wide = false) {
+    global $proudcore;
+
+    // We are setting app-wide 
+    if($app_wide) {
+      if(!empty($instance)) {
+        $proudcore->addJsSettings([
+          $this->id_base => [
+            'global' => $instance
+          ]
+        ]);
+      } 
     }
-    if(!empty($instance)) {
-      global $proudcore;
-      $settings = [];
-      foreach ($this->settings as $key => $value) {
-        // field to js, and exists?
-        if(!empty($value['#to_js_settings']) && isset($instance[$key])) {
-          $settings[$key] = $instance[$key];
-        }
+    // instance specific
+    else {
+      // Empty or un-initialized
+      if(empty($instance)) {
+        $instance = $this->getSettingDefaults();
       }
-      $proudcore->addJsSettings([
-        $this->id_base => [
-          $this->id => $settings
-        ]
-      ]);
+      // Actually have settings
+      if(!empty($instance)) {
+        $settings = [];
+        foreach ($this->settings as $key => $value) {
+          // field to js, and exists?
+          if(!empty($value['#to_js_settings']) && isset($instance[$key])) {
+            $settings[$key] = $instance[$key];
+          }
+        }
+        $proudcore->addJsSettings([
+          $this->id_base => [
+            'instances' => [
+              $this->id => $settings
+            ]
+          ]
+        ]);
+      }
     }
   }
 
