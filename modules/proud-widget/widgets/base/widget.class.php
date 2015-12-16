@@ -60,10 +60,13 @@ abstract class ProudWidget extends \WP_Widget {
   /**
    * Register admin libraries from Proud\Core\Libraries
    */
-  public function getSettingDefaults() {
+  public function addSettingDefaults($instance) {
     $return = [];
     foreach ($this->settings as $key => $value) {
-      if(!empty($value['#default_value'])) {
+      if(isset($instance[$key])) {
+        $return[$key] = $instance[$key];
+      }
+      else if (isset($value['#default_value'])) {
         $return[$key] = $value['#default_value'];
       }
     }
@@ -92,9 +95,7 @@ abstract class ProudWidget extends \WP_Widget {
     // instance specific
     else {
       // Empty or un-initialized
-      if(empty($instance)) {
-        $instance = $this->getSettingDefaults();
-      }
+      $instance = $this->addSettingDefaults($instance);
       // Actually have settings
       if(!empty($instance)) {
         $settings = [];
