@@ -15,6 +15,18 @@ abstract class ProudWidget extends \WP_Widget {
   function __construct($id, $name, $args) {
     parent::__construct($id, $name, $args);
     $this->initialize();
+    // Add title if not present
+    if(empty($settings['title'])) {
+      $this->settings = array_merge([
+        'title' => [
+          '#title' => 'Widget Title',
+          '#type' => 'text',
+          '#default_value' => '',
+          '#description' => 'Title',
+          '#to_js_settings' => false
+        ]
+      ], $this->settings);
+    }
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
     // Add admin scripts
@@ -136,6 +148,13 @@ abstract class ProudWidget extends \WP_Widget {
     <?php 
   }
 
+  // 
+  public function printTextArea($id, $name, $value, $rows, $translate = false) {
+    ?>
+     <textarea class="form-control" rows="<?php echo $rows ?>" id="<?php echo $id ?>" name="<?php echo $name ?>"><?php echo esc_attr( $value ); ?></textarea>
+    <?php 
+  }
+
   public function printOptionBox($type, $id, $name, $text, $value, $active, $translate = false) {
     ?>
     <label for="<?php echo $id ?>">
@@ -161,7 +180,7 @@ abstract class ProudWidget extends \WP_Widget {
 
   public function printFormItem($widgetName, $field) {
     ?>
-    <div class="form-group">
+    <div id="<?php echo $widgetName . '-' . $field['#id'] ?>" class="form-group">
     <?php
       switch ($field['#type']) {
         // @TODO
@@ -193,6 +212,18 @@ abstract class ProudWidget extends \WP_Widget {
         case 'email':
           $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName);
           $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $widgetName);
+          $this->printFieldDescription($field['#description']);
+          break;
+
+        case 'textarea':
+          $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName);
+          $this->printTextArea(
+            $field['#id'], 
+            $field['#name'], 
+            $field['#value'], 
+            !empty($field['#rows']) ? $field['#rows'] : 3, 
+            $widgetName
+          );
           $this->printFieldDescription($field['#description']);
           break;
 
@@ -262,7 +293,51 @@ abstract class ProudWidget extends \WP_Widget {
     <?php
   }
 
+  public function attachConfigStateJs($widgetName, $states) {
+    ?>
+    <script>
+      jQuery(document).ready(function() {
+        <?php foreach ($states as $field_id => $rules): ?>
+          <?php foreach($rules as $type => $values): ?>
+            // init visiblility
+            jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
+            <?php foreach($values as $watch_field => $watch_vals): ?>
+              <?php 
+                switch($this->settings[$watch_field]['#type']) {
+                  case 'radios':
+                    $watch = 'input[name=\'' . $this->get_field_name($watch_field) .'\']';
+                    $selector = $watch . ':checked';
+                    break;
+                  default: 
+                    $watch = '#' . $this->get_field_id($watch_field);
+                    $selector = $watch;
+                    break;
+                }
+                // Build if criteria
+                $criteria = [];
+                foreach ($watch_vals['value'] as $val) {
+                  $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
+                }
+              ?>
+              jQuery("<?php echo $watch ?>").change(function() {
+                if(<?php echo implode($watch_vals['glue'], $criteria) ?>) {
+                  jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'show' : 'hide' ?>();
+                }
+                else {
+                  jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
+                }
+              });
+            <?php endforeach; ?>
+          <?php endforeach; ?>
+        <?php endforeach; ?>
+      });
+    </script>
+    <?php
+  }
+
   public function printWidgetConfig($instance) {
+    // Javascript states for hiding / showing fields
+    $states = [];
     foreach ($this->settings as $id => $field) {
       // @TODO
       // Link / title field
@@ -298,7 +373,13 @@ abstract class ProudWidget extends \WP_Widget {
          : $field['#default_value'];
 
       $field['#description'] = !empty($field['#description']) ? $field['#description'] : false;
-      $this->printFormItem($this->id_base, $field);
+      $this->printFormItem($this->id_base, $field, $states);
+      if(!empty($field['#states'])) {
+        $states[$field['#id']] = $field['#states'];
+      }
+    }
+    if(!empty($states)) {
+      $this->attachConfigStateJs($this->id_base, $states);
     }
   }
 
