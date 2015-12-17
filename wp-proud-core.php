@@ -14,13 +14,22 @@ License URI:        http://opensource.org/licenses/MIT
 
 namespace Proud\Core;
 
+// Load Extendible
+// -----------------------
+
+if ( ! class_exists( 'ProudPlugin' ) ) {
+  require_once( plugin_dir_path(__FILE__) . 'proud-plugin.class.php' );
+}
+
+// Load Modules
+// -----------------------
 require_once plugin_dir_path(__FILE__) . '/modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-widget/proud-widgets.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-navbar/proud-navbar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
-class Proudcore {
+class Proudcore extends \ProudPlugin {
 
   // proud libraries
   public static $libraries;
@@ -28,22 +37,28 @@ class Proudcore {
   public static $jsSettings = [];
 
   function __construct() {
+
+    parent::__construct( array(
+      'textdomain'     => 'wp-proud-core',
+      'plugin_path'    => __FILE__,
+    ) );
+
     // Init on plugins loaded
-    add_action('plugins_loaded', array($this, 'init'));
+    $this->hook('plugins_loaded', 'init');
     // Load scripts from libraries
-    add_action('wp_enqueue_scripts', array($this,'loadLibraries'));
+    $this->hook('wp_enqueue_scripts', 'loadLibraries');
     // Load admin scripts from libraries
-    add_action('admin_enqueue_scripts', array($this,'loadAdminLibraries'));
+    $this->hook('admin_enqueue_scripts', 'loadAdminLibraries');
     // Add Javascript settings
-    add_action('proud_settings', array($this,'printJsSettings'));
+    $this->hook('proud_settings', 'printJsSettings');
 
     // -- ReST tweaks
-    add_action( 'init', array($this, 'restPostSupport') );
-    add_action( 'init', array($this, 'restTaxonomySupport') );
+    $this->hook('init',  'restPostSupport');
+    $this->hook('init',  'restTaxonomySupport');
 
     // -- Hacks
     // Hide admin fields
-    add_action( 'init', array($this,'removePostAdminFields'));
+    $this->hook('init', 'removePostAdminFields');
 
   }
 
