@@ -303,15 +303,18 @@ abstract class ProudWidget extends \WP_Widget {
             jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
             <?php foreach($values as $watch_field => $watch_vals): ?>
               <?php 
+                // Needs different selectors per type
+                $group_id = '#' . $widgetName . '-' . $this->get_field_id($watch_field);
                 switch($this->settings[$watch_field]['#type']) {
                   case 'radios':
-                    $watch = 'input[name=\'' . $this->get_field_name($watch_field) .'\']';
-                    $selector = $watch . ':checked';
+                  case 'checkbox':
+                    $watch = $group_id . ' input';
+                    $selector = $group_id . ' input:checked';
                     break;
-                  default: 
-                    $watch = '#' . $this->get_field_id($watch_field);
-                    $selector = $watch;
-                    break;
+
+                  default:
+                    $watch = $group_id . ' input';
+                    $selector = $group_id . ' input';
                 }
                 // Build if criteria
                 $criteria = [];
