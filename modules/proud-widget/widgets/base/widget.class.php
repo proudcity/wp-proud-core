@@ -158,7 +158,7 @@ abstract class ProudWidget extends \WP_Widget {
   public function printOptionBox($type, $id, $name, $text, $value, $active, $translate = false) {
     ?>
     <label for="<?php echo $id ?>">
-      <input class="form-control" id="<?php echo $id ?>" name="<?php echo $name ?>" type="<?php echo $type ?>"<?php if($active){echo ' checked="checked"'; } ?> value="<?php echo esc_attr( $value ); ?>"> 
+      <input id="<?php echo $id ?>" name="<?php echo $name ?>" type="<?php echo $type ?>"<?php if($active){echo ' checked="checked"'; } ?> value="<?php echo esc_attr( $value ); ?>"> 
       <?php if($translate) : ?>
         <?php echo __( $text, $translate); ?>
       <?php else: ?>
@@ -444,6 +444,7 @@ abstract class ProudWidget extends \WP_Widget {
     // Add JS Settings
     $this->addJsSettings($instance);
     $this->enqueueFrontend();
+    $instance = $this->addSettingDefaults($instance);
     ?>
     <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
       <?php $this->printWidget($args, $instance); ?>
