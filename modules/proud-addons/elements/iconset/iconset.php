@@ -10,7 +10,7 @@
  * Technical Support:  Feedback - http://getproudcity.com
  */
 
-if ( ! class_exists( 'WR_IconSet' ) ) :
+if ( ! class_exists( 'WR_Iconset' ) ) :
 
 /**
  * Create Sample Helloworld 2 element
@@ -18,7 +18,7 @@ if ( ! class_exists( 'WR_IconSet' ) ) :
  * @package  WR PageBuilder Shortcodes
  * @since    1.0.0
  */
-class WR_IconSet extends WR_Pb_Shortcode_Parent {
+class WR_Iconset extends WR_Pb_Shortcode_Parent {
   /**
    * Constructor
    *
@@ -35,9 +35,9 @@ class WR_IconSet extends WR_Pb_Shortcode_Parent {
    */
   function element_config() {
     $this->config['shortcode']   = strtolower( __CLASS__ );
-    $this->config['name']        = __( 'IconSet', WR_PBL );
+    $this->config['name']        = __( 'Iconset', WR_PBL );
     $this->config['icon']        = 'wr-icon-text';
-    $this->config['has_subshortcode'] = 'WR_Item_IconSet';
+    $this->config['has_subshortcode'] = 'WR_Item_Iconset';
     $this->config['description'] = __( 'Collection of icon-links', WR_PBL );
 
     // Use Ajax to speed up element settings modal loading speed

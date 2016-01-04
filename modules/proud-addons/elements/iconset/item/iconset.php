@@ -10,9 +10,9 @@
  * Technical Support:  Feedback - http://getproudcity.com
  */
 
-if ( ! class_exists( 'WR_Item_IconSet' ) ) {
+if ( ! class_exists( 'WR_Item_Iconset' ) ) {
 
-  class WR_Item_IconSet extends WR_Pb_Shortcode_Child {
+  class WR_Item_Iconset extends WR_Pb_Shortcode_Child {
 
     public function __construct() {
       parent::__construct();
