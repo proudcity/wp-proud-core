@@ -63,6 +63,14 @@ class Proudcore extends \ProudPlugin {
   }
 
   public function init() {
+    $this->addJsSettings(array('global' => array(
+      'location' => array(
+        'city' => get_option( 'city', 'Huntsville' ),
+        'state' => get_option( 'state', 'Alabama' ),
+        'lat' => (float) get_option( 'lat', 34.7303688 ),
+        'lng' => (float) get_option( 'lng', -86.5861037 ),
+      ),
+    )));
     self::$libraries = new ProudLibaries;
   }
 
