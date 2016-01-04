@@ -367,7 +367,7 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
         
       }
     $html .= $content;
-    $html .= '</div></div></div></div></div></div></div></div>';
+    $html .= '</div></div></div></div></div></div></div>';
 
     return $this->element_wrapper( $html, $arr_params );
   }
