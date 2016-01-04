@@ -25,7 +25,9 @@ if ( ! class_exists( 'ProudPlugin' ) ) {
 // -----------------------
 require_once plugin_dir_path(__FILE__) . '/modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-widget/proud-widgets.php';
+require_once plugin_dir_path(__FILE__) . '/modules/proud-addons/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-navbar/proud-navbar.php';
+require_once plugin_dir_path(__FILE__) . '/modules/proud-layout/proud-layout.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -33,6 +35,8 @@ class Proudcore extends \ProudPlugin {
 
   // proud libraries
   public static $libraries;
+  // proud layout
+  public static $layout;
   // js settings
   public static $jsSettings = [];
 
@@ -72,6 +76,7 @@ class Proudcore extends \ProudPlugin {
       ),
     )));
     self::$libraries = new ProudLibaries;
+    self::$layout = new \ProudLayout;
   }
 
   // Load common libraries
