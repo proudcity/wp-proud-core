@@ -128,265 +128,27 @@ abstract class ProudWidget extends \WP_Widget {
     }
   }
 
-  //
-  public function printFormTextLabel($id, $text, $translate = false) {
-    ?>
-      <label for="<?php echo $id; ?>">
-        <?php if($translate) : ?>
-          <?php echo __( $text, $translate); ?>
-        <?php else: ?>
-          <?php echo $text; ?>
-        <?php endif; ?>
-      </label>
-    <?php ;
-  }
+  public function printWidgetConfig( $instance ) {
 
-  // 
-  public function printTextInput($id, $name, $value, $translate = false) {
-    ?>
-     <input class="form-control" id="<?php echo $id ?>" name="<?php echo $name ?>" type="text" value="<?php echo esc_attr( $value ); ?>">
-    <?php 
-  }
-
-  // 
-  public function printTextArea($id, $name, $value, $rows, $translate = false) {
-    ?>
-     <textarea class="form-control" rows="<?php echo $rows ?>" id="<?php echo $id ?>" name="<?php echo $name ?>"><?php echo esc_attr( $value ); ?></textarea>
-    <?php 
-  }
-
-  public function printOptionBox($type, $id, $name, $text, $value, $active, $translate = false) {
-    ?>
-    <label for="<?php echo $id ?>">
-      <input id="<?php echo $id ?>" name="<?php echo $name ?>" type="<?php echo $type ?>"<?php if($active){echo ' checked="checked"'; } ?> value="<?php echo esc_attr( $value ); ?>"> 
-      <?php if($translate) : ?>
-        <?php echo __( $text, $translate); ?>
-      <?php else: ?>
-        <?php echo $text; ?>
-      <?php endif; ?>
-    </label>
-    <?php 
-  }
-
-  public function printFieldDescription($description) {
-    ?>
-    <?php if(!empty($field['#description'])): ?>
-      <span id="helpBlock" class="help-block">
-        <?php echo $field['#description']; ?>
-      </span>
-    <?php endif; ?>
-    <?php
-  }
-
-  public function printFormItem($widgetName, $field) {
-    ?>
-    <div id="<?php echo $widgetName . '-' . $field['#id'] ?>" class="form-group">
-    <?php
-      switch ($field['#type']) {
-        // @TODO
-        case 'link-with-title':
-          // $this->printFormTextLabel($field['#id']['title'], $field['#title']['title'], $widgetName);
-          // $this->printTextInput($field['#id']['title'], $field['#name']['title'], $field['#value']['title'], $widgetName);
-          // $this->printFieldDescription($field['#description']['title']);
-          // $this->printFormTextLabel($field['#id']['url'], $field['#title']['url'], $widgetName);
-          // $this->printTextInput($field['#id']['url'], $field['#name']['url'], $field['#value']['url'], $widgetName);
-          // $this->printFieldDescription($field['#description']['url']);
-          break;
-
-        case 'fa-icon':
-          ?>
-          <script>
-            jQuery(window).load(function(){
-              jQuery('#<?php echo $field['#id'];?>').once('icon-picker', function() { 
-                jQuery(this).iconpicker(); 
-              });
-            });
-          </script>
-          <?php
-          $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName);
-          $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $widgetName);
-          $this->printFieldDescription($field['#description']);
-          break;
-
-        case 'text':
-        case 'email':
-          $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName);
-          $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $widgetName);
-          $this->printFieldDescription($field['#description']);
-          break;
-
-        case 'textarea':
-          $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName);
-          $this->printTextArea(
-            $field['#id'], 
-            $field['#name'], 
-            $field['#value'], 
-            !empty($field['#rows']) ? $field['#rows'] : 3, 
-            $widgetName
-          );
-          $this->printFieldDescription($field['#description']);
-          break;
-
-        case 'checkboxes':
-        case 'radios':
-          // Print label
-          $this->printFormTextLabel($field['#id'], $field['#title'], $widgetName); 
-          foreach ($field['#options'] as $value => $title) {
-            $name = $field['#name'];
-            if($field['#type'] == 'checkboxes') {
-              $type = 'checkbox';
-              // Make name array
-              $name .= '[' .  $value . ']';
-              // Chekc in active
-              $field['#value'] = empty($field['#value']) ? [] : $field['#value'];
-              $active = in_array($value, $field['#value']);
-            }
-            else {
-              $type = 'radio';
-              $active = $value == $field['#value'];
-            }
-            ?>
-            <div class="<?php echo $type ?>">
-              <?php $this->printOptionBox(
-                $type, 
-                $field['#id'] . '-' . $value, 
-                $name, 
-                $title, 
-                $value,
-                $active, 
-                $widgetName
-              ); ?>
-            </div>
-            <?php $this->printFieldDescription($field['#description']) ?>
-            <?php 
-          }
-          break;
-
-        case 'checkbox':
-          ?>
-          <?php if(!empty($field['#label_above'])): ?>
-            <?php $this->printFormTextLabel('', $field['#title'], $widgetName); ?>
-          <?php endif; ?> 
-          <div class="<?php echo $field['#type'] ?>">
-            <?php $this->printOptionBox(
-              $field['#type'], 
-              $field['#id'], 
-              $field['#name'], 
-              !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
-              $field['#return_value'],
-              $field['#value'], 
-              $widgetName
-            ); ?>
-            <?php $this->printFieldDescription($field['#description']) ?>
-          </div>
-          <?php
-          break;
-        
-        default:
-          ?>
-          <div class="alert alert-danger">Form type not handled</div>
-          <?php
-          break;
-      }
-    ?>
-    </div>
-    <?php
-  }
-
-  public function attachConfigStateJs($widgetName, $states) {
-    ?>
-    <script>
-      jQuery(document).ready(function() {
-        <?php foreach ($states as $field_id => $rules): ?>
-          <?php foreach($rules as $type => $values): ?>
-            // init visiblility
-            jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
-            <?php foreach($values as $watch_field => $watch_vals): ?>
-              <?php 
-                // Needs different selectors per type
-                $group_id = '#' . $widgetName . '-' . $this->get_field_id($watch_field);
-                switch($this->settings[$watch_field]['#type']) {
-                  case 'radios':
-                  case 'checkbox':
-                    $watch = $group_id . ' input';
-                    $selector = $group_id . ' input:checked';
-                    break;
-
-                  default:
-                    $watch = $group_id . ' input';
-                    $selector = $group_id . ' input';
-                }
-                // Build if criteria
-                $criteria = [];
-                foreach ($watch_vals['value'] as $val) {
-                  $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
-                }
-              ?>
-              jQuery("<?php echo $watch ?>").change(function() {
-                if(<?php echo implode($watch_vals['glue'], $criteria) ?>) {
-                  jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'show' : 'hide' ?>();
-                }
-                else {
-                  jQuery("#<?php echo $widgetName . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
-                }
-              });
-            <?php endforeach; ?>
-          <?php endforeach; ?>
-        <?php endforeach; ?>
-      });
-    </script>
-    <?php
-  }
-
-  public function printWidgetConfig($instance) {
-    // Javascript states for hiding / showing fields
-    $states = [];
-    foreach ($this->settings as $id => $field) {
-      // @TODO
-      // Link / title field
-      if($field['#type'] == 'link-with-title') {
-        // $field['#title'] = !empty($field['#title']) 
-        //                  ? $field['#title']
-        //                  : ['title' => 'Title', 'url' => 'URL'];
-        // $field['#default_value'] = !empty($field['#default_value']) 
-        //                          ? $field['#default_value']
-        //                          : ['title' => '', 'url' => ''];
-        // $field['#description'] = !empty($field['#description']) 
-        //                        ? $field['#description']
-        //                        : ['title' => 'The link title.', 'url' => 'URL to link to'];
-        // $field['#id'] = [
-        //   'title' => $this->get_field_id($id . '-title'),
-        //   'url' => $this->get_field_id($id . '-url'),
-        // ];
-        // $field['#name'] = [
-        //   'title' => $this->get_field_name($id . '-title'),
-        //   'url' => $this->get_field_name($id . '-url'),
-        // ];
-      }
-      // others
-      else {
-        // Set id
-        $field['#id'] = $this->get_field_id($id);
-        $field['#name'] = $this->get_field_name($id);
-      }
+    $fields = $this->settings;
+    foreach ( $fields as $id => &$field ) {
+      // Set id
+      $field['#id'] = $this->get_field_id($id);
+      $field['#name'] = $this->get_field_name($id);
 
       // Set default value
       $field['#value'] = isset( $instance[$id] ) 
          ? $instance[$id] 
          : $field['#default_value'];
 
-      $field['#description'] = !empty($field['#description']) ? $field['#description'] : false;
-      $this->printFormItem($this->id_base, $field, $states);
-      if(!empty($field['#states'])) {
-        $states[$field['#id']] = $field['#states'];
-      }
+      $field['#description'] = !empty( $field['#description'] ) ? $field['#description'] : false;
     }
-    if(!empty($states)) {
-      $this->attachConfigStateJs($this->id_base, $states);
-    }
+
+    $form = new FormHelper($this->id_base, $fields);
+    $form->printFields( );
   }
 
-  public function updateWidgetConfig($new_instance, $old_instance) {
+  public function updateWidgetConfig( $new_instance, $old_instance ) {
     $instance = [];
     foreach ($new_instance as $key => $value) {
       $instance[$key] = $value;
@@ -447,6 +209,9 @@ abstract class ProudWidget extends \WP_Widget {
     $instance = $this->addSettingDefaults($instance);
     ?>
     <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
+      <?php if( !empty( $instance['title'] ) ): ?>
+        <h2><?php echo $instance['title']; ?></h2>
+      <?php endif; ?>
       <?php $this->printWidget($args, $instance); ?>
     </section>
     <?php

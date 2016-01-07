@@ -14,12 +14,13 @@ License URI:        http://opensource.org/licenses/MIT
 
 namespace Proud\Core;
 
-// Load Extendible
+// Load Extendibles
 // -----------------------
+require_once plugin_dir_path(__FILE__) . 'proud-plugin.class.php';
 
-if ( ! class_exists( 'ProudPlugin' ) ) {
-  require_once( plugin_dir_path(__FILE__) . 'proud-plugin.class.php' );
-}
+// Load Helpers
+// -----------------------
+require_once plugin_dir_path(__FILE__) . 'proud-formhelper.class.php';
 
 // Load Modules
 // -----------------------
@@ -28,6 +29,7 @@ require_once plugin_dir_path(__FILE__) . '/modules/proud-widget/proud-widgets.ph
 require_once plugin_dir_path(__FILE__) . '/modules/proud-addons/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-navbar/proud-navbar.php';
 require_once plugin_dir_path(__FILE__) . '/modules/proud-layout/proud-layout.php';
+require_once plugin_dir_path(__FILE__) . '/modules/proud-teasers/proud-teasers.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
