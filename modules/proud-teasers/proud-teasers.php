@@ -21,6 +21,7 @@ if ( !class_exists( 'TeaserOptions' ) ) {
             'post' => __('News', 'proud-teaser'),
             'event' => __('Events', 'proud-teaser'),
             'agency' => __('Agencies', 'proud-teaser'),
+            'staff-member' => __('Staff Members', 'proud-teaser'),
           ]
         ],
         'proud_teaser_display' => [
@@ -30,6 +31,7 @@ if ( !class_exists( 'TeaserOptions' ) ) {
             'list' => __('List View', 'proud-teaser'),
             'mini' => __('Mini List', 'proud-teaser'),
             'cards' => __('Card View', 'proud-teaser'),
+            'table' => __('Table View', 'proud-teaser'),
           ]
         ]
       ];
@@ -149,35 +151,49 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Gets taxonomy for post type
+     */
+    private function get_taxonomy() {
+      switch( $this->post_type ) {
+        case 'staff-member':
+          return 'staff-member-group';
+        case 'post':
+          return 'category';
+      }
+      return false;
+    }
+
+
+    /**
      * Builds out filters if present
      */
     private function build_filters() {
-      switch( $this->post_type ) {
-        default: 
-          $this->filters = [
-            'filter_keyword' => [
-              '#id' => 'filter_keyword',
-              '#type' => 'text',
-              '#name' => 'filter_keyword',
-              '#title' => __( 'Search Keywords', 'proud-teaser' ),
-            ]
+      $this->filters = [
+        'filter_keyword' => [
+          '#id' => 'filter_keyword',
+          '#type' => 'text',
+          '#name' => 'filter_keyword',
+          '#title' => __( 'Search Keywords', 'proud-teaser' ),
+        ]
+      ];
+
+      $taxonomy = $this->get_taxonomy();
+      // Grab categories
+      if( $taxonomy ) {
+        $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $taxonomy] );
+        if(!empty($categories)) {
+          $options = [];
+          foreach ($categories as $cat) {
+            $options[$cat->term_id] = $cat->name;
+          };
+          $this->filters['filter_categories'] = [
+            '#id' => 'filter_categories',
+            '#title' => __( 'Category', 'proud-teaser' ),
+            '#type' => 'checkboxes',
+            '#name' => 'filter_categories',
+            '#options' => $options
           ];
-          // Grab categories
-          $categories = get_categories( ['type' => $this->post_type] );
-          if(!empty($categories)) {
-            $options = [];
-            foreach ($categories as $cat) {
-              $options[$cat->term_id] = $cat->name;
-            };
-            $this->filters['filter_categories'] = [
-              '#id' => 'filter_categories',
-              '#title' => __( 'Category', 'proud-teaser' ),
-              '#type' => 'checkboxes',
-              '#name' => 'filter_categories',
-              '#options' => $options
-            ];
-          }
-          break;
+        }
       }
     }
 
@@ -190,11 +206,21 @@ if ( !class_exists( 'TeaserList' ) ) {
           switch( $key ) {
             // taxonomies
             case 'filter_categories':
-              $values = [];
-              foreach( $_REQUEST[$key] as $cat_key ) {
-                $values[] = (int) sanitize_text_field( $cat_key );
+              $taxonomy = $this->get_taxonomy();
+              if($taxonomy) {
+                $values = [];
+                foreach( $_REQUEST[$key] as $cat_key ) {
+                  $values[] = (int) sanitize_text_field( $cat_key );
+                }
+                $args['tax_query'] = [
+                  [
+                    'taxonomy' => $taxonomy,
+                    'field'    => 'term_id',
+                    'terms'    => $values,
+                    'operator' => 'IN',
+                  ]
+                ];
               }
-              $args['category__in'] = $values;
               break;
 
             // keyword search
@@ -259,6 +285,22 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         case 'cards':
           echo '<div class="card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize">';
+          break;
+
+        case 'table':
+          switch( $this->post_type ) {
+            case 'staff-member':
+            default:
+              echo '<div class="table-responsive"><table class="table table-striped">';
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+                __( 'Name', 'proud-teaser' ),
+                __( 'Position', 'proud-teaser' ),
+                __( 'Phone', 'proud-teaser' )
+              );
+              break;
+              echo '<tbody>';
+          }
+          break;
       }
     }
 
@@ -275,11 +317,20 @@ if ( !class_exists( 'TeaserList' ) ) {
         $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Just load from here
-          $file = plugin_dir_path(__FILE__) . 'templates/teaser-' . $this->display_type . '.php';
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
       // Init post
       $this->query->the_post();
+      // Load Meta info?
+      $meta;
+      switch( $this->post_type ) {
+        case 'staff-member':
+          global $post; 
+          $meta = get_post_meta( $post->ID );
+          break;
+      }
+
       include($file);
     }
 
@@ -299,6 +350,10 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'cards':
           echo "</div>";
           break;
+
+        case 'table':
+          echo "</tbody></table></div>";
+          break;
       }
     }
 
@@ -315,7 +370,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         $template = $this->template_path .  'teasers-empty-' . $this->post_type . '.php';
         if( !( $file = locate_template( $template ) ) ) {
           // Just load from here
-          $file = plugin_dir_path(__FILE__) . 'templates/teasers-empty.php';
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teasers-empty.php';
         }
       }
       include($file);
@@ -345,7 +400,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     public function print_filters() {
       // Grab form helper
       $form = new \Proud\Core\FormHelper( 'proud-teaser-filter', $this->filters );
-      $form->printForm( );
+      $form->printForm( ['button_text' => __( 'Filter', 'proud-teaser' )] );
     }
   }
 }
@@ -365,7 +420,9 @@ function process_filter_submit() {
         if( strpos( $key, 'filter_' ) === 0 && !empty( $value ) ) {
           echo $key;
           if( is_array( $value ) ) {
-            $params[] = $key . '[]=' . urlencode( sanitize_text_field( implode('&' . $key . '[]=', $value ) ) );
+            foreach ($value as $val) {
+              $params[] = $key . '[]=' . urlencode( sanitize_text_field( $val ) );
+            }
           }
           else {
             $params[] = $key . '=' . urlencode( sanitize_text_field( $value ) );
