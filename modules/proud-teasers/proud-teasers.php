@@ -116,6 +116,7 @@ if ( !class_exists( 'TeaserList' ) ) {
   // Prints out a teaser list from the args on creation
   class TeaserList {
     
+    private $template_path = 'templates/teaser-items/';
     private $post_type;
     private $display_type;
     private $query;
@@ -266,17 +267,18 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_content() {
       // Try for post type
-      $template = 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
       // Try to load template from theme
-      if( !($file = locate_template( $template ) ) ) {
+      if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic
-        $template = 'teaser-' . $this->display_type . '.php';
-        if( !($file = locate_template( $template ) ) ) {
+        $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
+        if( '' === ( $file = locate_template( $template ) ) ) {
           // Just load from here
-          $file = plugin_dir_path(__FILE__) . 'templates/' . $template;
+          $file = plugin_dir_path(__FILE__) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
+      d($file);
       // Init post
       $this->query->the_post();
       include($file);
@@ -305,13 +307,13 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints empty behavior
      */
     private function print_empty() {
-      // Try for post type
-      $template = 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
+      // Try for post type + display
+      $template = $this->template_path . 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
       // Try to load template from theme
       if( !( $file = locate_template( $template ) ) ) {
-        // Try for generic
-        $template = 'teasers-empty-' . $this->display_type . '.php';
+        // Try for generic post type
+        $template = $this->template_path .  'teasers-empty-' . $this->post_type . '.php';
         if( !( $file = locate_template( $template ) ) ) {
           // Just load from here
           $file = plugin_dir_path(__FILE__) . 'templates/teasers-empty.php';
