@@ -95,8 +95,8 @@ abstract class ProudWidget extends \WP_Widget {
     global $proudcore;
 
     // We are setting app-wide 
-    if($app_wide) {
-      if(!empty($instance)) {
+    if( $app_wide ) {
+      if( !empty( $instance ) ) {
         $proudcore->addJsSettings([
           $this->id_base => [
             'global' => $instance
@@ -107,13 +107,13 @@ abstract class ProudWidget extends \WP_Widget {
     // instance specific
     else {
       // Empty or un-initialized
-      $instance = $this->addSettingDefaults($instance);
+      $instance = $this->addSettingDefaults( $instance );
       // Actually have settings
       if(!empty($instance)) {
         $settings = [];
         foreach ($this->settings as $key => $value) {
           // field to js, and exists?
-          if(!empty($value['#to_js_settings']) && isset($instance[$key])) {
+          if( !empty( $value['#to_js_settings'] ) && isset( $instance[$key] ) ) {
             $settings[$key] = $instance[$key];
           }
         }
@@ -208,12 +208,20 @@ abstract class ProudWidget extends \WP_Widget {
     $this->enqueueFrontend();
     $instance = $this->addSettingDefaults($instance);
     ?>
-    <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
+    <?php if( !empty( $args['name'] ) ): ?> 
+      <?php echo $args['before_widget'] ?>
+    <?php else: ?>
+      <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
+    <?php endif; ?>
       <?php if( !empty( $instance['title'] ) ): ?>
         <h2><?php echo $instance['title']; ?></h2>
       <?php endif; ?>
       <?php $this->printWidget($args, $instance); ?>
-    </section>
+    <?php if( !empty( $args['name'] ) ): ?> 
+      <?php echo $args['after_widget'] ?>
+    <?php else: ?>
+      </section>>
+    <?php endif; ?>
     <?php
   }
 }

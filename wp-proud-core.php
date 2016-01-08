@@ -20,6 +20,7 @@ require_once plugin_dir_path(__FILE__) . 'proud-plugin.class.php';
 
 // Load Helpers
 // -----------------------
+require_once plugin_dir_path(__FILE__) . 'proud-helpers.php';
 require_once plugin_dir_path(__FILE__) . 'proud-formhelper.class.php';
 
 // Load Modules
