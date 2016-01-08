@@ -95,8 +95,8 @@ abstract class ProudWidget extends \WP_Widget {
     global $proudcore;
 
     // We are setting app-wide 
-    if($app_wide) {
-      if(!empty($instance)) {
+    if( $app_wide ) {
+      if( !empty( $instance ) ) {
         $proudcore->addJsSettings([
           $this->id_base => [
             'global' => $instance
@@ -107,13 +107,13 @@ abstract class ProudWidget extends \WP_Widget {
     // instance specific
     else {
       // Empty or un-initialized
-      $instance = $this->addSettingDefaults($instance);
+      $instance = $this->addSettingDefaults( $instance );
       // Actually have settings
       if(!empty($instance)) {
         $settings = [];
         foreach ($this->settings as $key => $value) {
           // field to js, and exists?
-          if(!empty($value['#to_js_settings']) && isset($instance[$key])) {
+          if( !empty( $value['#to_js_settings'] ) && isset( $instance[$key] ) ) {
             $settings[$key] = $instance[$key];
           }
         }
@@ -207,13 +207,20 @@ abstract class ProudWidget extends \WP_Widget {
     $this->addJsSettings($instance);
     $this->enqueueFrontend();
     $instance = $this->addSettingDefaults($instance);
+    // Widget placed in theme, so replace default values
+    if( empty( $args['name'] ) ) {
+      $args['before_widget'] = sprintf( '<section class="widget %s clearfix">', str_replace( '_', '-', $this->option_name ) );
+      $args['after_widget']  = '</section>';
+      $args['before_title']  = '<h2>';
+      $args['after_title']   = '</h2>';
+    }
     ?>
-    <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
+    <?php echo $args['before_widget'] ?>
       <?php if( !empty( $instance['title'] ) ): ?>
-        <h2><?php echo $instance['title']; ?></h2>
+        <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
       <?php endif; ?>
       <?php $this->printWidget($args, $instance); ?>
-    </section>
+    <?php echo $args['after_widget'] ?>
     <?php
   }
 }

@@ -57,6 +57,7 @@
         case 'answers':
         case 'payments':
         case 'report':
+        case 'status':
           thisLayer = 'answers';
           otherLayer = 'search';
           break;

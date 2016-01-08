@@ -116,6 +116,7 @@ if ( !class_exists( 'TeaserList' ) ) {
   // Prints out a teaser list from the args on creation
   class TeaserList {
     
+    private $template_path = 'templates/teaser-items/';
     private $post_type;
     private $display_type;
     private $query;
@@ -266,15 +267,15 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_content() {
       // Try for post type
-      $template = 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
       // Try to load template from theme
-      if( !($file = locate_template( $template ) ) ) {
+      if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic
-        $template = 'teaser-' . $this->display_type . '.php';
-        if( !($file = locate_template( $template ) ) ) {
+        $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
+        if( '' === ( $file = locate_template( $template ) ) ) {
           // Just load from here
-          $file = plugin_dir_path(__FILE__) . 'templates/' . $template;
+          $file = plugin_dir_path(__FILE__) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
       // Init post
@@ -305,13 +306,13 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints empty behavior
      */
     private function print_empty() {
-      // Try for post type
-      $template = 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
+      // Try for post type + display
+      $template = $this->template_path . 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
       // Try to load template from theme
       if( !( $file = locate_template( $template ) ) ) {
-        // Try for generic
-        $template = 'teasers-empty-' . $this->display_type . '.php';
+        // Try for generic post type
+        $template = $this->template_path .  'teasers-empty-' . $this->post_type . '.php';
         if( !( $file = locate_template( $template ) ) ) {
           // Just load from here
           $file = plugin_dir_path(__FILE__) . 'templates/teasers-empty.php';
@@ -384,45 +385,3 @@ function process_filter_submit() {
 
 // Search submit
 add_action( 'init', __NAMESPACE__ . '\\process_filter_submit' );
-
-
-// Hacky copied function to produce exerpt
-function wp_trim_excerpt( $text = '' ) {
-  $raw_excerpt = $text;
-  if ( '' == $text ) {
-    $text = get_the_content('');
-
-    $text = strip_shortcodes( $text );
-
-    /** This filter is documented in wp-includes/post-template.php */
-    // $text = apply_filters( 'the_content', $text );
-    $text = str_replace(']]>', ']]&gt;', $text);
-
-    /**
-     * Filter the number of words in an excerpt.
-     *
-     * @since 2.7.0
-     *
-     * @param int $number The number of words. Default 55.
-     */
-    $excerpt_length = apply_filters( 'excerpt_length', 55 );
-    /**
-     * Filter the string in the "more" link displayed after a trimmed excerpt.
-     *
-     * @since 2.9.0
-     *
-     * @param string $more_string The string shown within the more link.
-     */
-    $excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
-    $text = wp_trim_words( $text, $excerpt_length, $excerpt_more );
-  }
-  /**
-   * Filter the trimmed excerpt string.
-   *
-   * @since 2.8.0
-   *
-   * @param string $text        The trimmed text.
-   * @param string $raw_excerpt The text prior to trimming.
-   */
-  return apply_filters( 'wp_trim_excerpt', $text, $raw_excerpt );
-}
