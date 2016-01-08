@@ -166,3 +166,18 @@ if ( !class_exists( 'ProudLayout' ) ) {
     } // ProudLayout
 
 } // !class_exists( 'ProudLayout' )
+
+
+function proud_page_builder_alter() {
+  // if(empty($scripts['proud-page-builder-js'])) {
+  //   $path = plugins_url('js/',__FILE__);
+  //   $scripts['proud-page-builder-js'] = array(
+  //     'src' => 
+  //   );
+  // }
+  // return $scripts;
+  $path = plugins_url('js/',__FILE__);
+  // d($path . 'page-builder-default-tab.js');
+  wp_enqueue_script('proud_page_builder_alter', $path . 'page-builder-default-tab.js');
+}
+add_filter( 'admin_enqueue_scripts', 'proud_page_builder_alter' );
