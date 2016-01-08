@@ -11,7 +11,7 @@ function print_proud_navbar() {
   <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom" role="navigation">
     <ul id="logo-menu" class="nav navbar-nav">
       <li class="nav-logo">
-        <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>"><img style="height:38px;" class="logo" src="http://dev.getproudcity.com/sites/default/files/inverted_logo/logo-icon-white.png" alt="Home" title="Home"></a>    
+        <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>"><img style="height:38px;" class="logo" src="<?php echo plugins_url( '/assets/images/logo-icon-white.png', __FILE__ ) ?>" alt="Home" title="Home"></a>    
       </li>
       <li class="nav-text">
         <a title="Home" rel="home" href="<?= esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
@@ -55,7 +55,7 @@ function print_proud_navbar() {
   <div class="navbar navbar-header-region navbar-default">
     <div class="navbar-header"><div class="container">
       <h3>
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="logo"><img style="height:38px;" class="logo" src="http://dev.getproudcity.com/sites/default/files/inverted_logo/logo-icon-white.png" alt="Home" title="Home"></a>
+        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="logo"><img style="height:38px;" class="logo" src="<?php echo plugins_url( '/assets/images/logo-icon-white.png', __FILE__ ) ?>" alt="Home" title="Home"></a>
         <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>
@@ -66,7 +66,7 @@ function print_proud_navbar() {
 add_action( 'get_header', 'print_proud_navbar' );
 
 function enqueue_proud_navbar_frontend() {
-  $path = plugins_url('includes/js/',__FILE__);
+  $path = plugins_url('assets/js/',__FILE__);
   wp_register_script('proud-navbar/js', $path . 'proud-navbar.js', ['jquery', 'proud']);
   wp_enqueue_script('proud-navbar/js');
 }
