@@ -207,21 +207,20 @@ abstract class ProudWidget extends \WP_Widget {
     $this->addJsSettings($instance);
     $this->enqueueFrontend();
     $instance = $this->addSettingDefaults($instance);
+    // Widget placed in theme, so replace default values
+    if( empty( $args['name'] ) ) {
+      $args['before_widget'] = sprintf( '<section class="widget %s clearfix">', str_replace( '_', '-', $this->option_name ) );
+      $args['after_widget']  = '</section>';
+      $args['before_title']  = '<h2>';
+      $args['after_title']   = '</h2>';
+    }
     ?>
-    <?php if( !empty( $args['name'] ) ): ?> 
-      <?php echo $args['before_widget'] ?>
-    <?php else: ?>
-      <section class="widget <?php echo str_replace('_', '-', $this->option_name) ?> clearfix">
-    <?php endif; ?>
+    <?php echo $args['before_widget'] ?>
       <?php if( !empty( $instance['title'] ) ): ?>
-        <h2><?php echo $instance['title']; ?></h2>
+        <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
       <?php endif; ?>
       <?php $this->printWidget($args, $instance); ?>
-    <?php if( !empty( $args['name'] ) ): ?> 
-      <?php echo $args['after_widget'] ?>
-    <?php else: ?>
-      </section>
-    <?php endif; ?>
+    <?php echo $args['after_widget'] ?>
     <?php
   }
 }
