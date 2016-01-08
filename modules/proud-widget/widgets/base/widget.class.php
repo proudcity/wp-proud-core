@@ -220,7 +220,7 @@ abstract class ProudWidget extends \WP_Widget {
     <?php if( !empty( $args['name'] ) ): ?> 
       <?php echo $args['after_widget'] ?>
     <?php else: ?>
-      </section>>
+      </section>
     <?php endif; ?>
     <?php
   }
