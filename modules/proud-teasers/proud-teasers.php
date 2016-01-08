@@ -278,7 +278,6 @@ if ( !class_exists( 'TeaserList' ) ) {
           $file = plugin_dir_path(__FILE__) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
-      d($file);
       // Init post
       $this->query->the_post();
       include($file);
