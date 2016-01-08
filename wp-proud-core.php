@@ -25,12 +25,13 @@ require_once plugin_dir_path(__FILE__) . 'proud-formhelper.class.php';
 
 // Load Modules
 // -----------------------
-require_once plugin_dir_path(__FILE__) . '/modules/proud-libraries/libraries.class.php';
-require_once plugin_dir_path(__FILE__) . '/modules/proud-widget/proud-widgets.php';
-require_once plugin_dir_path(__FILE__) . '/modules/proud-addons/proud-addons.php';
-require_once plugin_dir_path(__FILE__) . '/modules/proud-navbar/proud-navbar.php';
-require_once plugin_dir_path(__FILE__) . '/modules/proud-layout/proud-layout.php';
-require_once plugin_dir_path(__FILE__) . '/modules/proud-teasers/proud-teasers.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.class.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-widget/proud-widgets.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
+require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
+require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-wr-pagebuilder.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -84,7 +85,7 @@ class Proudcore extends \ProudPlugin {
 
   // Load common libraries
   public function loadLibraries() {
-    $path = plugins_url('includes/js/',__FILE__);
+    $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
     self::$libraries->loadLibraries();
@@ -92,14 +93,14 @@ class Proudcore extends \ProudPlugin {
 
     // Load common libraries
   public function loadAdminLibraries($hi) {
-    $path = plugins_url('includes/js/',__FILE__);
+    $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
     self::$libraries->loadLibraries('true');
   }
 
   // Recusive array merging from 
-  // https://api.drupal.org/api/drupal/includes%21bootstrap.inc/function/drupal_array_merge_deep_array/7
+  // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
   public function arrayMergeDeepArray($arrays) {
     $result = array();
 
