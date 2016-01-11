@@ -63,6 +63,9 @@ class Proudcore extends \ProudPlugin {
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
 
+    // Add blue "demo" bar to footer @todo: should this be moved? @todo: make this work
+    $this->hook('wp_footer',  'proudbar');
+
     // -- Hacks
     // Hide admin fields
     $this->hook('init', 'removePostAdminFields');
@@ -169,6 +172,20 @@ class Proudcore extends \ProudPlugin {
           $wp_taxonomies[ $taxonomy_name ]->rest_base = $taxonomy_name;
           $wp_taxonomies[ $taxonomy_name ]->rest_controller_class = 'WP_REST_Terms_Controller';
       }
+    }
+  }
+
+  // Add blue "demo" bar to footer @todo: make this work
+  public function proudbar() {
+    $stage = get_option('proud_stage', '');
+    if ('beta' === $stage || 'demo' === $stage) {
+      echo '<div class="proudbar">
+        <div class="proudbar-title">'. $stage .'</div>
+        <a href="https://insights.hotjar.com/s?siteId=124068&surveyId=6063" class="proudbar-btn">Feedback</a>
+        <a href="//proudcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="What is this?"><i class="fa fa-question"></i></a>
+        <a href="//proudcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
+        <a href="//proudcity.com" class="proudbar-logo" target="_blank">ProudCity</a>
+      </div>';
     }
   }
 
