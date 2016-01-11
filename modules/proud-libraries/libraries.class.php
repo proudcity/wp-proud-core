@@ -17,7 +17,7 @@ class ProudLibaries {
    */
   protected function initLibraries() {
 
-    $path = plugins_url('includes/',__FILE__);
+    $path = plugins_url('assets/js/',__FILE__);
 
     self::$libraries['lodash'] = [
       'title' => 'Lodash',

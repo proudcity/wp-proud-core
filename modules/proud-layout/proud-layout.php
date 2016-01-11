@@ -79,7 +79,7 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
         public function add_box(){
 
-          $posttypes = array( 'page' );
+          $posttypes = array( 'page', 'agency' );
 
           foreach ( $posttypes as $posttype ){
             add_meta_box( 'proud_layout', 'Layout Options', array( $this, 'build_box' ), $posttype, 'side' );

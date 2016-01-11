@@ -229,18 +229,18 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
     public function printForm ($args = []) {
       // Merge with defaults
-      $args = array_merge($args, [
+      $args = array_merge( [
         'button_text' => __( 'Submit', 'proud-form' ),
         'method' => 'post',
         'action' => '',
         'name' => $this->form_id,
         'id' => $this->form_id
-      ]);
+      ], $args);
       ?>
-      <form id="<?php print $args['id']; ?>" name="<?php print $args['name']; ?>" method="<?php print $args['method']; ?>" action="<?php print $args['action']; ?>">
+      <form id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
         <?php wp_nonce_field( $args['id'] ); ?>
         <?php $this->printFields(); ?>
-        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="submit" class="btn btn-default"><?php print $args['button_text']; ?></button>
       </form>
       <?php
     }
