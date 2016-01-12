@@ -59,6 +59,8 @@ class Proudcore extends \ProudPlugin {
     $this->hook('admin_enqueue_scripts', 'loadAdminLibraries');
     // Add Javascript settings
     $this->hook('proud_settings', 'printJsSettings');
+    // Get the $pageInfo global var for submenu logic
+    $this->hook('init',  'getPageInfo');
 
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
@@ -66,11 +68,6 @@ class Proudcore extends \ProudPlugin {
 
     // Add blue "demo" bar to footer @todo: should this be moved? @todo: make this work
     $this->hook('wp_footer',  'proudbar');
-
-    // -- Hacks
-    // Hide admin fields
-    $this->hook('init', 'removePostAdminFields');
-
   }
 
   public function init() {
@@ -143,13 +140,6 @@ class Proudcore extends \ProudPlugin {
     <?php
   }
 
-  // Remove extra fields on the admin pages
-  public function removePostAdminFields() {
-    remove_post_type_support( 'question', 'author' );
-    remove_post_type_support( 'question', 'comments' );
-    remove_post_type_support( 'question', 'custom-fields' );
-  }
-
   // Add REST API support to an already registered post types
   public function restPostSupport() {
     global $wp_post_types;
@@ -189,6 +179,39 @@ class Proudcore extends \ProudPlugin {
       </div>';
     }
   }
+
+  // If this post is a page, get the menu information
+  public function getPageInfo() {
+    if (is_page()) {
+      
+      global $pageInfo;
+      global $wpdb;
+      if (empty($pageInfo)) {
+        // @todo: make this more elegant / cached
+        // @todo: this should be in proud core (in some kind of hook_init)
+        $row = $wpdb->get_row( $wpdb->prepare( '
+          SELECT post_id, slug FROM wp_postmeta pm
+          LEFT JOIN wp_term_relationships r ON pm.post_id = r.object_id
+          LEFT JOIN wp_terms t ON r.term_taxonomy_id = t.term_id
+          WHERE pm.meta_key = %s
+          AND pm.meta_value = %d;', 
+        '_menu_item_object_id', get_the_ID() ) );
+
+        $pageInfo['menu'] = $row->slug;
+
+        if ( 'primary-links' === $row->slug ) {
+          $pageInfo['parent'] = get_post_meta ( 41, '_menu_item_menu_item_parent', true );
+        }
+        else {
+          $pageInfo['agency'] = $wpdb->get_var( $wpdb->prepare( '
+            SELECT post_id FROM wp_postmeta WHERE meta_key = %s AND meta_value = %s',
+          'agency_menu', $pageInfo['menu'] ) );
+        }
+      }
+    }
+  }
+
+  
 
 }
 
