@@ -67,7 +67,8 @@ class Proudcore extends \ProudPlugin {
     $this->hook('init',  'restTaxonomySupport');
 
     // Add blue "demo" bar to footer @todo: should this be moved? @todo: make this work
-    $this->hook('wp_footer',  'proudbar');
+    $this->hook( 'wp_footer',  'proudbar' );
+    $this->hook( 'admin_footer', 'proudbar' );
   }
 
   public function init() {
@@ -173,7 +174,7 @@ class Proudcore extends \ProudPlugin {
       echo '<div class="proudbar">
         <div class="proudbar-title">'. $stage .'</div>
         <a href="https://insights.hotjar.com/s?siteId=124068&surveyId=6063" class="proudbar-btn">Feedback</a>
-        <a href="//proudcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="What is this?"><i class="fa fa-question"></i></a>
+        <a href="//proudwpcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="What is this?"><i class="fa fa-question"></i></a>
         <a href="//proudcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
         <a href="//proudcity.com" class="proudbar-logo" target="_blank">ProudCity</a>
       </div>';
