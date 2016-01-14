@@ -182,7 +182,7 @@ abstract class ProudWidget extends \WP_Widget {
     return $this->updateWidgetConfig($new_instance, $old_instance);
   }
 
-   /**
+  /**
    * Front-end display of widget.
    *
    * @see WP_Widget::widget()
@@ -192,6 +192,22 @@ abstract class ProudWidget extends \WP_Widget {
    */
   public function printWidget( $args, $instance ) {
 
+  }
+
+  /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent( $args, $instance ) {
+    // empty plugin
+    if( empty( $instance ) || ( isset( $instance['title'] ) && count( $instance ) === 1 ) ) {
+      return false;
+    }
+    return true;
   }
 
    /**
@@ -216,7 +232,7 @@ abstract class ProudWidget extends \WP_Widget {
     }
     ?>
     <?php echo $args['before_widget'] ?>
-      <?php if( !empty( $instance['title'] ) ): ?>
+      <?php if( $this->hasContent( $args, $instance ) && !empty( $instance['title'] ) ): ?>
         <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
       <?php endif; ?>
       <?php $this->printWidget($args, $instance); ?>
