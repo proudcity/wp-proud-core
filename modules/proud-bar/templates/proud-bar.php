@@ -1,4 +1,5 @@
 <div class="proudbar">
+  <a href="//proudcity.com" class="proudbar-logo" target="_blank">ProudCity</a>
   <div class="proudbar-title"><a href="//proudcity.com/how-it-works" target="_blank" title="How ProudCity works"><?php print $stage ?></a></div>
   
   <?php if ( 'example' !== $stage ): ?> 
@@ -9,5 +10,4 @@
     <a href="//proudcity.com/start" class="proudbar-btn">Claim your city</a>
   <?php endif; ?>
 
-  <a href="//proudcity.com" class="proudbar-logo" target="_blank">ProudCity</a>
 </div>
