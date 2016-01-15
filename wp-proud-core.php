@@ -32,6 +32,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php'
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-wr-pagebuilder.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -60,15 +61,13 @@ class Proudcore extends \ProudPlugin {
     // Add Javascript settings
     $this->hook('proud_settings', 'printJsSettings');
     // Get the $pageInfo global var for submenu logic
-    $this->hook('init',  'getPageInfo');
+    $this->hook('template_redirect',  'getPageInfo');
+    // Set up image styles
+    $this->hook( 'after_setup_theme', 'addImageSizes' );
 
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
-
-    // Add blue "demo" bar to footer @todo: should this be moved? @todo: make this work
-    $this->hook( 'wp_footer',  'proudbar' );
-    $this->hook( 'admin_footer', 'proudbar' );
   }
 
   public function init() {
@@ -167,24 +166,13 @@ class Proudcore extends \ProudPlugin {
     }
   }
 
-  // Add blue "demo" bar to footer @todo: make this work
-  public function proudbar() {
-    $stage = get_option('proud_stage', '');
-    if ('beta' === $stage || 'demo' === $stage) {
-      echo '<div class="proudbar">
-        <div class="proudbar-title">'. $stage .'</div>
-        <a href="https://insights.hotjar.com/s?siteId=124068&surveyId=6063" class="proudbar-btn">Feedback</a>
-        <a href="//proudwpcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="What is this?"><i class="fa fa-question"></i></a>
-        <a href="//proudcity.com" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
-        <a href="//proudcity.com" class="proudbar-logo" target="_blank">ProudCity</a>
-      </div>';
-    }
+  function addImageSizes() {
+    add_image_size( 'card-thumb', 300, 170, true );
   }
 
   // If this post is a page, get the menu information
   public function getPageInfo() {
     if (is_page()) {
-      
       global $pageInfo;
       global $wpdb;
       if (empty($pageInfo)) {
@@ -201,18 +189,17 @@ class Proudcore extends \ProudPlugin {
         $pageInfo['menu'] = $row->slug;
 
         if ( 'primary-links' === $row->slug ) {
-          $pageInfo['parent'] = get_post_meta ( 41, '_menu_item_menu_item_parent', true );
+          $pageInfo['parent'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
         }
         else {
           $pageInfo['agency'] = $wpdb->get_var( $wpdb->prepare( '
             SELECT post_id FROM wp_postmeta WHERE meta_key = %s AND meta_value = %s',
-          'agency_menu', $pageInfo['menu'] ) );
+          'post_menu', $pageInfo['menu'] ) );
         }
+
       }
     }
   }
-
-  
 
 }
 
