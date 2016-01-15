@@ -52,7 +52,7 @@ if ( !class_exists( 'TeaserOptions' ) ) {
         add_meta_box( 'proud_teaser', 'Teaser Configuration', array( $this, 'build_box' ), 'page', 'side' );
       }
 
-      add_action('save_post','my_meta_save');
+      add_action('save_post', [ $this, 'on_save' ]);
     }
 
     public function build_box( $post ){

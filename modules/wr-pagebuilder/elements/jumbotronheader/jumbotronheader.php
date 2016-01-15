@@ -36,14 +36,14 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
    */
   function element_config() {
     $this->config['shortcode']   = strtolower( __CLASS__ );
-    $this->config['name']        = __( 'Jumbotron Header', WR_PBL );
+    $this->config['name']        = __( 'Page Header', WR_PBL );
     $this->config['cat']         = __( 'Typography', WR_PBL );
     $this->config['icon']        = 'wr-icon-text';
     $this->config['description'] = __( 'Jumbotron header layout: for landing pages', WR_PBL );
 
     // Define exception for this shortcode
     $this->config['exception'] = array(
-      'default_content' => __( 'Jumbotron Header', WR_PBL ),
+      'default_content' => __( 'Page Header', WR_PBL ),
 
       'admin_assets' => array(
     // Shortcode initialization
