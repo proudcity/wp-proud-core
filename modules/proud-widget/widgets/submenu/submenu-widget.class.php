@@ -23,11 +23,11 @@ class Submenu extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
         global $pageInfo;
-        if ( $pageInfo['parent'] > 0 ) {
+        if ( $pageInfo['parent_link'] > 0 ) {
           
             $args = array(
               'menu' => $pageInfo['menu'],
-              'submenu' => $pageInfo['parent'],
+              'submenu' => $pageInfo['parent_link'],
               'menu_class' => 'nav nav-pills nav-stacked',
             );
 

@@ -189,12 +189,18 @@ class Proudcore extends \ProudPlugin {
         $pageInfo['menu'] = $row->slug;
 
         if ( 'primary-links' === $row->slug ) {
-          $pageInfo['parent'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
+          $pageInfo['parent_link'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
+          if ($pageInfo['parent_link']) {
+            $pageInfo['parent_post'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object_id', true );
+          }
         }
         else {
-          $pageInfo['agency'] = $wpdb->get_var( $wpdb->prepare( '
+          $pageInfo['parent_post'] = $wpdb->get_var( $wpdb->prepare( '
             SELECT post_id FROM wp_postmeta WHERE meta_key = %s AND meta_value = %s',
           'post_menu', $pageInfo['menu'] ) );
+          if (!empty($pageInfo['parent_post'])) {
+            $pageInfo['parent_post_type'] = 'agency';
+          }
         }
 
       }
