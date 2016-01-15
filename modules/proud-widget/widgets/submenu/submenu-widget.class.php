@@ -4,37 +4,37 @@ use Proud\Core;
 
 class Submenu extends Core\ProudWidget {
 
-  function __construct() {
-    parent::__construct(
-      'submenu', // Base ID
-      __( 'Submenu', 'wp-agency' ), // Name
-      array( 'description' => __( "Display a submenu", 'wp-agency' ), ) // Args
-    );
-  }
-
-  function initialize() {
-  }
-
-  /**
-   * Outputs the content of the widget
-   *
-   * @param array $args
-   * @param array $instance
-   */
-  public function printWidget( $args, $instance ) {
-      global $pageInfo;
-      if ( $pageInfo['parent'] > 0 ) {
-        
-        $args = array(
-          'menu' => $pageInfo['menu'],
-          'submenu' => $pageInfo['parent'],
-          'menu_class' => 'nav nav-pills nav-stacked',
+    function __construct() {
+        parent::__construct(
+            'submenu', // Base ID
+            __( 'Submenu', 'wp-agency' ), // Name
+            array( 'description' => __( "Display a submenu", 'wp-agency' ), ) // Args
         );
+    }
 
-        wp_nav_menu( $args );
-      }
-      
-  }
+    function initialize() {
+    }
+
+    /**
+     * Outputs the content of the widget
+     *
+     * @param array $args
+     * @param array $instance
+     */
+    public function printWidget( $args, $instance ) {
+        global $pageInfo;
+        if ( $pageInfo['parent_link'] > 0 ) {
+          
+            $args = array(
+              'menu' => $pageInfo['menu'],
+              'submenu' => $pageInfo['parent_link'],
+              'menu_class' => 'nav nav-pills nav-stacked',
+            );
+
+            wp_nav_menu( $args );
+        }
+        
+    }
 }
 
 // register Foo_Widget widget
