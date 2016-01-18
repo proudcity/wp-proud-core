@@ -28,7 +28,8 @@ class Submenu extends Core\ProudWidget {
             $args = array(
               'menu' => $pageInfo['menu'],
               'submenu' => $pageInfo['parent_link'],
-              'menu_class' => 'nav nav-pills nav-stacked',
+              'menu_class' => 'nav nav-pills nav-stacked submenu',
+              'fallback_cb' => false,
             );
 
             wp_nav_menu( $args );
