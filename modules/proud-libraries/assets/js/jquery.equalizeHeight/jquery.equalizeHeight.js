@@ -39,7 +39,6 @@
         }
         $.each($children, function(index, element) {
             $(element).css({ 'height': largestHeight + "px" });
-            console.log(largestHeight + "px");
         });
       }
 
