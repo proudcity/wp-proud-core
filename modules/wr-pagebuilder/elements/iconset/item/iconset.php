@@ -55,7 +55,7 @@ if ( ! class_exists( 'WR_Item_Iconset' ) ) {
 
       ),
       array(
-        'name' => __( 'Icon', WR_PBL ),
+        'name' => __( 'Icon (<a href="https://fortawesome.github.io/Font-Awesome/icons/#search-input" target="_blank">Choose icon</a>)', WR_PBL ),
         'id'   => 'icon',
         'type' => 'text_field',
         'role'    => 'icon',
