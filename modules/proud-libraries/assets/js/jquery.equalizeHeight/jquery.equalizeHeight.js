@@ -38,7 +38,7 @@
             });
         }
         $.each($children, function(index, element) {
-            $(element).height(largestHeight + "px");
+            $(element).css({ 'height': largestHeight + "px" });
         });
       }
 

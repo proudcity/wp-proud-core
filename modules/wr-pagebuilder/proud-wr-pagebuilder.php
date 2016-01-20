@@ -13,6 +13,15 @@ function proud_pagebuilder_alter() {
 add_filter( 'admin_enqueue_scripts', __NAMESPACE__ . '\\proud_pagebuilder_alter' );
 
 
+/** 
+ * @TODO find out how to remove CSS from pagebuilder
+ */
+function proud_pagebuilder_css_dequeue() {
+  wp_deregister_style('wr-pb-frontend-responsive');
+  wp_dequeue_style('wr-pb-frontend-responsive');
+}
+add_action( 'wp_print_styles', __NAMESPACE__ . '\\proud_pagebuilder_css_dequeue', 100 );
+
 /**
  * Register theme styles to popup teaser
  */
