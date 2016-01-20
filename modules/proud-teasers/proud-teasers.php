@@ -82,10 +82,8 @@ if ( !class_exists( 'TeaserOptions' ) ) {
         }
 
         $old = get_post_meta( $postID, $id, true );
-        print $old;
         $new = $_POST[ $id ] ;
-        print $new;
-        if( $old ){
+        if( !is_null( $old ) ){
           if ( is_null( $new ) ){
             delete_post_meta( $postID, $id );
           } else {

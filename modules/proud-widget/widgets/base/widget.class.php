@@ -202,7 +202,7 @@ abstract class ProudWidget extends \WP_Widget {
    * @param array $args     Widget arguments.
    * @param array $instance Saved values from database.
    */
-  public function hasContent( $args, $instance ) {
+  public function hasContent( $args, &$instance ) {
     // empty plugin
     if( empty( $instance ) || ( isset( $instance['title'] ) && count( $instance ) === 1 ) ) {
       return false;

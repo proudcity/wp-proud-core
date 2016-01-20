@@ -132,7 +132,7 @@ if ( !class_exists( 'ProudLayout' ) ) {
             $old = get_post_meta( $postID, $field, true );
             $new = $_POST[ $field ] ;
 
-            if( $old ){
+            if( !is_null( $old ) ){
               if ( is_null( $new ) ){
                 delete_post_meta( $postID, $field );
               } else {
