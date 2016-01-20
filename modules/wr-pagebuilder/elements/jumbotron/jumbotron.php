@@ -73,8 +73,6 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
           'std'  => WR_Pb_Helper_Type::lorem_text(),
           'rows' => 15,
         ),
-      ),
-      'styling' => array(
         array(
           'type' => 'preview',
         ),
@@ -93,31 +91,31 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
           'std'        => 'none',
           'class'    => 'input-sm',
           'options'    => array(
-            'none'     => __( 'None', WR_PBL ),
-            'solid'    => __( 'Solid Color', WR_PBL ),
-            // 'gradient' => __( 'Gradient Color', WR_PBL ),
-            'pattern'  => __( 'Pattern', WR_PBL ),
-            'image'    => __( 'Image', WR_PBL ),
-        ),
-              'has_depend' => '1',
+                'none'     => __( 'None', WR_PBL ),
+                'solid'    => __( 'Solid Color', WR_PBL ),
+                // 'gradient' => __( 'Gradient Color', WR_PBL ),
+                'pattern'  => __( 'Pattern', WR_PBL ),
+                'image'    => __( 'Image', WR_PBL ),
+          ),
+          'has_depend' => '1',
         ),
         array(
               'name' => __( 'Solid Color', WR_PBL ),
               'type' => array(
-        array(
-                  'id'           => 'solid_color_value',
-                  'type'         => 'text_field',
-                  'class'        => 'input-small',
-                  'std'          => '#FFFFFF',
-                  'parent_class' => 'combo-item',
-        ),
-        array(
-                  'id'           => 'solid_color_color',
-                  'type'         => 'color_picker',
-                  'std'          => '#ffffff',
-                  'parent_class' => 'combo-item',
-        ),
-        ),
+                    array(
+                        'id'           => 'solid_color_value',
+                        'type'         => 'text_field',
+                        'class'        => 'input-small',
+                        'std'          => '#FFFFFF',
+                        'parent_class' => 'combo-item',
+                    ),
+                    array(
+                        'id'           => 'solid_color_color',
+                        'type'         => 'color_picker',
+                        'std'          => '#ffffff',
+                        'parent_class' => 'combo-item',
+                    ),
+              ),
               'container_class' => 'combo-group',
               'dependency'      => array( 'background', '=', 'solid' ),
         ),
@@ -135,10 +133,10 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
               'type'    => 'radio_button_group',
               'std'     => 'full',
               'options' => array(
-                'full'       => __( 'Full', WR_PBL ),
-                'vertical'   => __( 'Vertical', WR_PBL ),
-                'horizontal' => __( 'Horizontal', WR_PBL ),
-        ),
+                    'full'       => __( 'Full', WR_PBL ),
+                    'vertical'   => __( 'Vertical', WR_PBL ),
+                    'horizontal' => __( 'Horizontal', WR_PBL ),
+              ),
               'dependency' => array( 'background', '=', 'pattern' ),
         ),
         array(
@@ -149,61 +147,6 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
               'class'      => 'jsn-input-large-fluid',
               'dependency' => array( 'background', '=', 'image' ),
         ),
-        array(
-              'name'    => __( 'Repeat', WR_PBL ),
-              'id'      => 'img_repeat',
-              'type'    => 'radio_button_group',
-              'std'     => 'none',
-              'options' => array(
-                'none'       => __( 'None', WR_PBL ),
-                'full'       => __( 'Full', WR_PBL ),
-                'vertical'   => __( 'Vertical', WR_PBL ),
-                'horizontal' => __( 'Horizontal', WR_PBL ),
-              ),
-              'dependency' => array( 'background', '=', 'image' ),
-        ),
-        array(
-              'name'       => __( 'Size', WR_PBL ),
-              'id'         => 'background_size',
-              'type'       => 'radio',
-              'std'        => 'normal',
-              'options'    => array(
-                'normal'      => __( 'Normal', WR_PBL ),
-                'cover'       => __( 'Cover (big)', WR_PBL ),
-                '200%'        => __( 'Huge (good for paralax)', WR_PBL ),
-              ),
-              'dependency' => array( 'background', '=', 'image' ),
-        ),
-        array(
-              'name'       => __( 'Position', WR_PBL ),
-              'id'         => 'position',
-              'type'       => 'radio',
-              'label_type' => 'image',
-              'dimension'  => array( 23, 23 ),
-              'std'        => 'center center',
-              'options'    => array(
-                'left top'      => array( 'left top' ),
-                'center top'    => array( 'center top' ),
-                'right top'     => array( 'right top', 'linebreak' => true ),
-                'left center'   => array( 'left center' ),
-                'center center' => array( 'center center' ),
-                'right center'  => array( 'right center', 'linebreak' => true ),
-                'left bottom'   => array( 'left bottom' ),
-                'center bottom' => array( 'center bottom' ),
-                'right bottom'  => array( 'right bottom' ),
-        ),
-              'dependency' => array( 'background', '=', 'image' ),
-        ),
-        array(
-              'name'       => __( 'Enable Paralax', WR_PBL ),
-              'id'         => 'paralax',
-              'type'       => 'radio',
-              'std'        => 'no',
-              'options'    => array( 'yes' => __( 'Yes', WR_PBL ), 'no' => __( 'No', WR_PBL ) ),
-              'dependency' => array( 'background', '=', 'pattern__#__image' ),
-        ),
-        // WR_Pb_Helper_Type::get_apprearing_animations(),
-        // WR_Pb_Helper_Type::get_animation_speeds(),
       )
     );
   }
@@ -273,43 +216,33 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
           break;
 
         case 'image':
+          $classes[] = 'jumbotron-image';
           $image = $arr_params['image'];
-          $image_position = $arr_params['position'];
-
-          $background_style = "background-image:url('$image');background-position:$image_position;";
-          // Background repeat
-          $background_repeat = self::background_repeat( $arr_params['img_repeat'] );
-          if ( ! empty( $background_repeat ) ) {
-            $background_style .= "background-repeat:$background_repeat;";
-          }
-          // Backgound size
-          if ( ! empty( $background_size ) ) {
-            $background_style .= ($background_size != 'normal') ? "background-size:$background_size;"  : '';
-          }
+          $background_style = "background-image:url('$image');";
           break;
       }
 
       $arr_styles[] = $background_style;
-
-      // Paralax background
-      if ( isset( $atts['paralax']) && $atts['paralax'] == 'yes' ) {
-        $data_attr = ' data-stellar-background-ratio="-.3"';
-      }
     }
 
     $random_id = WR_Pb_Utils_Common::random_string();
-    $script = $html_element = '';
     // Compile styles
     $style = $arr_styles ? sprintf( 'style="%s"', implode( '', $arr_styles ) ) : '';
-    $html_element .= $content;
-    $html  = sprintf( '<div class="%s" id="%s" %s>', 
+    $html  = sprintf( '<div class="container"><div class="%s" id="%s" %s>', 
       implode( ' ', $classes ), 
       $random_id,
       $data_attr . ' ' . $style 
     );
-    $html .= $script;
-    $html .= $html_element;
-    $html .= '</div>';
+    if( $image ) {
+      $html .= '<div class="row"><div class="col-lg-5 col-md-8 col-sm-8"><div class="jumbotron-bg">';
+      $html .= $content;   
+      $html .= '</div></div></div>';
+      
+    } 
+    else {
+      $html .= $content;
+    }
+    $html .= '</div></div>';
 
     return $this->element_wrapper( $html, $arr_params );
   }

@@ -64,8 +64,6 @@ class WR_Iconset extends WR_Pb_Shortcode_Parent {
             array( 'std' => '' ),
           ),
         ),
-      ),
-      'styling' => array(
         array(
           'type' => 'preview',
         )

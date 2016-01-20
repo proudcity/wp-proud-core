@@ -73,28 +73,18 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
           'std'  => WR_Pb_Helper_Type::lorem_text(),
           'rows' => 15,
         ),
-      ),
-      'styling' => array(
         array(
           'type' => 'preview',
-        ),
-        array(
-          'name'       => __( 'Include Page Title', WR_PBL ),
-          'id'         => 'include_title',
-          'type'       => 'radio',
-          'std'        => 'no',
-          'desc' => __( 'If yes, print page title will be placed inside the box', WR_PBL ),
-          'options'    => array( 'yes' => __( 'Yes', WR_PBL ), 'no' => __( 'No', WR_PBL ) ),
         ),
         array(
           'name'       => __( 'Container Background', WR_PBL ),
           'id'         => 'background',
           'type'       => 'select',
-          'std'        => 'proud',
+          'std'        => 'image',
           'class'    => 'input-sm',
           'options'    => array(
             'none'     => __( 'None', WR_PBL ),
-            'proud'    => __( 'ProudCity Image from setup', WR_PBL ),
+            // 'proud'    => __( 'ProudCity Image from setup', WR_PBL ),
             'solid'    => __( 'Solid Color', WR_PBL ),
             'pattern'  => __( 'Pattern', WR_PBL ),
             'image'    => __( 'Image', WR_PBL ),
@@ -150,80 +140,13 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
               'dependency' => array( 'background', '=', 'image' ),
         ),
         array(
-              'name'    => __( 'Repeat', WR_PBL ),
-              'id'      => 'img_repeat',
-              'type'    => 'radio_button_group',
-              'std'     => 'none',
-              'options' => array(
-                'none'       => __( 'None', WR_PBL ),
-                'full'       => __( 'Full', WR_PBL ),
-                'vertical'   => __( 'Vertical', WR_PBL ),
-                'horizontal' => __( 'Horizontal', WR_PBL ),
-              ),
-              'dependency' => array( 'background', '=', 'proud__#__image' ),
-        ),
-        array(
-              'name'       => __( 'Size', WR_PBL ),
-              'id'         => 'background_size',
-              'type'       => 'radio',
-              'std'        => 'normal',
-              'options'    => array(
-                'normal'      => __( 'Normal', WR_PBL ),
-                'cover'       => __( 'Cover', WR_PBL ),
-                '200%'        => __( 'Huge (good for paralax)', WR_PBL ),
-              ),
-              'dependency' => array( 'background', '=', 'proud__#__image' ),
-        ),  
-        array(
-              'name'       => __( 'Enable Paralax', WR_PBL ),
-              'id'         => 'paralax',
-              'type'       => 'radio',
-              'std'        => 'no',
-              'options'    => array( 'yes' => __( 'Yes', WR_PBL ), 'no' => __( 'No', WR_PBL ) ),
-              'dependency' => array( 'background', '=', 'pattern__#__proud__#__image' ),
-        ),
-        array(
           'name'       => __( 'Inverse text in box?', WR_PBL ),
           'id'         => 'make_inverse',
           'type'       => 'radio',
           'std'        => 'no',
           'options'    => array( 'yes' => __( 'Yes', WR_PBL ), 'no' => __( 'No', WR_PBL ) ),
-          'tooltip'    => __( 'Inverse colors on box', WR_PBL ),
-        ),
-        array(
-          'name'       => __( 'Box Background', WR_PBL ),
-          'id'         => 'box_background',
-          'type'       => 'select',
-          'std'        => 'none',
-          'class'    => 'input-sm',
-          'options'    => array(
-            'none'     => __( 'Normal', WR_PBL ),
-            'solid'    => __( 'Solid Color', WR_PBL ),
-        ),
-              'has_depend' => '1',
-        ),
-        array(
-              'name' => __( 'Solid Color', WR_PBL ),
-              'type' => array(
-        array(
-                  'id'           => 'box_solid_color_value',
-                  'type'         => 'text_field',
-                  'class'        => 'input-small',
-                  'std'          => '#FFFFFF',
-                  'parent_class' => 'combo-item',
-        ),
-        array(
-                  'id'           => 'box_solid_color_color',
-                  'type'         => 'color_picker',
-                  'std'          => '#ffffff',
-                  'parent_class' => 'combo-item',
-        ),
-        ),
-              'container_class' => 'combo-group',
-              'dependency'      => array( 'box_background', '=', 'solid' ),
-        ),
-        // WR_Pb_Helper_Type::get_apprearing_animations(),
-        // WR_Pb_Helper_Type::get_animation_speeds(),
+          'tooltip'    => __( 'Inverse the colors on the box', WR_PBL ),
+        )
       )
     );
   }
@@ -289,38 +212,10 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
         case 'image':
           $image = $arr_params['image'];
           $background_style = "background-image:url('$image');";
-          // Background repeat
-          $background_repeat = self::background_repeat( $arr_params['img_repeat'] );
-          if ( ! empty( $background_repeat ) ) {
-            $background_style .= "background-repeat:$background_repeat;";
-          }
-          // Backgound size
-          if ( ! empty( $background_size ) ) {
-            $background_style .= ($background_size != 'normal') ? "background-size:$background_size;"  : '';
-          }
-          break;
-
-        case 'proud':
-          $image = $arr_params['image'];
-          $background_style = "background-image:url('$image');";
-          // Background repeat
-          $background_repeat = self::background_repeat( $arr_params['img_repeat'] );
-          if ( ! empty( $background_repeat ) ) {
-            $background_style .= "background-repeat:$background_repeat;";
-          }
-          // Backgound size
-          if ( ! empty( $background_size ) ) {
-            $background_style .= ($background_size != 'normal') ? "background-size:$background_size;"  : '';
-          }
           break;
       }
 
       $arr_styles[] = $background_style;
-
-      // Paralax background
-      if ( isset( $atts['paralax']) && $atts['paralax'] == 'yes' ) {
-        $data_attr = ' data-stellar-background-ratio="-.3"';
-      }
     }
 
     // Box styles
@@ -331,17 +226,6 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
       $boxclasses[] = 'jumbotron-inverse';
     }
     $box_arr_styles = [];
-    // if(!empty($box_background) && $box_background != 'none') {
-    //   switch ( $background ) {
-
-    //     case 'solid':
-    //       $solid_color = $arr_params['box_solid_color_value'];
-    //       $background_style  = "background-color: $solid_color;";
-    //       break;
-    //   }
-
-    //   $box_arr_styles[] = $background_style;
-    // }
 
     $random_id = WR_Pb_Utils_Common::random_string();
     $script = $html_element = '';
@@ -358,14 +242,6 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
       implode( '', $box_arr_styles )
     );
     $html .= $html_element;
-    // Include title inside box?
-    if ( isset( $include_title ) && $include_title == 'yes' ) {
-      global $proudcore;
-      $html .= $proudcore::$layout->title_is_hidden() 
-             ? '<h1>' . get_the_title() . '</h1>'
-             : '<h2 class="h1">' . get_the_title() . '</h2>';
-        
-      }
     $html .= $content;
     $html .= '</div></div></div></div></div></div></div>';
 
