@@ -85,13 +85,20 @@ class Proudcore extends \ProudPlugin {
 
   // Load common libraries
   public function loadLibraries() {
-
+    $path = plugins_url('assets/js/',__FILE__);
+    wp_register_script('proud', $path . 'proud.js', ['jquery']);
+    wp_enqueue_script('proud');
+    self::$libraries->loadLibraries();
   }
-
-    // Load common libraries
-  public function loadAdminLibraries($hi) {
  
+  // Load common libraries
+  public function loadAdminLibraries($hi) {
+    $path = plugins_url('assets/js/',__FILE__);
+    wp_register_script('proud', $path . 'proud.js', ['jquery']);
+    wp_enqueue_script('proud');
+    self::$libraries->loadLibraries('true');
   }
+
 
   // Recusive array merging from 
   // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
