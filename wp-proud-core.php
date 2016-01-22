@@ -31,7 +31,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php'
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
-//require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-wr-pagebuilder.php';
+require_once plugin_dir_path(__FILE__) . 'modules/so-pagebuilder/proud-so-pagebuilder.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
