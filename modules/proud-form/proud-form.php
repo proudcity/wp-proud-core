@@ -217,12 +217,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
       ?>
       <div id="<?php echo $field['#id']; ?>" class="repeating-group">
         <div class="repeating">
-        <?php d($field); foreach($field['#items'] as $key => $group): ?>
+        <?php foreach($field['#items'] as $key => $group): ?>
           <fieldset id="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
             <legend><?php echo __($field['#title'], $this->form_id); ?></legend>
             <div>
               <?php foreach($group as $sub_field): ?>
-                <?php d($sub_field); $this->printFormItem( $sub_field ); ?>
+                <?php $this->printFormItem( $sub_field ); ?>
               <?php endforeach; ?>
             </div>            
           </fieldset>
