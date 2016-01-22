@@ -11,6 +11,8 @@ abstract class ProudWidget extends \WP_Widget {
   public $settings = [];
   // proud libraries
   public static $libaries;
+  // Simple version of class name
+  public $shortcode_name;
 
   function __construct($id, $name, $args) {
     parent::__construct($id, $name, $args);
@@ -27,6 +29,8 @@ abstract class ProudWidget extends \WP_Widget {
         ]
       ], $this->settings);
     }
+    // Save class name
+    $this->shortcode_name = get_class($this);
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
     // Add proud admin scripts
