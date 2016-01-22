@@ -58,7 +58,7 @@ function sanitize_input_text_output($text, $shortcode = true) {
   }
   // Evaluate shortcode?
   if($shortcode) {
-    $instance['text'] = do_shortcode( $instance['text'] );
+    $text = do_shortcode( $text );
   }
   return $text;
 }
