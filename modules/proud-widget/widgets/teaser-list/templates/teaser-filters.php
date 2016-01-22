@@ -1,0 +1,1 @@
+<?php $teaser_filter_class->print_filters(); ?>

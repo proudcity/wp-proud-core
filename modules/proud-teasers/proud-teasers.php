@@ -180,6 +180,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           '#type' => 'text',
           '#name' => 'filter_keyword',
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
+          '#description' => ''
         ]
       ];
 
@@ -197,7 +198,8 @@ if ( !class_exists( 'TeaserList' ) ) {
             '#title' => __( 'Category', 'proud-teaser' ),
             '#type' => 'checkboxes',
             '#name' => 'filter_categories',
-            '#options' => $options
+            '#options' => $options,
+            '#description' => ''
           ];
         }
       }
@@ -235,6 +237,9 @@ if ( !class_exists( 'TeaserList' ) ) {
               break;
           }
           $this->filters[$key]['#value'] = $_REQUEST[$key];
+        }
+        else {
+          $this->filters[$key]['#value'] = ($key == 'filter_categories') ? 0 : '';
         }
       }
     }
