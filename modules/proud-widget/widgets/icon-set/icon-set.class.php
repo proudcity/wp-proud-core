@@ -76,6 +76,7 @@ class IconSet extends Core\ProudWidget {
    * Generate HTML code from shortcode content.
    */
   function printWidget( $args, $instance ) {
+    extract($instance);
     $file = plugin_dir_path( __FILE__ ) . 'templates/icon-set.php';
     include( $file );
   }

@@ -148,25 +148,27 @@ abstract class ProudWidget extends \WP_Widget {
       if( $field['#type'] == 'group') {
 
         // How many of these do we have saved ?
-        $count = !empty( $instance[$id] ) ? count($instance[$id]) : 1; 
+        // TODO, fix this
+        $count = 8;//!empty( $instance[$id] ) ? count($instance[$id]) : 1; 
         // Init field collection
         $field['#items'] = [];
         // Run through any saved field items
         for($i = 0; $i < $count; $i++) {
           foreach($field['#sub_items_template'] as $sub_id => $sub_field) {
             // build sub children id
-            $local_id = $id . '[' . $count . '][' . $sub_id . ']';
+            $local_id = $id . '[' . $i . '][' . $sub_id . ']';
             // get field settings
             $sub_field['#id'] = $this->get_field_id( $local_id );
             $sub_field['#name'] = $this->get_field_name( $local_id );
             $sub_field['#description'] = !empty( $sub_field['#description'] ) ? $sub_field['#description'] : false;
             // Set default value
-            $sub_field['#value'] = isset( $instance[$id][$count][$sub_id] ) 
-              ? $instance[$id][$count][$sub_id]
+            $sub_field['#value'] = isset( $instance[$id][$i][$sub_id] ) 
+              ? $instance[$id][$i][$sub_id]
               : $sub_field['#default_value'];
-            $field['#items'][$count][$local_id] = $sub_field;
+            $field['#items'][$i][$local_id] = $sub_field;
           }
         }
+        d($field);
       }
       // Normal field, so get value
       else {

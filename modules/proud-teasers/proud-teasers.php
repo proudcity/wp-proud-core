@@ -43,16 +43,24 @@ if ( !class_exists( 'TeaserOptions' ) ) {
 
     public function add_teaser_options()
     {
-
-      $post_id = $_GET['post'] ? $_GET['post'] : $_POST['post_ID'] ;
-      $template_file = get_post_meta( $post_id,'_wp_page_template', TRUE );
-      // d($template_file);
-      // check for a template type
-      if ( strpos( $template_file, 'teasers.php' ) > 0 ) {
-        add_meta_box( 'proud_teaser', 'Teaser Configuration', array( $this, 'build_box' ), 'page', 'side' );
+      // Try to get post ID
+      $post_id = !empty( $_GET['post'] ) ? $_GET['post'] : null;
+      if( !$post_id ) {
+        $post_id = ( $_POST && !empty( $_POST['post_ID'] ) )
+                   ? $_POST['post_ID']
+                   : null;
       }
+      // have it?
+      if( $post_id ) {
+        $template_file = get_post_meta( $post_id,'_wp_page_template', TRUE );
+        // d($template_file);
+        // check for a template type
+        if ( strpos( $template_file, 'teasers.php' ) > 0 ) {
+          add_meta_box( 'proud_teaser', 'Teaser Configuration', array( $this, 'build_box' ), 'page', 'side' );
+        }
 
-      add_action('save_post', [ $this, 'on_save' ]);
+        add_action('save_post', [ $this, 'on_save' ]);
+      }
     }
 
     public function build_box( $post ){
