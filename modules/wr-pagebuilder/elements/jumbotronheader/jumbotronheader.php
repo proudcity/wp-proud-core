@@ -77,19 +77,32 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
           'type' => 'preview',
         ),
         array(
+          'name'       => __( 'Header Type', WR_PBL ),
+          'id'         => 'headertype',
+          'type'    => 'select',
+              'std'     => 'header',
+              'options' => array(
+                'header'   => __( 'Header (good for important pages)', WR_PBL ),
+                'full'     => __( 'Full-height (good for landing pages)', WR_PBL ),
+                'simple'     => __( 'Simple heading (good for landing pages)', WR_PBL )
+          ),
+          'has_depend' => '1',   
+        ),
+        array(
           'name'       => __( 'Container Background', WR_PBL ),
           'id'         => 'background',
           'type'       => 'select',
           'std'        => 'image',
-          'class'    => 'input-sm',
+          'class'      => 'input-sm',
           'options'    => array(
-            'none'     => __( 'None', WR_PBL ),
-            // 'proud'    => __( 'ProudCity Image from setup', WR_PBL ),
-            'solid'    => __( 'Solid Color', WR_PBL ),
-            'pattern'  => __( 'Pattern', WR_PBL ),
-            'image'    => __( 'Image', WR_PBL ),
-        ),
-              'has_depend' => '1',
+              'none'     => __( 'None', WR_PBL ),
+              // 'proud'    => __( 'ProudCity Image from setup', WR_PBL ),
+              'solid'    => __( 'Solid Color', WR_PBL ),
+              'pattern'  => __( 'Pattern', WR_PBL ),
+              'image'    => __( 'Image', WR_PBL ),
+          ),
+          'has_depend' => '1',
+          'dependency'      => array( 'headertype', '!=', 'simple' ),
         ),
         array(
               'name' => __( 'Solid Color', WR_PBL ),
@@ -218,33 +231,50 @@ class WR_JumbotronHeader extends WR_Pb_Shortcode_Element {
       $arr_styles[] = $background_style;
     }
 
-    // Box styles
-    // Init classes
-    $boxclasses = ['jumbotron', 'jumbotron-image', 'full'];
-    // Inverse?
-    if ( isset( $make_inverse ) && $make_inverse == 'yes' ) {
-      $boxclasses[] = 'jumbotron-inverse';
-    }
-    $box_arr_styles = [];
-
+    // Init a random id for the element
     $random_id = WR_Pb_Utils_Common::random_string();
-    $script = $html_element = '';
-    // Compile Container styles
-    $style = $arr_styles ? sprintf( 'style="%s"', implode( '', $arr_styles ) ) : '';
-    $html  = sprintf( '<div class="full-image" id="%s" %s><div class="container"><div class="full-container">', 
-      $random_id,
-      $data_attr . ' ' . $style 
-    );
-    $html .= $script;
-    // Compile Box Styles
-    $html_element .= sprintf( '<div class="%s" %s><div class="row"><div class="col-lg-7 col-md-8 col-sm-9"><div class="jumbotron-bg">',
-      implode( ' ', $boxclasses ),
-      implode( '', $box_arr_styles )
-    );
-    $html .= $html_element;
-    $html .= $content;
-    $html .= '</div></div></div></div></div></div></div>';
-
+    // init file location
+    $file = plugin_dir_path( __FILE__ ) . 'templates/';
+    // init classes
+    $classes = [];
+  
+    // normal header type
+    if( $arr_params['headertype'] == 'header' ) {
+      // Classes
+      $classes = ['jumbotron', 'jumbotron-image'];
+      // Inverse?
+      if ( isset( $make_inverse ) && $make_inverse == 'yes' ) {
+        $classes[] = 'jumbotron-inverse';
+      }
+      $file .= 'jumbotron-header.php';
+    }
+    // We're doing a "full" style jumbotron
+    else if( $arr_params['headertype'] == 'full' ) {
+      // Classes
+      $classes = ['full-image'];
+      // Box styles
+      // Init classes
+      $boxclasses = ['jumbotron', 'jumbotron-image', 'full'];
+      // Inverse?
+      if ( isset( $make_inverse ) && $make_inverse == 'yes' ) {
+        $boxclasses[] = 'jumbotron-inverse';
+      }
+      $file .= 'jumbotron-full.php';
+    }    
+    else {
+      // Classes
+      $classes = ['jumbotron'];
+      // Inverse?
+      if ( isset( $make_inverse ) && $make_inverse == 'yes' ) {
+        $classes[] = 'jumbotron-inverse';
+      }
+      $file .= 'jumbotron-simple.php';
+    }
+    // Include the template file
+    ob_start( );
+    include( $file );
+    $html = ob_get_contents( ); 
+    ob_end_clean( );
     return $this->element_wrapper( $html, $arr_params );
   }
 }

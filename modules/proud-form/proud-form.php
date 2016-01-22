@@ -52,6 +52,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <?php
     }
 
+    public function printImageUpload($value, $translate) {
+      ?>
+      <img class="custom_media_image" src="<?php if(!empty($value)){echo $value;} ?>" style="margin:0;padding:0;max-width:100px;float:left;display:inline-block" />
+      <input class="upload_image_button" type="button" value="<?php if(!empty($value)){ echo __('Change Image', $translate); } else {echo __( 'Upload Image', $translate); }?>" />
+      <?php
+    }
+
     // 
     public function printTextArea($id, $name, $value, $rows, $translate = false) {
       ?>
@@ -87,16 +94,6 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="form-group">
       <?php
         switch ($field['#type']) {
-          // @TODO
-          case 'link-with-title':
-            // $this->printFormTextLabel($field['#id']['title'], $field['#title']['title'], $this->form_id);
-            // $this->printTextInput($field['#id']['title'], $field['#name']['title'], $field['#value']['title'], $this->form_id);
-            // $this->printFieldDescription($field['#description']['title']);
-            // $this->printFormTextLabel($field['#id']['url'], $field['#title']['url'], $this->form_id);
-            // $this->printTextInput($field['#id']['url'], $field['#name']['url'], $field['#value']['url'], $this->form_id);
-            // $this->printFieldDescription($field['#description']['url']);
-            break;
-
           case 'fa-icon':
             ?>
             <script>
@@ -109,6 +106,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
             <?php
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
+            $this->printFieldDescription($field['#description']);
+            break;
+
+          case 'select_media':
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
+            $this->printImageUpload($field['#value'], $this->form_id);
             $this->printFieldDescription($field['#description']);
             break;
 
@@ -209,16 +213,40 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <?php
     }
 
+    public function printGroupFields ($id, $field) {
+      ?>
+      <div id="<?php echo $field['#id']; ?>" class="repeating-group">
+        <div class="repeating">
+        <?php d($field); foreach($field['#items'] as $key => $group): ?>
+          <fieldset id="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
+            <legend><?php echo __($field['#title'], $this->form_id); ?></legend>
+            <div>
+              <?php foreach($group as $sub_field): ?>
+                <?php d($sub_field); $this->printFormItem( $sub_field ); ?>
+              <?php endforeach; ?>
+            </div>            
+          </fieldset>
+        <?php endforeach; ?>
+        </div>
+        <button id="<?php echo $field['#id']; ?>-add" class="add-row">Add Set</button>
+      </div>
+      <?php
+    }
+
     public function printFields () {
       // Javascript states for hiding / showing fields
       $states = [];
 
       foreach ( $this->fields as $id => $field ) {
+        if($field['#type'] == 'group') {
+          $this->printGroupFields( $id, $field );
+        }
+        else {
+          $this->printFormItem( $field );
 
-        $this->printFormItem( $field );
-
-        if(!empty($field['#states'])) {
-          $states[$field['#id']] = $field['#states'];
+          if(!empty($field['#states'])) {
+            $states[$field['#id']] = $field['#states'];
+          }
         }
       }
 
@@ -244,47 +272,102 @@ if ( ! class_exists( 'FormHelper' ) ) {
       </form>
       <?php
     }
-
+    /**
+     * Prints out show / hide javascript for the form
+      * '#states' => [
+      *  'glue' => '&&',
+      *  'visible' => [
+      *    'background' => [
+      *      'operator' => '==',
+      *      'value' => ['image'],
+      *      'glue' => '&&'
+      *    ],
+      *  ],
+      *  'invisible' => [
+      *    'glue' => '&&',
+      *    'headertype' => [
+      *      'operator' => '==',
+      *      'value' => ['simple'],
+      *      'glue' => '&&'
+      *    ],
+      *  ],
+      *]
+     */
     public function attachConfigStateJs( $states ) {
       ?>
       <script>
         jQuery(document).ready(function() {
-          <?php foreach ( $states as $field_id => $rules ): ?>
-            <?php foreach( $rules as $type => $values ): ?>
-              // init visiblility
-              jQuery("#<?php echo $this->form_id . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
-              <?php foreach( $values as $watch_field => $watch_vals ): ?>
-                <?php 
-                  // Needs different selectors per type
-                  $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
-                  switch( $this->fields[$watch_field]['#type'] ) {
-                    case 'radios':
-                    case 'checkbox':
-                      $watch = $group_id . ' input';
-                      $selector = $group_id . ' input:checked';
-                      break;
+          var fieldFunctions = [];
+        <?php
+        $field_count = 0;
+        foreach ( $states as $field_id => $rules ):
+          // Field level if statement
+          $field_if = [];
+          // connect the field options
+          $field_glue = !empty($rules['glue']) ? $rules['glue'] : '&&';
+          // Fields to watch for changes
+          $watches = [];
+          foreach( $rules as $type => $values ):
+            // Just the statement glue
+            if($type == 'glue') {
+              continue;
+            }
+            // connect the visible / invisible state
+            $rules_glue = !empty($values['glue']) ? $values['glue'] : '&&';
+            // Rule level if statement
+            $rule_if = [];
+            // Run through fields that make it visible or invisible
+            foreach( $values as $watch_field => $watch_vals ):
+              // Just the statement glue
+              if($watch_field == 'glue') {
+                continue;
+              }
+              // Needs different selectors per type
+              $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
+              switch( $this->fields[$watch_field]['#type'] ) {
+                case 'radios':
+                case 'checkbox':
+                  $watches[] = $group_id . ' input';
+                  $selector = $group_id . ' input:checked';
+                  break;
 
-                    default:
-                      $watch = $group_id . ' input';
-                      $selector = $group_id . ' input';
-                  }
-                  // Build if criteria
-                  $criteria = [];
-                  foreach ( $watch_vals['value'] as $val ) {
-                    $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
-                  }
-                ?>
-                jQuery("<?php echo $watch ?>").change(function() {
-                  if(<?php echo implode( $watch_vals['glue'], $criteria ) ?>) {
-                    jQuery("#<?php echo $this->form_id . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'show' : 'hide' ?>();
-                  }
-                  else {
-                    jQuery("#<?php echo $this->form_id . '-' . $field_id ?>").<?php echo $type == 'visible' ? 'hide' : 'show' ?>();
-                  }
-                });
-              <?php endforeach; ?>
-            <?php endforeach; ?>
-          <?php endforeach; ?>
+                default:
+                  $watches[] = $group_id . ' input';
+                  $selector = $group_id . ' input';
+              }
+              // Build if criteria
+              $criteria = [];
+              foreach ( $watch_vals['value'] as $val ) {
+                $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
+              }
+              $rule_if[] = $type == 'visible' 
+                         ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
+                         : '!(' . implode( $watch_vals['glue'], $criteria ) . ')';
+            endforeach;
+            // connect visible + invisible
+            $field_if[] = '('  . implode( $rules_glue,  $rule_if ) . ')';
+          endforeach;
+          // connect entire field
+          $if = implode( $field_glue,  $field_if );
+          $field_selector = $this->form_id . '-' . $field_id;
+          ?>
+          fieldFunctions.push(function () {
+            if(<?php echo $if ?>) {
+              jQuery("#<?php echo $field_selector ?>").show();
+            }
+            else {
+              jQuery("#<?php echo $field_selector ?>").hide();
+            }
+          });
+          jQuery("<?php echo implode(',',$watches) ?>").change(function() {
+            fieldFunctions[<?php echo $field_count; ?>]();
+          });
+          fieldFunctions[<?php echo $field_count; ?>]();
+        <?php 
+          // Next field to watch
+          $field_count++; 
+          endforeach; 
+        ?>
         });
       </script>
       <?php

@@ -45,3 +45,20 @@ function wp_trim_excerpt( $text = '' ) {
    */
   return apply_filters( 'wp_trim_excerpt', $text, $raw_excerpt );
 }
+
+
+/** 
+ * Sanitize text input
+ */
+function sanitize_input_text_output($text, $shortcode = true) {
+  $text = \wp_kses_post( $text );
+  // Run some known stuff
+  if( !empty($GLOBALS['wp_embed']) ) {
+    $text = $GLOBALS['wp_embed']->autoembed( $text );
+  }
+  // Evaluate shortcode?
+  if($shortcode) {
+    $instance['text'] = do_shortcode( $instance['text'] );
+  }
+  return $text;
+}

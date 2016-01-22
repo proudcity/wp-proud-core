@@ -29,7 +29,7 @@ abstract class ProudWidget extends \WP_Widget {
     }
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
-    // Add admin scripts
+    // Add proud admin scripts
     add_action( 'init', [$this,'registerAdminLibraries']);
   }
 
@@ -65,6 +65,10 @@ abstract class ProudWidget extends \WP_Widget {
         foreach ($value['#admin_libraries'] as $library) {
           $proudcore::$libraries->addBundleToLoad($library, true);
         }
+      }
+      // Media upload
+      if($value['#type'] == 'select_media') {
+        $proudcore::$libraries->addBundleToLoad('upload-media', true);
       }
     }
   }
@@ -129,19 +133,45 @@ abstract class ProudWidget extends \WP_Widget {
   }
 
   public function printWidgetConfig( $instance ) {
-
-    $fields = $this->settings;
-    foreach ( $fields as $id => &$field ) {
+    $fields = [];
+    foreach ( $this->settings as $id => $field ) {
       // Set id
       $field['#id'] = $this->get_field_id($id);
       $field['#name'] = $this->get_field_name($id);
-
-      // Set default value
-      $field['#value'] = isset( $instance[$id] ) 
-         ? $instance[$id] 
-         : $field['#default_value'];
-
       $field['#description'] = !empty( $field['#description'] ) ? $field['#description'] : false;
+
+      // Repeating Group fields
+      if( $field['#type'] == 'group') {
+
+        // How many of these do we have saved ?
+        $count = !empty( $instance[$id] ) ? count($instance[$id]) : 1; 
+        // Init field collection
+        $field['#items'] = [];
+        // Run through any saved field items
+        for($i = 0; $i < $count; $i++) {
+          foreach($field['#sub_items_template'] as $sub_id => $sub_field) {
+            // build sub children id
+            $local_id = $id . '[' . $count . '][' . $sub_id . ']';
+            // get field settings
+            $sub_field['#id'] = $this->get_field_id( $local_id );
+            $sub_field['#name'] = $this->get_field_name( $local_id );
+            $sub_field['#description'] = !empty( $sub_field['#description'] ) ? $sub_field['#description'] : false;
+            // Set default value
+            $sub_field['#value'] = isset( $instance[$id][$count][$sub_id] ) 
+              ? $instance[$id][$count][$sub_id]
+              : $sub_field['#default_value'];
+            $field['#items'][$count][$local_id] = $sub_field;
+          }
+        }
+      }
+      // Normal field, so get value
+      else {
+        // Set default value
+        $field['#value'] = isset( $instance[$id] ) 
+           ? $instance[$id] 
+           : $field['#default_value'];
+      }
+      $fields[$id] = $field;
     }
 
     $form = new FormHelper($this->id_base, $fields);

@@ -228,7 +228,7 @@ class WR_Jumbotron extends WR_Pb_Shortcode_Element {
     $random_id = WR_Pb_Utils_Common::random_string();
     // Compile styles
     $style = $arr_styles ? sprintf( 'style="%s"', implode( '', $arr_styles ) ) : '';
-    $html  = sprintf( '<div class="container"><div class="%s" id="%s" %s>', 
+    $html  = sprintf( '<div class="container-fluid"><div class="%s" id="%s" %s>', 
       implode( ' ', $classes ), 
       $random_id,
       $data_attr . ' ' . $style 

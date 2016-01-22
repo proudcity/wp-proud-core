@@ -17,7 +17,7 @@ class ProudLibaries {
    */
   protected function initLibraries() {
 
-    $path = plugins_url('assets/js/',__FILE__);
+    $path = plugins_url( 'assets/js/',__FILE__ );
 
     self::$libraries['lodash'] = [
       'title' => 'Lodash',
@@ -108,17 +108,35 @@ class ProudLibaries {
       'js_footer' => true,
       'deps' => ['angular']
     ];
+
+    self::$libraries['upload-media'] =[
+      'title' => 'Wordpress image upload',
+      'js' => [
+        'upload-media-input' => $path . 'upload-media/upload-media.js'
+      ],
+      'js_footer' => true,
+      'deps' => ['media-upload', 'thickbox'],
+      'wp-deps' => [
+        'js' => [
+          'media-upload',
+          'thickbox'
+        ],
+        'css' => [
+          'thickbox'
+        ]
+      ]
+    ];
   }
 
   /**
    *  Registers depenencies with wp_register_script
    */
   public function registerLibaries() {
-    foreach (self::$libraries as $bundle => $options) {
-      if(!empty($options['js'])) {
-        $deps = !empty($options['deps']) ? $options['deps'] : [];
-        foreach($options['js'] as $name => $file) {
-          wp_register_script($name, $file, $deps, false, $options['js_footer']);
+    foreach ( self::$libraries as $bundle => $options ) {
+      if( !empty( $options['js'] ) ) {
+        $deps = !empty( $options['deps'] ) ? $options['deps'] : [];
+        foreach( $options['js'] as $name => $file ) {
+          wp_register_script( $name, $file, $deps, false, $options['js_footer'] );
           // Add this script to the dependencies
           $deps[] = $name;
         }
@@ -130,8 +148,8 @@ class ProudLibaries {
   /**
    *  Sets a bundle to be loaded with ::loadLibraries()
    */
-  public function addBundleToLoad($library, $admin = false) {
-    if($admin) {
+  public function addBundleToLoad( $library, $admin = false ) {
+    if( $admin ) {
       self::$libraries[$library]['load_admin'] = true;
     }
     else {
@@ -143,59 +161,75 @@ class ProudLibaries {
    * Helper function loads common proud scripts().
    */
   public function addCommon() {
-    $this->addBundleToLoad('proud-common');
+    $this->addBundleToLoad( 'proud-common' );
   }
 
   /**
    * Helper function loads common map scripts + styles().
    */
   public function addMaps() {
-    $this->addBundleToLoad('maps');
+    $this->addBundleToLoad( 'maps' );
   }
 
   /**
    * Helper function loads common proud scripts().
    */
-  public function addAngular($core, $router_animate, $lazy) {
+  public function addAngular( $core, $router_animate, $lazy ) {
     // Load angular
-    $this->addBundleToLoad('angular');
+    $this->addBundleToLoad( 'angular' );
     // Core?
-    if($core) {
-      $this->addBundleToLoad('angular-core');
+    if( $core ) {
+      $this->addBundleToLoad( 'angular-core' );
     }
     // Router?
-    if($router_animate) {
-      $this->addBundleToLoad('angular-router-animate');
+    if( $router_animate ) {
+      $this->addBundleToLoad( 'angular-router-animate' );
     }
-    if($lazy) {
-      $this->addBundleToLoad('angular-lazy');
+    if( $lazy ) {
+      $this->addBundleToLoad( 'angular-lazy' );
     }
   }
 
   /**
    *  Function called on wp_enqueue_scripts
    */
-  public function loadLibraries($admin = false) {
-    if(!self::$registered) {
-      $this->registerLibaries($admin);
+  public function loadLibraries( $admin = false ) {
+    if( !self::$registered ) {
+      $this->registerLibaries( $admin );
     }
-    foreach (self::$libraries as $bundle => $options) {
-      if((!$admin && !empty($options['load'])) || ($admin && !empty($options['load_admin']))) {
-        if(!empty($options['js'])) {
-          foreach($options['js'] as $name => $file) {
-            wp_enqueue_script($name);
+    foreach ( self::$libraries as $bundle => $options ) {
+      // if we are loading front end, OR loading admin
+      if(( !$admin && !empty( $options['load'] ) ) || ( $admin && !empty( $options['load_admin'] ) ) ) {
+        // Enqueue wordpress assets
+        if( !empty( $options['wp-deps'] ) ) {
+          if( !empty( $options['wp-deps']['js'] ) ) {
+            foreach( $options['wp-deps']['js'] as $name ) {
+              wp_enqueue_script( $name );
+            }
           }
-          if(!empty($options['dequeue'])) {
-            foreach($options['dequeue'] as $name) {
-              wp_dequeue_script($name);
+          if( !empty( $options['wp-deps']['css'] ) ) {
+            foreach( $options['wp-deps']['css'] as $name ) {
+              wp_enqueue_style( $name );
             }
           }
         }
-        if(!empty($options['css'])) {
-          foreach($options['css'] as $name => $file) {
-            wp_enqueue_style($name, $file, false, null);
+        // Enqueue proud assets
+        if( !empty( $options['js'] ) ) {
+          foreach( $options['js'] as $name => $file ) {
+            wp_enqueue_script( $name );
+          }
+          if( !empty( $options['dequeue'] ) ) {
+            foreach( $options['dequeue'] as $name ) {
+              wp_dequeue_script( $name );
+            }
           }
         }
+        if( !empty( $options['css'] ) ) {
+          foreach( $options['css'] as $name => $file ) {
+            wp_enqueue_style( $name, $file, false, null );
+          }
+        }
+
       }
     }
   }
