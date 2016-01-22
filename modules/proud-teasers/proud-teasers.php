@@ -113,7 +113,8 @@ if ( !class_exists( 'TeaserOptions' ) ) {
   }
 
   // init
-  $options = new TeaserOptions();
+  // @todo remove
+  // $options = new TeaserOptions();
 }
 
 /**
