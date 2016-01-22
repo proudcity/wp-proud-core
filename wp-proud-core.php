@@ -31,7 +31,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php'
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
-require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-wr-pagebuilder.php';
+require_once plugin_dir_path(__FILE__) . 'modules/so-pagebuilder/proud-so-pagebuilder.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
@@ -90,14 +90,15 @@ class Proudcore extends \ProudPlugin {
     wp_enqueue_script('proud');
     self::$libraries->loadLibraries();
   }
-
-    // Load common libraries
+ 
+  // Load common libraries
   public function loadAdminLibraries($hi) {
     $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
     self::$libraries->loadLibraries('true');
   }
+
 
   // Recusive array merging from 
   // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
