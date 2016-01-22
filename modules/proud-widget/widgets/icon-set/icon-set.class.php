@@ -42,7 +42,7 @@ class IconSet extends Core\ProudWidget {
   function initialize() {
     $this->settings = array(
       'iconset' => array(
-        '#title' => __( 'Icons', WR_PBL ),
+        '#title' => __( 'Icons', 'wp-proud-core' ),
         '#type' => 'group',
         '#sub_items_template' => array(
           'link_title' => [

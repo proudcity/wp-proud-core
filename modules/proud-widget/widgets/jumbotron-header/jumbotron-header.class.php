@@ -38,32 +38,32 @@ class JumbotronHeader extends Core\ProudWidget {
 
     $this->settings = [
       'text'=> [
-        '#title' => __( 'Jumbtron text', WR_PBL ),
-        '#description' => __( 'Enter some content for this textblock', WR_PBL ),
+        '#title' => __( 'Jumbtron text', 'wp-proud-core' ),
+        '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
         '#type' => 'textarea',
         '#default_value'  => '',
         'rows' => 15,
       ],
       'headertype' => [
-        '#title' => __( 'Header Type', WR_PBL ),
+        '#title' => __( 'Header Type', 'wp-proud-core' ),
         '#type'    => 'radios',
         '#default_value'     => 'header',
          '#options' => [
-          'header'   => __( 'Header (good for important pages)', WR_PBL ),
-          'full'     => __( 'Full-height (good for landing pages)', WR_PBL ),
-          'simple'     => __( 'Simple heading (good for landing pages)', WR_PBL )
+          'header'   => __( 'Header (good for important pages)', 'wp-proud-core' ),
+          'full'     => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
+          'simple'     => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
         ],
       ],
       'background' => [
-        '#title' => __( 'Container Background', WR_PBL ),
+        '#title' => __( 'Container Background', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'none',
         '#options' => [
-          'none' => __( 'None', WR_PBL ),
-          // 'proud'    => __( 'ProudCity Image from setup', WR_PBL ),
-          // 'solid'  => __( 'Solid Color', WR_PBL ),
-          'pattern' => __( 'Pattern', WR_PBL ),
-          'image' => __( 'Image', WR_PBL ),
+          'none' => __( 'None', 'wp-proud-core' ),
+          // 'proud'    => __( 'ProudCity Image from setup', 'wp-proud-core' ),
+          // 'solid'  => __( 'Solid Color', 'wp-proud-core' ),
+          'pattern' => __( 'Pattern', 'wp-proud-core' ),
+          'image' => __( 'Image', 'wp-proud-core' ),
         ],
         '#states' => [
           'visible' => [
@@ -76,7 +76,7 @@ class JumbotronHeader extends Core\ProudWidget {
         ],
       ],
       // 'solid_color_value' => [
-      //   '#title' => __( 'Solid Color', WR_PBL ),
+      //   '#title' => __( 'Solid Color', 'wp-proud-core' ),
       //   '#type' => 'text_field',
       //   '#default_value'  => '#FFFFFF',
       // ],
@@ -85,7 +85,7 @@ class JumbotronHeader extends Core\ProudWidget {
       //   '#default_value'  => '#ffffff',
       // ],
       'pattern' => [
-        '#title' => __( 'Pattern', WR_PBL ),
+        '#title' => __( 'Pattern', 'wp-proud-core' ),
         '#type' => 'select_media',
         '#default_value'  => '',
         '#states' => [
@@ -104,13 +104,13 @@ class JumbotronHeader extends Core\ProudWidget {
         ],
       ],
       'repeat' => [
-        '#title' => __( 'Repeat', WR_PBL ),
+        '#title' => __( 'Repeat', 'wp-proud-core' ),
         '#type'  => 'radios',
         '#default_value'  => 'full',
          '#options' => [
-          'full' => __( 'Full', WR_PBL ),
-          'vertical'   => __( 'Vertical', WR_PBL ),
-          'horizontal' => __( 'Horizontal', WR_PBL ),
+          'full' => __( 'Full', 'wp-proud-core' ),
+          'vertical'   => __( 'Vertical', 'wp-proud-core' ),
+          'horizontal' => __( 'Horizontal', 'wp-proud-core' ),
         ],
         '#states' => [
           'visible' => [
@@ -128,7 +128,7 @@ class JumbotronHeader extends Core\ProudWidget {
         ],
       ],
       'image' => [
-        '#title' => __( 'Image', WR_PBL ),
+        '#title' => __( 'Image', 'wp-proud-core' ),
         '#type' => 'select_media',
         '#default_value'  => '',
         '#states' => [
@@ -149,12 +149,12 @@ class JumbotronHeader extends Core\ProudWidget {
         ],
       ],
       'make_inverse' => [
-        '#title' => __( 'Inverse text in box?', WR_PBL ),
+        '#title' => __( 'Inverse text in box?', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'no',
         '#options' => [ 
-          'yes' => __( 'Yes', WR_PBL ), 
-          'no' => __( 'No', WR_PBL ) 
+          'yes' => __( 'Yes', 'wp-proud-core' ), 
+          'no' => __( 'No', 'wp-proud-core' ) 
         ],
       ]
     ];
