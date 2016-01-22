@@ -21,11 +21,11 @@ require_once plugin_dir_path(__FILE__) . 'proud-plugin.class.php';
 // Load Helpers
 // -----------------------
 require_once plugin_dir_path(__FILE__) . 'proud-helpers.php';
-require_once plugin_dir_path(__FILE__) . 'proud-formhelper.class.php';
 
 // Load Modules
 // -----------------------
 require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.class.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-widget/proud-widgets.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
