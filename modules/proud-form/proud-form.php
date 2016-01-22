@@ -97,7 +97,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           case 'fa-icon':
             ?>
             <script>
-              jQuery(window).load(function(){
+              jQuery(document).ready(function() {
                 jQuery('#<?php echo $field['#id'];?>').once('icon-picker', function() { 
                   jQuery(this).iconpicker(); 
                 });
