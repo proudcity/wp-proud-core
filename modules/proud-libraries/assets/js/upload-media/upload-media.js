@@ -3,8 +3,8 @@ jQuery(document).ready( function($){
     var _custom_media = true,
     _orig_send_attachment = wp.media.editor.send.attachment;
     jQuery('body').on('click', button_class, function(e) {
-        var $input = $(this).prev('input');
-        var $img = $input.prev('img');
+        var $img = $(this).prev('img');
+        var $input = $img.prev('input');
         var send_attachment_bkp = wp.media.editor.send.attachment;
         _custom_media = true;
         wp.media.editor.send.attachment = function(props, attachment){
