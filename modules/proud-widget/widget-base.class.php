@@ -168,7 +168,6 @@ abstract class ProudWidget extends \WP_Widget {
             $field['#items'][$i][$local_id] = $sub_field;
           }
         }
-        d($field);
       }
       // Normal field, so get value
       else {
