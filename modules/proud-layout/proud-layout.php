@@ -32,7 +32,7 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
         public function post_is_full_width(  ){
 
-           if( is_singular() ){
+           /*if( is_singular() ){
 
             global $post;
 
@@ -46,12 +46,14 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
           } else {
             return false;
-          }
+          }*/
+
+          return siteorigin_panels_is_panel();
         }
 
         public function title_is_hidden(  ){
 
-          if( is_singular() ){
+          /*f( is_singular() ){
 
             global $post;
 
@@ -65,7 +67,8 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
           } else {
             return false;
-          }
+          }*/
+          return $this->post_is_full_width(  );
 
         } // title_is_hidden()
 
