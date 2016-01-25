@@ -47,8 +47,9 @@ if ( !class_exists( 'ProudLayout' ) ) {
           } else {
             return false;
           }*/
-
-          return siteorigin_panels_is_panel();
+          if ( function_exists('siteorigin_panels_is_panel') ) {
+            return siteorigin_panels_is_panel();
+          }
         }
 
         public function title_is_hidden(  ){
