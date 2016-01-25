@@ -17,13 +17,13 @@ if ( !class_exists( 'ProudLayout' ) ) {
         */
         function __construct(){
           // Set Fields
-          self::$fields =  [
-            'proud_hide_title' => __('Hide the title on singular page views.', 'proud-layout'), 
-            'proud_full_width' => __('Make page full width.', 'proud-layout')
-          ];
-          add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
-          add_action( 'save_post', array( $this, 'on_save' ) );
-          add_action( 'delete_post', array( $this, 'on_delete' ) );
+          //self::$fields =  [
+          //  'proud_hide_title' => __('Hide the title on singular page views.', 'proud-layout'), 
+          //  'proud_full_width' => __('Make page full width.', 'proud-layout')
+          //];
+          //add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
+          //add_action( 'save_post', array( $this, 'on_save' ) );
+          //add_action( 'delete_post', array( $this, 'on_delete' ) );
           add_action( 'wp_head', array( $this, 'head_insert' ), 3000 );
           // add_action( 'the_title', array( $this, 'wrap_title' ) );
           add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
