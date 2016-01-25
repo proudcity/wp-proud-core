@@ -16,7 +16,6 @@ abstract class ProudWidget extends \WP_Widget {
 
   function __construct($id, $name, $args) {
     parent::__construct($id, $name, $args);
-    $this->initialize();
     // Add title if not present
     if(empty($settings['title'])) {
       $this->settings = array_merge([
@@ -31,6 +30,8 @@ abstract class ProudWidget extends \WP_Widget {
     }
     // Save class name
     $this->shortcode_name = get_class($this);
+    // Init settings
+    add_action( 'init', [$this, 'initialize'] );
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
     // Add proud admin scripts

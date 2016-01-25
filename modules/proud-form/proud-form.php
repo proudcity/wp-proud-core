@@ -10,83 +10,44 @@ if ( ! class_exists( 'FormHelper' ) ) {
   class FormHelper {
 
     private $form_id;
+    private $template_path;
 
     function __construct($form_id, $fields) {
       $this->form_id = $form_id;
       $this->fields = $fields;
+      $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
     }
 
-    //
+    private function template($file) {
+      return $this->template_path . $file . '.php';
+    }
+
     public function printFormTextLabel($id, $text, $translate = false) {
-      ?>
-        <label for="<?php echo $id; ?>">
-          <?php if($translate) : ?>
-            <?php echo __( $text, $translate); ?>
-          <?php else: ?>
-            <?php echo $text; ?>
-          <?php endif; ?>
-        </label>
-      <?php ;
+      include $this->template('form-label');
     }
 
-    // 
     public function printTextInput($id, $name, $value, $translate = false) {
-      ?>
-       <input class="form-control" id="<?php echo $id ?>" name="<?php echo $name ?>" type="text" value="<?php echo esc_attr( $value ); ?>">
-      <?php 
+      include $this->template('text-input');
     }
 
     public function printSelectList($id, $name, $value, $options, $translate = false) {
-      ?>
-      <select class="form-control" id="<?php echo $id ?>" name="<?php echo $name; ?>">
-        <?php foreach ( $options as $key => $label ): ?>
-          <option value="<?php echo $key; ?>"<?php if($key == $value) print ' selected="selected"';?>>
-            <?php if($translate) : ?>
-              <?php echo __( $label, $translate); ?>
-            <?php else: ?>
-              <?php echo $label; ?>
-            <?php endif; ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-      <?php
+      include $this->template('select-list');
     }
 
     public function printImageUpload($value, $translate) {
-      ?>
-      <img class="custom_media_image" src="<?php if(!empty($value)){echo $value;} ?>" style="margin:0;padding:0;max-width:100px;float:left;display:inline-block" />
-      <input class="upload_image_button" type="button" value="<?php if(!empty($value)){ echo __('Change Image', $translate); } else {echo __( 'Upload Image', $translate); }?>" />
-      <?php
+      include $this->template('image-upload');
     }
 
-    // 
     public function printTextArea($id, $name, $value, $rows, $translate = false) {
-      ?>
-       <textarea class="form-control" rows="<?php echo $rows ?>" id="<?php echo $id ?>" name="<?php echo $name ?>"><?php echo esc_attr( $value ); ?></textarea>
-      <?php 
+      include $this->template('textarea');
     }
 
     public function printOptionBox($type, $id, $name, $text, $value, $active, $translate = false) {
-      ?>
-      <label for="<?php echo $id ?>">
-        <input id="<?php echo $id ?>" name="<?php echo $name ?>" type="<?php echo $type ?>"<?php if($active){echo ' checked="checked"'; } ?> value="<?php echo esc_attr( $value ); ?>"> 
-        <?php if($translate) : ?>
-          <?php echo __( $text, $translate); ?>
-        <?php else: ?>
-          <?php echo $text; ?>
-        <?php endif; ?>
-      </label>
-      <?php 
+      include $this->template('option-box');
     }
 
-    public function printFieldDescription($description) {
-      ?>
-      <?php if(!empty($field['#description'])): ?>
-        <span id="helpBlock" class="help-block">
-          <?php echo $field['#description']; ?>
-        </span>
-      <?php endif; ?>
-      <?php
+    public function printDescription($description) {
+      include $this->template('description');
     }
 
     public function printFormItem($field) {
@@ -97,7 +58,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           case 'fa-icon':
             ?>
             <script>
-              jQuery(window).load(function(){
+              jQuery(document).ready(function() {
                 jQuery('#<?php echo $field['#id'];?>').once('icon-picker', function() { 
                   jQuery(this).iconpicker(); 
                 });
@@ -106,21 +67,21 @@ if ( ! class_exists( 'FormHelper' ) ) {
             <?php
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-            $this->printFieldDescription($field['#description']);
+            $this->printDescription($field['#description']);
             break;
 
           case 'select_media':
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
             $this->printImageUpload($field['#value'], $this->form_id);
-            $this->printFieldDescription($field['#description']);
+            $this->printDescription($field['#description']);
             break;
 
           case 'text':
           case 'email':
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-            $this->printFieldDescription($field['#description']);
+            $this->printDescription($field['#description']);
             break;
 
           case 'select':
@@ -132,7 +93,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
               $field['#options'], 
               $this->form_id
             );
-            $this->printFieldDescription($field['#description']);
+            $this->printDescription($field['#description']);
             break;
 
           case 'textarea':
@@ -144,7 +105,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
               !empty($field['#rows']) ? $field['#rows'] : 3, 
               $this->form_id
             );
-            $this->printFieldDescription($field['#description']);
+            $this->printDescription($field['#description']);
             break;
 
           case 'checkboxes':
@@ -177,7 +138,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
                   $this->form_id
                 ); ?>
               </div>
-              <?php $this->printFieldDescription($field['#description']) ?>
+              <?php $this->printDescription($field['#description']) ?>
               <?php 
             }
             break;
@@ -197,7 +158,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
                 $field['#value'], 
                 $this->form_id
               ); ?>
-              <?php $this->printFieldDescription($field['#description']) ?>
+              <?php $this->printDescription($field['#description']) ?>
             </div>
             <?php
             break;
@@ -214,23 +175,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
 
     public function printGroupFields ($id, $field) {
-      ?>
-      <div id="<?php echo $field['#id']; ?>" class="repeating-group">
-        <div class="repeating">
-        <?php foreach($field['#items'] as $key => $group): ?>
-          <fieldset id="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
-            <legend><?php echo __($field['#title'], $this->form_id); ?></legend>
-            <div>
-              <?php foreach($group as $sub_field): ?>
-                <?php $this->printFormItem( $sub_field ); ?>
-              <?php endforeach; ?>
-            </div>            
-          </fieldset>
-        <?php endforeach; ?>
-        </div>
-        <button id="<?php echo $field['#id']; ?>-add" class="add-row">Add Set</button>
-      </div>
-      <?php
+      include $this->template('repeating-fields');
     }
 
     public function printFields () {
@@ -272,6 +217,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       </form>
       <?php
     }
+
     /**
      * Prints out show / hide javascript for the form
       * '#states' => [
@@ -294,83 +240,64 @@ if ( ! class_exists( 'FormHelper' ) ) {
       *]
      */
     public function attachConfigStateJs( $states ) {
-      ?>
-      <script>
-        jQuery(document).ready(function() {
-          var fieldFunctions = [];
-        <?php
-        $field_count = 0;
-        foreach ( $states as $field_id => $rules ):
-          // Field level if statement
-          $field_if = [];
-          // connect the field options
-          $field_glue = !empty($rules['glue']) ? $rules['glue'] : '&&';
-          // Fields to watch for changes
-          $watches = [];
-          foreach( $rules as $type => $values ):
+      $fields = [];
+      // Build field rules
+      foreach ( $states as $field_id => $rules ):
+        // Field level if statement
+        $field_if = [];
+        // connect the field options
+        $field_glue = !empty($rules['glue']) ? $rules['glue'] : '&&';
+        // Fields to watch for changes
+        $watches = [];
+        foreach( $rules as $type => $values ):
+          // Just the statement glue
+          if($type == 'glue') {
+            continue;
+          }
+          // connect the visible / invisible state
+          $rules_glue = !empty($values['glue']) ? $values['glue'] : '&&';
+          // Rule level if statement
+          $rule_if = [];
+          // Run through fields that make it visible or invisible
+          foreach( $values as $watch_field => $watch_vals ):
             // Just the statement glue
-            if($type == 'glue') {
+            if($watch_field == 'glue') {
               continue;
             }
-            // connect the visible / invisible state
-            $rules_glue = !empty($values['glue']) ? $values['glue'] : '&&';
-            // Rule level if statement
-            $rule_if = [];
-            // Run through fields that make it visible or invisible
-            foreach( $values as $watch_field => $watch_vals ):
-              // Just the statement glue
-              if($watch_field == 'glue') {
-                continue;
-              }
-              // Needs different selectors per type
-              $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
-              switch( $this->fields[$watch_field]['#type'] ) {
-                case 'radios':
-                case 'checkbox':
-                  $watches[] = $group_id . ' input';
-                  $selector = $group_id . ' input:checked';
-                  break;
+            // Needs different selectors per type
+            $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
+            switch( $this->fields[$watch_field]['#type'] ) {
+              case 'radios':
+              case 'checkbox':
+                $watches[] = $group_id . ' input';
+                $selector = $group_id . ' input:checked';
+                break;
 
-                default:
-                  $watches[] = $group_id . ' input';
-                  $selector = $group_id . ' input';
-              }
-              // Build if criteria
-              $criteria = [];
-              foreach ( $watch_vals['value'] as $val ) {
-                $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
-              }
-              $rule_if[] = $type == 'visible' 
-                         ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
-                         : '!(' . implode( $watch_vals['glue'], $criteria ) . ')';
-            endforeach;
-            // connect visible + invisible
-            $field_if[] = '('  . implode( $rules_glue,  $rule_if ) . ')';
+              default:
+                $watches[] = $group_id . ' input';
+                $selector = $group_id . ' input';
+            }
+            // Build if criteria
+            $criteria = [];
+            foreach ( $watch_vals['value'] as $val ) {
+              $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
+            }
+            $rule_if[] = $type == 'visible' 
+                       ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
+                       : '!(' . implode( $watch_vals['glue'], $criteria ) . ')';
           endforeach;
-          // connect entire field
-          $if = implode( $field_glue,  $field_if );
-          $field_selector = $this->form_id . '-' . $field_id;
-          ?>
-          fieldFunctions.push(function () {
-            if(<?php echo $if ?>) {
-              jQuery("#<?php echo $field_selector ?>").show();
-            }
-            else {
-              jQuery("#<?php echo $field_selector ?>").hide();
-            }
-          });
-          jQuery("<?php echo implode(',',$watches) ?>").change(function() {
-            fieldFunctions[<?php echo $field_count; ?>]();
-          });
-          fieldFunctions[<?php echo $field_count; ?>]();
-        <?php 
-          // Next field to watch
-          $field_count++; 
-          endforeach; 
-        ?>
-        });
-      </script>
-      <?php
+          // connect visible + invisible
+          $field_if[] = '('  . implode( $rules_glue,  $rule_if ) . ')';
+        endforeach;
+        // connect entire field
+        $fields[$this->form_id . '-' . $field_id] = [
+          'watches' => implode( ',', $watches ),
+          'if' => implode( $field_glue,  $field_if )
+        ];
+      endforeach;
+
+      // Include JS
+      include $this->template('form-state-js');
     }
   }
 }

@@ -1,0 +1,1 @@
+<textarea class="form-control" rows="<?php echo $rows ?>" id="<?php echo $id ?>" name="<?php echo $name ?>"><?php echo esc_attr( $value ); ?></textarea>

@@ -44,6 +44,7 @@ class IconSet extends Core\ProudWidget {
       'iconset' => array(
         '#title' => __( 'Icons', 'wp-proud-core' ),
         '#type' => 'group',
+        '#admin_libraries' => ['fontawesome-iconpicker'],
         '#sub_items_template' => array(
           'link_title' => [
             '#title' => 'Link title',
@@ -65,7 +66,6 @@ class IconSet extends Core\ProudWidget {
             '#default_value' => '',
             '#description' => 'The icon to use for the icon box.',
             '#to_js_settings' => false,
-            '#admin_libraries' => ['fontawesome-iconpicker']
           ]
         ),
       )
