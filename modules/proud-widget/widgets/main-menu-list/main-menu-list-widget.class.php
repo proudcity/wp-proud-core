@@ -10,8 +10,8 @@ class MainMenuList extends Core\ProudWidget {
   function __construct() {
     parent::__construct(
       'proud_main_menu_list', // Base ID
-      __( 'Main Menu List', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Displays Main menu in simple list', 'wp-proud-core' ), ) // Args
+      __( 'Main menu list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'Main menu in simple list', 'wp-proud-core' ), ) // Args
     );
   }
 

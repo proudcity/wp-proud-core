@@ -11,7 +11,7 @@ class GoogleTranslate extends Core\ProudWidget {
     parent::__construct(
       'proud_google_translate', // Base ID
       __( 'Google Translate dropdown', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Adds a Google Translate dropdown select', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'Google Translate dropdown select widget', 'wp-proud-core' ), ) // Args
     );
   }
 

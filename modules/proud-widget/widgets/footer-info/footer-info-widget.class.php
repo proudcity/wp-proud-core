@@ -11,7 +11,7 @@ class FooterInfo extends Core\ProudWidget {
     parent::__construct(
       'proud_footer_info', // Base ID
       __( 'Footer info', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Displays proudly serving, with logo', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'Proudly serving text, with logo', 'wp-proud-core' ), ) // Args
     );
   }
 

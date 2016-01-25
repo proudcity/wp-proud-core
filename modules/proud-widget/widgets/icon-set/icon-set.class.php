@@ -29,8 +29,8 @@ class IconSet extends Core\ProudWidget {
   public function __construct() {
     parent::__construct(
       'proud_icon_set', // Base ID
-      __( 'Icon Set', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Displays a collection of icons and links', 'wp-proud-core' ), ) // Args
+      __( 'Icon set', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'A collection of icons and links', 'wp-proud-core' ), ) // Args
     );
   }
 

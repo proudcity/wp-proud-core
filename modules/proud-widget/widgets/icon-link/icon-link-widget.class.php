@@ -10,8 +10,8 @@ class IconLink extends Core\ProudWidget {
   function __construct() {
     parent::__construct(
       'proud_icon_link', // Base ID
-      __( 'Icon Link', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Simple icon, and link', 'wp-proud-core' ), ) // Args
+      __( 'Icon link', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'Simple icon button, and link', 'wp-proud-core' ), ) // Args
     );
   }
 

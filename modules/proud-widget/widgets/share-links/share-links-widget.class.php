@@ -11,7 +11,7 @@ class ShareLinks extends Core\ProudWidget {
     parent::__construct(
       'proud_share_links', // Base ID
       __( 'Share dropdown', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Quickly share the page or node. Uses Sharethis if module is available', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'Quickly share the current page', 'wp-proud-core' ), ) // Args
     );
   }
 

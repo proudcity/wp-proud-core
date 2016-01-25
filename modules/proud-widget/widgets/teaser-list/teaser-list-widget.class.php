@@ -11,7 +11,7 @@ class TeaserListWidget extends Core\ProudWidget {
     parent::__construct(
       'proud_teaser_list', // Base ID
       __( 'Content list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List content in teaser form', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of content with a customizable display mode', 'wp-proud-core' ), ) // Args
     );
   }
 
@@ -39,7 +39,7 @@ class TeaserListWidget extends Core\ProudWidget {
       ],
       'post_count' => [
         '#type' => 'text',
-        '#title' => 'Post Count?',
+        '#title' => 'Number of posts to show',
         '#description' => 'How many posts to show?',
         '#default_value' => 3
       ],

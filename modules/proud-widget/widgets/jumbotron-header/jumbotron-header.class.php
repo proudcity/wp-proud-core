@@ -29,8 +29,8 @@ class JumbotronHeader extends Core\ProudWidget {
   public function __construct() {
     parent::__construct(
       'proud_jumbotron_header', // Base ID
-      __( 'Page Header', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Header display for pages', 'wp-proud-core' ), ) // Args
+      __( 'Jumbotron hero unit', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'A hero unit for the header of the page', 'wp-proud-core' ), ) // Args
     );
   }
 
