@@ -8,34 +8,331 @@ class ProudSOPagebuilder {
    * Constructor
    */
   public function __construct() {
-    //add_filter( 'siteorigin_panels_css_object', array($this, 'siteorigin_panels_css_object'), 11, 3);
+    add_filter( 'siteorigin_panels_widgets', array($this, 'so_panels_widgets'), 11);
+    //add_filter( 'siteorigin_panels_css_object', array($this, 'siteorigin_panels_css_object'), -11, 3);
     add_filter('siteorigin_panels_row_style_attributes', array($this, 'so_row_style_attributes'), 10, 2);
+    add_filter('siteorigin_panels_prebuilt_layouts', array($this, 'proud_prebuilt_layouts'));
   }
 
+  // Restrict widgets available
+  function so_panels_widgets( $widgets ){
+    unset($widgets['WP_Auth0_Embed_Widget']);
+    unset($widgets['WP_Auth0_Popup_Widget']);
+    unset($widgets['WP_Nav_Menu_Widget']);
+    unset($widgets['EM_Widget']);
+    unset($widgets['EM_Locations_Widget']);
+    unset($widgets['EM_Widget_Calendar']);
+    unset($widgets['search_FAQ_Widget']);
+    unset($widgets['random_FAQ_Widget']);
+    unset($widgets['recent_FAQ_Widget']);
+    unset($widgets['topics_FAQ_Widget']);
+    unset($widgets['cloud_FAQ_Widget']);
+    unset($widgets['SiteOrigin_Panels_Widgets_PostContent']);
+    unset($widgets['SiteOrigin_Panels_Widgets_PostLoop']);
+    unset($widgets['SiteOrigin_Panels_Widgets_Layout']);
+    unset($widgets['WP_Widget_Tag_Cloud']);
+    unset($widgets['WP_Widget_Recent_Posts']);
+    unset($widgets['WP_Widget_Categories']);
+    //unset($widgets['WP_Widget_Text']);
+    $widgets['WP_Widget_Text']['title'] = 'Code';
+    $widgets['WP_Widget_Text']['icon'] = 'fa fa-code';
+    unset($widgets['WP_Widget_Search']);
+    unset($widgets['WP_Widget_Meta']);
+    unset($widgets['WP_Widget_Archives']);
+    unset($widgets['WP_Widget_Calendar']);
+    unset($widgets['WP_Widget_Pages']);
+    $widgets['WP_Widget_RSS']['icon'] = 'fa fa-rss';
 
-  /**
-   * Add async, defer to Google places API code
-   * From http://stackoverflow.com/questions/18944027/how-do-i-defer-or-async-this-wordpress-javascript-snippet-to-load-lastly-for-fas
-   */
-  function siteorigin_panels_css_object($css, $panels_data, $post_id)
-  {
-    //print_r($post_id);
-    //print_r($css);
-    //print_r($panels_data);
+    $widgets['SiteOrigin_Widget_Editor_Widget']['title'] = 'Text';
+    $widgets['SiteOrigin_Widget_Editor_Widget']['icon'] = 'fa fa-font';
+    $widgets['SiteOrigin_Widget_Image_Widget']['title'] = 'Image';
+    $widgets['SiteOrigin_Widget_Image_Widget']['icon'] = 'fa fa-file-image-o';
+    $widgets['SiteOrigin_Widget_Slider_Widget']['title'] = 'Slider';
+    $widgets['SiteOrigin_Widget_Slider_Widget']['icon'] = 'fa fa-camera-retro';
+
+    unset($widgets['SiteOrigin_Widget_Button_Widget']);
+    unset($widgets['SiteOrigin_Widget_Features_Widget']);
+    unset($widgets['SiteOrigin_Widget_PostCarousel_Widget']);
+    unset($widgets['SiteOrigin_Widget_GoogleMap_Widget']);
+    unset($widgets['SiteOrigin_Widget_SocialMediaButtons_Widget']);
+    unset($widgets['SiteOrigin_Widget_PostCarousel_Widget']);
+
+    $widgets['ActionsBox']['icon'] = 'fa fa-wrench';
+    $widgets['LocalMap']['icon'] = 'fa fa-map-marker';
+    unset($widgets['ActionsMenu']);
+    unset($widgets['MainMenuList']);
+    unset($widgets['FooterInfo']);
+    unset($widgets['GoogleTranslate']);
+    unset($widgets['ShareLinks']);
+    unset($widgets['FontSize']);
+    unset($widgets['GoogleTranslate']);
+    unset($widgets['GoogleTranslate']);
+    $widgets['SearchBox']['icon'] = 'fa fa-search';
+    $widgets['SocialFeed']['icon'] = 'fa fa-comments';
+    $widgets['Submenu']['icon'] = 'fa fa-list-ul';
+    $widgets['TeaserListWidget']['icon'] = 'fa fa-th-list';
+
+
+    $widgets['MC4WP_Form_Widget']['icon'] = 'fa fa-map';
+    $widgets['AgencyMenu']['icon'] = 'fa fa-list';
+    $widgets['AgencySocial']['icon'] = 'fa fa-comment';
+    $widgets['AgencyHours']['icon'] = 'fa fa-clock-o';
+    $widgets['AgencyContact']['icon'] = 'fa fa-envelope';
+    $widgets['JumbotronHeader']['icon'] = 'fa fa-picture-o';
+    $widgets['IconSet']['icon'] = 'fa fa-th-large';
+    $widgets['IconLink']['icon'] = 'fa fa-university';
+
+    /*$widgets['AgencyMenu']['icon'] = 'fa fa-list';
+    $widgets['AgencySocial']['icon'] = 'fa fa-comment';
+    $widgets['AgencyHours']['icon'] = 'fa fa-clock-o';
+    $widgets['AgencyContact']['icon'] = 'fa fa-envelope';
+*/
+    $widgets['AgencyMenu']['icon'] = 'fa fa-building';
+    $widgets['AgencySocial']['icon'] = 'fa fa-building';
+    $widgets['AgencyHours']['icon'] = 'fa fa-building';
+    $widgets['AgencyContact']['icon'] = 'fa fa-building';
+
+    /*$widgets['AgencyMenu']['icon'] = 'fa fa-building';
+    $widgets['AgencySocial']['icon'] = 'fa fa-building';
+    $widgets['AgencyHours']['icon'] = 'fa fa-building';
+    $widgets['AgencyContact']['icon'] = 'fa fa-building';*/
+
+    unset($widgets['DLM_Widget_Downloads']);
+
+
+    //print_r($widgets);
+    return $widgets;
+  }
+
+  // Try to alter some of the css code that is outputted
+  /*function siteorigin_panels_css_object($css, $panels_data, $post_id) {
+    print_r($post_id);
+    print_r($css);
+    print_r($panels_data);
     return $css;
-  }
+  }*/
 
   // Add container class to rows that aren't full width
   function so_row_style_attributes( $attributes, $args ) {
     if( empty( $args['row_stretch'] ) ) {
         array_push($attributes['class'], 'container');
     }
-
     return $attributes;
   }
 
 
-  
+  function proud_prebuilt_layouts($layouts){
+    $layouts['landing-page'] = array(
+        'name' => __('Landing page', 'vantage'),    
+        'description' => __('Used on the homepage and other similar pages', 'vantage'),    // Optional
+        'widgets' => array (
+          0 => 
+          array (
+            'title' => '',
+            'text' => 'teafd',
+            'filter' => false,
+            'panels_info' => 
+            array (
+              'class' => 'WP_Widget_Text',
+              'raw' => false,
+              'grid' => 0,
+              'cell' => 0,
+              'id' => 0,
+              'style' => 
+              array (
+                'background_display' => 'tile',
+              ),
+            ),
+          ),
+          1 => 
+          array (
+            'title' => '',
+            'active_tabs' => 
+            array (
+              'faq' => 'faq',
+              'payments' => 'payments',
+              'report' => 'report',
+              'status' => 'status',
+            ),
+            'category_section' => 
+            array (
+              0 => true,
+            ),
+            'panels_info' => 
+            array (
+              'class' => 'ActionsBox',
+              'raw' => false,
+              'grid' => 1,
+              'cell' => 0,
+              'id' => 1,
+            ),
+          ),
+          2 => 
+          array (
+            'title' => 'Recent news',
+            'proud_teaser_content' => 'post',
+            'proud_teaser_display' => 'mini',
+            'post_count' => '3',
+            'link_title' => 'More news',
+            'link_url' => '/news',
+            'panels_info' => 
+            array (
+              'class' => 'TeaserListWidget',
+              'raw' => false,
+              'grid' => 2,
+              'cell' => 0,
+              'id' => 2,
+              'style' => 
+              array (
+                'background_display' => 'tile',
+              ),
+            ),
+          ),
+          3 => 
+          array (
+            'title' => 'Upcoming events',
+            'proud_teaser_content' => 'event',
+            'proud_teaser_display' => 'list',
+            'post_count' => '3',
+            'link_title' => 'More events',
+            'link_url' => '/events',
+            'panels_info' => 
+            array (
+              'class' => 'TeaserListWidget',
+              'raw' => false,
+              'grid' => 2,
+              'cell' => 1,
+              'id' => 3,
+              'style' => 
+              array (
+                'background_display' => 'tile',
+              ),
+            ),
+          ),
+          4 => 
+          array (
+            'title' => '',
+            'accounts' => 'all',
+            'custom' => '',
+            'services' => 
+            array (
+              'facebook' => 'facebook',
+              'twitter' => 'twitter',
+              'youtube' => 'youtube',
+              'instagram' => 'instagram',
+              'ical' => 'ical',
+              'rss' => 'rss',
+            ),
+            'widget_type' => 'static',
+            'post_count' => '20',
+            'panels_info' => 
+            array (
+              'class' => 'SocialFeed',
+              'raw' => false,
+              'grid' => 3,
+              'cell' => 0,
+              'id' => 4,
+            ),
+          ),
+          5 => 
+          array (
+            'title' => '',
+            'active_layers' => 
+            array (
+              'all' => 'all',
+            ),
+            'panels_info' => 
+            array (
+              'class' => 'LocalMap',
+              'raw' => false,
+              'grid' => 4,
+              'cell' => 0,
+              'id' => 5,
+              'style' => 
+              array (
+                'background_display' => 'tile',
+              ),
+            ),
+          ),
+        ),
+        'grids' => 
+        array (
+          0 => 
+          array (
+            'cells' => 1,
+            'style' => 
+            array (
+              'row_stretch' => 'full',
+              'background_display' => 'tile',
+            ),
+          ),
+          1 => 
+          array (
+            'cells' => 1,
+            'style' => 
+            array (
+            ),
+          ),
+          2 => 
+          array (
+            'cells' => 2,
+            'style' => 
+            array (
+            ),
+          ),
+          3 => 
+          array (
+            'cells' => 1,
+            'style' => 
+            array (
+            ),
+          ),
+          4 => 
+          array (
+            'cells' => 1,
+            'style' => 
+            array (
+              'row_stretch' => 'full',
+              'background_display' => 'tile',
+            ),
+          ),
+        ),
+        'grid_cells' => 
+        array (
+          0 => 
+          array (
+            'grid' => 0,
+            'weight' => 1,
+          ),
+          1 => 
+          array (
+            'grid' => 1,
+            'weight' => 1,
+          ),
+          2 => 
+          array (
+            'grid' => 2,
+            'weight' => 0.5,
+          ),
+          3 => 
+          array (
+            'grid' => 2,
+            'weight' => 0.5,
+          ),
+          4 => 
+          array (
+            'grid' => 3,
+            'weight' => 1,
+          ),
+          5 => 
+          array (
+            'grid' => 4,
+            'weight' => 1,
+          ),
+        )
+    );
+    return $layouts;
+  }  
 }
 
 new ProudSOPagebuilder;
