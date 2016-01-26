@@ -12,7 +12,8 @@ class PageTitle extends Core\ProudWidget {
         );
     }
 
-    function initialize() {
+    function initialize() { 
+      $this->settings = [];
     }
 
     /**

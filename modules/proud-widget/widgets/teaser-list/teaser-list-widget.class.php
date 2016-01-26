@@ -31,29 +31,37 @@ class TeaserListWidget extends Core\ProudWidget {
     );
   }
 
+  function postTypes() {
+    return [
+      'post' => __('News', 'proud-teaser'),
+      'event' => __('Events', 'proud-teaser'),
+      'agency' => __('Agencies', 'proud-teaser'),
+      'staff-member' => __('Staff Members', 'proud-teaser'),
+    ];
+  }
+
+  function displayModes() {
+    return [
+      'list' => __('List View', 'proud-teaser'),
+      'mini' => __('Mini List', 'proud-teaser'),
+      'cards' => __('Card View', 'proud-teaser'),
+      'table' => __('Table View', 'proud-teaser'),
+    ];
+  }
+
   function initialize() {
-    $this->settings = [
+    $this->settings += [
       'proud_teaser_content' => [
         '#title' => __('Content Type', 'proud-teaser'),
         '#type' => 'select',
-        '#options' => [
-          'post' => __('News', 'proud-teaser'),
-          'event' => __('Events', 'proud-teaser'),
-          'agency' => __('Agencies', 'proud-teaser'),
-          'staff-member' => __('Staff Members', 'proud-teaser'),
-        ],
+        '#options' => $this->postTypes(),
         '#default_value' => 'post',
       ],
       'proud_teaser_display' => [
         '#title' => __('Teaser Display Mode', 'proud-teaser'),
-        '#type' => 'select',
+        '#type' => 'radios',
         '#default_value' => 'list',
-        '#options' => [
-          'list' => __('List View', 'proud-teaser'),
-          'mini' => __('Mini List', 'proud-teaser'),
-          'cards' => __('Card View', 'proud-teaser'),
-          'table' => __('Table View', 'proud-teaser'),
-        ]
+        '#options' => $this->displayModes(),
       ],
       'show_filters' => [
         '#type' => 'radios',
