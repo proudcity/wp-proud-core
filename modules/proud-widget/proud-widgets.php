@@ -14,6 +14,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/main-menu-list/main-menu-list-
 require_once plugin_dir_path(__FILE__) . 'widgets/icon-set/icon-set.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/jumbotron-header/jumbotron-header.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/submenu/submenu-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/page-title/page-title-widget.class.php';
 
 
 

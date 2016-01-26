@@ -81,6 +81,7 @@ class ProudSOPagebuilder {
     $widgets['JumbotronHeader']['icon'] = 'fa fa-picture-o';
     $widgets['IconSet']['icon'] = 'fa fa-th-large';
     $widgets['IconLink']['icon'] = 'fa fa-university';
+    $widgets['PageTitle']['icon'] = 'fa fa-header';
 
     /*$widgets['AgencyMenu']['icon'] = 'fa fa-list';
     $widgets['AgencySocial']['icon'] = 'fa fa-comment';
