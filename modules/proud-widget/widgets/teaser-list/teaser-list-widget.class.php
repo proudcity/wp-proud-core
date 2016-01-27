@@ -37,6 +37,8 @@ class TeaserListWidget extends Core\ProudWidget {
       'event' => __('Events', 'proud-teaser'),
       'agency' => __('Agencies', 'proud-teaser'),
       'staff-member' => __('Staff Members', 'proud-teaser'),
+      'document' => __('Documents', 'proud-teaser'),
+      'job_listing' => __('Jobs', 'proud-teaser'),
     ];
   }
 

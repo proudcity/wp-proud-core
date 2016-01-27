@@ -21,7 +21,7 @@ if ( !class_exists( 'TeaserOptions' ) ) {
             'post' => __('News', 'proud-teaser'),
             'event' => __('Events', 'proud-teaser'),
             'agency' => __('Agencies', 'proud-teaser'),
-            'staff-member' => __('Staff Members', 'proud-teaser'),
+            'staff-member' => __('People', 'proud-teaser'),
           ]
         ],
         'proud_teaser_display' => [
@@ -36,9 +36,9 @@ if ( !class_exists( 'TeaserOptions' ) ) {
         ]
       ];
       // Actions
-      add_action( 'admin_init', array( $this, 'add_teaser_options' ) );
-      add_action( 'save_post', array( $this, 'on_save' ) );
-      add_action( 'delete_post', array( $this, 'on_delete' ) );
+      //add_action( 'admin_init', array( $this, 'add_teaser_options' ) );
+      //add_action( 'save_post', array( $this, 'on_save' ) );
+      //add_action( 'delete_post', array( $this, 'on_delete' ) );
     }
 
     public function add_teaser_options()
@@ -161,11 +161,16 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Gets taxonomy for post type
      */
     private function get_taxonomy() {
+
       switch( $this->post_type ) {
         case 'staff-member':
           return 'staff-member-group';
         case 'post':
           return 'category';
+        case 'job_listing':
+          return 'job_listing_type';
+        case 'document':
+          return 'document_taxonomy';
       }
       return false;
     }
@@ -300,18 +305,34 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
 
         case 'table':
+          echo '<div class="table-responsive"><table class="table table-striped">';
           switch( $this->post_type ) {
             case 'staff-member':
-            default:
-              echo '<div class="table-responsive"><table class="table table-striped">';
               echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
                 __( 'Name', 'proud-teaser' ),
                 __( 'Position', 'proud-teaser' ),
                 __( 'Phone', 'proud-teaser' )
               );
               break;
-              echo '<tbody>';
+            case 'document':
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+                __( 'Name', 'proud-teaser' ),
+                __( 'Category', 'proud-teaser' ),
+                __( 'Date', 'proud-teaser' ),
+                __( 'Download', 'proud-teaser' )
+              );
+              break;
+            case 'job_listing':
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+                __( 'Name', 'proud-teaser' ),
+                __( 'Position', 'proud-teaser' ),
+                __( 'Phone', 'proud-teaser' )
+              );
+              break;
+            default:
+              break;
           }
+          echo '<tbody>';
           break;
       }
     }
@@ -342,7 +363,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $meta = get_post_meta( $post->ID );
           break;
       }
-
+//print_r($this);
       include($file);
     }
 
