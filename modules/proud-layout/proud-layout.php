@@ -47,7 +47,7 @@ if ( !class_exists( 'ProudLayout' ) ) {
           } else {
             return false;
           }*/
-          if ( function_exists('siteorigin_panels_is_panel') ) {
+          if ( function_exists('siteorigin_panels_is_panel') && is_page() ) {
             $id = get_the_ID();
             return siteorigin_panels_is_panel() && ($id != 6 && $id != 149 && $id != 147);
           }
