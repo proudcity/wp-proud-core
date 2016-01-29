@@ -217,7 +217,8 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'image':
-          $back_image = $instance['image'];
+          // Allow [featured-image]
+          $back_image = esc_url( do_shortcode($instance['image']) );
           $background_style = "background-image:url('$back_image');";
           break;
       }
