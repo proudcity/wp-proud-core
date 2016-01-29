@@ -3,6 +3,11 @@
  * @author ProudCity
  */
 
+function get_proud_logo() {
+  $logo = get_theme_mod( 'proud_logo' );
+  return $logo ? $logo : plugins_url( '/assets/images/logo-icon-white.png', __FILE__ );
+}
+
 /**
  *  Prints the proud navbar
  */
@@ -11,7 +16,9 @@ function print_proud_navbar() {
   <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom" role="navigation">
     <ul id="logo-menu" class="nav navbar-nav">
       <li class="nav-logo">
-        <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>"><img style="height:38px;" class="logo" src="<?php echo plugins_url( '/assets/images/logo-icon-white.png', __FILE__ ) ?>" alt="Home" title="Home"></a>    
+        <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>">
+          <img class="logo" src="<?php echo esc_url( get_proud_logo() ); ?>" alt="Home" title="Home">
+        </a>    
       </li>
       <li class="nav-text">
         <a title="Home" rel="home" href="<?= esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
@@ -55,7 +62,7 @@ function print_proud_navbar() {
   <div class="navbar navbar-header-region navbar-default">
     <div class="navbar-header"><div class="container">
       <h3>
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="logo"><img style="height:38px;" class="logo" src="<?php echo plugins_url( '/assets/images/logo-icon-white.png', __FILE__ ) ?>" alt="Home" title="Home"></a>
+        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="logo"><img style="height:38px;" class="logo pull-left" src="<?php echo get_proud_logo() ?>" alt="Home" title="Home"></a>
         <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>

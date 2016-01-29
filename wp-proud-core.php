@@ -65,6 +65,12 @@ class Proudcore extends \ProudPlugin {
     // Set up image styles
     $this->hook( 'after_setup_theme', 'addImageSizes' );
 
+    // Shortcodes
+    add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
+    add_shortcode( 'slogan', array($this, 'shortcode_slogan') );
+    add_shortcode( 'title', array($this, 'shortcode_title') );
+    add_shortcode( 'featured-image', array($this, 'shortcode_featured_image') );
+
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
@@ -207,6 +213,25 @@ class Proudcore extends \ProudPlugin {
         }
       }
     }
+  }
+
+
+  // Add shortcodees
+  // [sitename]
+  function shortcode_sitename( ){
+    return get_bloginfo('title');
+  }
+  // [slogan]
+  function shortcode_slogan( ){
+    return get_bloginfo('description');
+  }
+  // [title] (page title)
+  function shortcode_title( ){
+    return get_the_title();
+  }
+  // [featured-image] (page title)
+  function shortcode_featured_image( ){
+    return get_the_post_thumbnail_url(get_the_ID());
   }
 
 }

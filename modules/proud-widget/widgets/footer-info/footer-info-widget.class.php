@@ -11,7 +11,7 @@ class FooterInfo extends Core\ProudWidget {
     parent::__construct(
       'proud_footer_info', // Base ID
       __( 'Footer info', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Proudly serving text, with logo', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'Footer logo and slogan', 'wp-proud-core' ), ) // Args
     );
   }
 
@@ -33,11 +33,11 @@ class FooterInfo extends Core\ProudWidget {
       <div class="panel-pane pane-page-logo">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
-            <img src="<?php echo plugins_url( '/assets/images/IconBlack.png', __FILE__ ) ?>" alt="Home">
+            <img src="<?php echo esc_url( get_proud_logo() ); ?>" style="max-height:80px;" alt="Home">
           </a>  
         </div>
       </div>
-      <small>Proudly serving</small>
+      <small><?php echo get_bloginfo( 'description' ); ?></small>
       <div><?php echo get_bloginfo( 'name' ); ?></div>
     </h4>
     <?php
