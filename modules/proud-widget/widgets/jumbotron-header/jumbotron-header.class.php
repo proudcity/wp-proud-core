@@ -59,9 +59,9 @@ class JumbotronHeader extends Core\ProudWidget {
         '#type' => 'radios',
         '#default_value'  => 'none',
         '#options' => [
-          'none' => __( 'None', 'wp-proud-core' ),
+          'none' => __( 'Default', 'wp-proud-core' ),
           // 'proud'    => __( 'ProudCity Image from setup', 'wp-proud-core' ),
-          // 'solid'  => __( 'Solid Color', 'wp-proud-core' ),
+          // @todo: 'solid'  => __( 'Choose color', 'wp-proud-core' ),
           'pattern' => __( 'Pattern', 'wp-proud-core' ),
           'image' => __( 'Image', 'wp-proud-core' ),
         ],
@@ -75,7 +75,8 @@ class JumbotronHeader extends Core\ProudWidget {
           ],
         ],
       ],
-      // 'solid_color_value' => [
+      // @todo
+      //'solid_color_value' => [
       //   '#title' => __( 'Solid Color', 'wp-proud-core' ),
       //   '#type' => 'text_field',
       //   '#default_value'  => '#FFFFFF',
@@ -149,12 +150,12 @@ class JumbotronHeader extends Core\ProudWidget {
         ],
       ],
       'make_inverse' => [
-        '#title' => __( 'Inverse text in box?', 'wp-proud-core' ),
+        '#title' => __( 'Style', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'no',
         '#options' => [ 
-          'yes' => __( 'Yes', 'wp-proud-core' ), 
-          'no' => __( 'No', 'wp-proud-core' ) 
+          'yes' => __( 'Black text on light background', 'wp-proud-core' ), 
+          'no' => __( 'White text on dark background', 'wp-proud-core' ) 
         ],
       ]
     ];
@@ -238,7 +239,10 @@ class JumbotronHeader extends Core\ProudWidget {
     // normal header type
     if( $instance['headertype'] == 'header' ) {
       // Classes
-      $classes = ['jumbotron', 'jumbotron-image'];
+      $classes = ['jumbotron'];
+      if ( $instance['background'] == 'pattern' || $instance['background'] == 'image' ) {
+        $classes[] = 'jumbotron-image';
+      }
       // Inverse?
       if ( $instance['make_inverse'] == 'yes' ) {
         $classes[] = 'jumbotron-inverse';
