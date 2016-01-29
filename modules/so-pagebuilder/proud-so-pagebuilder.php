@@ -137,7 +137,7 @@ class ProudSOPagebuilder {
           'pattern' => '',
           'repeat' => 'full',
           'image' => '[featured-image]',
-          'make_inverse' => 'yes',
+          'make_inverse' => 'no',
           'panels_info' => 
           array (
             'class' => 'JumbotronHeader',
