@@ -49,7 +49,8 @@ if ( !class_exists( 'ProudLayout' ) ) {
           }*/
           if ( function_exists('siteorigin_panels_is_panel') && (is_page() || get_post_type() == 'agency') ) {
             $id = get_the_ID();
-            return siteorigin_panels_is_panel() && ($id != 6 && $id != 149 && $id != 147);
+            // @todo: fix this so we dont need to reference post ids
+            return !empty(get_post_meta(get_the_ID(), 'panels_data', false)) && ($id != 6 && $id != 149 && $id != 147);
           }
         }
 
