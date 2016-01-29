@@ -5,4 +5,5 @@
   <?php else: ?>
     <?php echo $text; ?>
   <?php endif; ?>
+  <?php echo $after ? $after : ''; ?>
 </label>

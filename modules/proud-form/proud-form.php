@@ -22,11 +22,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
       return $this->template_path . $file . '.php';
     }
 
-    public function printFormTextLabel($id, $text, $translate = false) {
+    public function printFormTextLabel($id, $text, $translate = false, $args = array() ) {
+      $after = !empty($args['after']) ? $args['after'] : false;
+      unset($args['after']);
       include $this->template('form-label');
     }
 
-    public function printTextInput($id, $name, $value, $translate = false) {
+    public function printTextInput($id, $name, $value, $translate = false, $args = array() ) {
+      $args['class'] = !empty($args['class']) ? $args['class'] . ' form-control' : 'form-control';
+      $after = !empty($args['after']) ? $args['after'] : false;
+      unset($args['after']);
       include $this->template('text-input');
     }
 
@@ -80,7 +85,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           case 'text':
           case 'email':
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
+            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
             $this->printDescription($field['#description']);
             break;
 
@@ -111,7 +116,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           case 'checkboxes':
           case 'radios':
             // Print label
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id); 
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
             foreach ($field['#options'] as $value => $title) {
               $name = $field['#name'];
               if($field['#type'] == 'checkboxes') {
@@ -213,7 +218,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <form id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
         <?php wp_nonce_field( $args['id'] ); ?>
         <?php $this->printFields(); ?>
-        <button type="submit" class="btn btn-default"><?php print $args['button_text']; ?></button>
+        <button type="submit" class="btn btn-primary"><?php print $args['button_text']; ?></button>
       </form>
       <?php
     }

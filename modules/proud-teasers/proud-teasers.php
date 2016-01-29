@@ -136,15 +136,29 @@ if ( !class_exists( 'TeaserList' ) ) {
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false ) {
+    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false ) {
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
 
-      // Attach filters?
-      if($filters) {
-        $this->build_filters();
-        $this->process_post($args);
+      // Limit to $terms
+      if ($terms) {
+        $args['tax_query'] = [
+          [
+            'taxonomy' => $this->get_taxonomy(),
+            'field'    => 'term_id',
+            'terms'    => $terms,
+            'operator' => 'IN',
+          ]
+        ];
       }
+
+      // Attach filters
+      if($filters) {
+        $this->build_filters( $terms );
+        $this->process_post( $args );
+      }
+
+      //print_r($args);
 
       $this->add_sort($args);
 
@@ -160,9 +174,9 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
      * Gets taxonomy for post type
      */
-    private function get_taxonomy() {
+    public function get_taxonomy( $post_type = false ) {
 
-      switch( $this->post_type ) {
+      switch( $post_type ? $post_type : $this->post_type ) {
         case 'staff-member':
           return 'staff-member-group';
         case 'post':
@@ -179,13 +193,16 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
      * Builds out filters if present
      */
-    private function build_filters() {
+    private function build_filters( $terms ) {
       $this->filters = [
         'filter_keyword' => [
           '#id' => 'filter_keyword',
           '#type' => 'text',
           '#name' => 'filter_keyword',
-          '#title' => __( 'Search Keywords', 'proud-teaser' ),
+          '#args' => array(
+            'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
+            'after' => '<i class="fa fa-search form-control-search-icon"></i>',
+          ),
           '#description' => ''
         ]
       ];
@@ -197,7 +214,9 @@ if ( !class_exists( 'TeaserList' ) ) {
         if(!empty($categories)) {
           $options = [];
           foreach ($categories as $cat) {
-            $options[$cat->term_id] = $cat->name;
+            if (!$terms || in_array($cat->term_id, $terms)) {
+              $options[$cat->term_id] = $cat->name;
+            }
           };
           $this->filters['filter_categories'] = [
             '#id' => 'filter_categories',
@@ -363,7 +382,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $meta = get_post_meta( $post->ID );
           break;
       }
-//print_r($this);
+
       include($file);
     }
 
