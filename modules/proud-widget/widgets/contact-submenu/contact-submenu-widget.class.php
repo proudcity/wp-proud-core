@@ -26,13 +26,13 @@ class ContactSubmenu extends Core\ProudWidget {
       ],
       'agency_page' => [
         '#type' => 'text',
-        '#title' => 'Agency contect page',
+        '#title' => 'Agency contact page',
         '#description' => 'Page that lists the contact information for Agencies',
         '#default_value' => 'contact'
       ],
       'contact_page' => [
         '#type' => 'text',
-        '#title' => 'Contact page',
+        '#title' => 'People contact page',
         '#description' => 'Page that lists Contacts, including a filter for categories',
         '#default_value' => 'people',
       ],
