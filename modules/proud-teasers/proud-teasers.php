@@ -1,6 +1,6 @@
 <?php
 
-namespace Proud\Core;
+namespace Proud\Core; // @todo: JL: @aschmoe I think this should be something else...
 
 /**
  * Sets up options for listing on pages
@@ -326,11 +326,22 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'table':
           echo '<div class="table-responsive"><table class="table table-striped">';
           switch( $this->post_type ) {
+            case 'agency':
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+                __( 'Agency', 'proud-agency' ),
+                __( 'Person', 'proud-agency' ),
+                __( 'Phone', 'proud-teaser' ),
+                __( 'Email', 'proud-teaser' ),
+                __( 'Social', 'proud-teaser' )
+              );
+              break;
             case 'staff-member':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
                 __( 'Name', 'proud-teaser' ),
                 __( 'Position', 'proud-teaser' ),
-                __( 'Phone', 'proud-teaser' )
+                __( 'Agency', 'proud-agency' ),
+                __( 'Phone', 'proud-teaser' ),
+                __( 'Email', 'proud-teaser' )
               );
               break;
             case 'document':
@@ -376,10 +387,19 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->query->the_post();
       // Load Meta info?
       $meta;
+      global $post; 
       switch( $this->post_type ) {
         case 'staff-member':
-          global $post; 
+          $terms = wp_get_post_terms( $post->ID, 'staff-member-group', array("fields" => "all"));
+          // Intentionally no break
+        case 'agency':
           $meta = get_post_meta( $post->ID );
+          break;
+        case 'document':
+          $src = get_post_meta( $post->ID, 'document', true );
+          $filename = get_post_meta( $post->ID, 'document_filename', true );
+          $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));
+          $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
           break;
       }
 
