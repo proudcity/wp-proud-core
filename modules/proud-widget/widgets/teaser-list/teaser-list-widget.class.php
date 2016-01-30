@@ -67,19 +67,17 @@ class TeaserListWidget extends Core\ProudWidget {
       $taxonomy = $this->get_taxonomy($this->post_type);
       if( $taxonomy ) {
         $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $taxonomy] );
-        if(!empty($categories)) {
-          $options = [];
-          foreach ($categories as $cat) {
-            $options[$cat->term_id] = $cat->name;
-          };
-          $this->settings['proud_teaser_terms'] = [
-            '#title' => __( 'Limit to category', 'proud-teaser' ),
-            '#type' => 'checkboxes',
-            '#options' => $options,
-            '#default_value' => array_values($options),
-            '#description' => ''
-          ];
-        }
+        $options = [];
+        foreach ($categories as $cat) {
+          $options[$cat->term_id] = $cat->name;
+        };
+        $this->settings['proud_teaser_terms'] = [
+          '#title' => __( 'Limit to category', 'proud-teaser' ),
+          '#type' => 'checkboxes',
+          '#options' => $options,
+          '#default_value' => array_values($options),
+          '#description' => ''
+        ];
       }
     }
     $this->settings += [
