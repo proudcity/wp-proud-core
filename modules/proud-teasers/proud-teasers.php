@@ -327,7 +327,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           echo '<div class="table-responsive"><table class="table table-striped">';
           switch( $this->post_type ) {
             case 'agency':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
                 __( 'Agency', 'proud-agency' ),
                 __( 'Person', 'proud-agency' ),
                 __( 'Phone', 'proud-teaser' ),
@@ -336,12 +336,13 @@ if ( !class_exists( 'TeaserList' ) ) {
               );
               break;
             case 'staff-member':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
                 __( 'Name', 'proud-teaser' ),
                 __( 'Position', 'proud-teaser' ),
                 __( 'Agency', 'proud-agency' ),
                 __( 'Phone', 'proud-teaser' ),
-                __( 'Email', 'proud-teaser' )
+                __( 'Email', 'proud-teaser' ),
+                __( 'Social', 'proud-teaser' )
               );
               break;
             case 'document':
