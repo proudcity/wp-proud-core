@@ -66,7 +66,7 @@ class TeaserListWidget extends Core\ProudWidget {
       // @todo: this should be called from proud-teasers.php
       $taxonomy = $this->get_taxonomy($this->post_type);
       if( $taxonomy ) {
-        $categories = get_categories( ['type' => 'staff-member', 'taxonomy' => 'taff-member-group'] );
+        $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $this->get_taxonomy( $this->post_type )] );
         $options = [];
         foreach ($categories as $cat) {
           $options[$cat->term_id] = $cat->name;
@@ -90,7 +90,7 @@ class TeaserListWidget extends Core\ProudWidget {
       'post_count' => [
         '#type' => 'text',
         '#title' => 'Number of posts to show',
-        '#description' => 'How many posts to show?',
+        //'#description' => 'How many posts to show?',
         '#default_value' => 3
       ],
       'pager' => [
@@ -113,7 +113,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'More Link title',
         '#type' => 'text',
         '#default_value' => 'More',
-        '#description' => 'Text for the link',
+        //'#description' => 'Text for the link',
         '#to_js_settings' => false,
         '#states' => [
           'hidden' => [
@@ -129,7 +129,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'More Link url',
         '#type' => 'text',
         '#default_value' => '',
-        '#description' => 'Url for the link',
+        //'description' => 'Url for the link',
         '#to_js_settings' => false,
         '#states' => [
           'hidden' => [
