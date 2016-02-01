@@ -8,7 +8,7 @@
   <?php else: ?>
     Welcome to our future website!
     <a href="https://insights.hotjar.com/s?siteId=124068&surveyId=6063" class="proudbar-btn">Feedback</a>
-    <a href="//proudcity.com/plans" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
+    <!--<a href="//proudcity.com/plans" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>-->
   <?php endif; ?>
 
 </div>
