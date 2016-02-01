@@ -114,7 +114,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'More',
         '#return_value' => '1',
         '#label_above' => true,
-        '#replace_title' => 'Inlcude a more link',
+        '#replace_title' => 'Include a more link',
         '#default_value' => false
       ],
       'link_title' => [
