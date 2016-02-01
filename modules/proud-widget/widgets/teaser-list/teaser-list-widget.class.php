@@ -66,7 +66,13 @@ class TeaserListWidget extends Core\ProudWidget {
       // @todo: this should be called from proud-teasers.php
       $taxonomy = $this->get_taxonomy($this->post_type);
       if( $taxonomy ) {
-        $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $this->get_taxonomy( $this->post_type )] );
+        $categories = get_categories( [
+          'type' => $this->post_type, 
+          'taxonomy' => $this->get_taxonomy( $this->post_type ), 
+          'hide_empty' => 0,
+          //'orderby' => 'weight',
+          //'order' => 'ASC',
+        ]);
         $options = [];
         foreach ($categories as $cat) {
           $options[$cat->term_id] = $cat->name;
