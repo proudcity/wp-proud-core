@@ -5,12 +5,12 @@
 
 use Proud\Core;
 
-class FooterInfo extends Core\ProudWidget {
+class LogoWidget extends Core\ProudWidget {
 
   function __construct() {
     parent::__construct(
-      'proud_footer_info', // Base ID
-      __( 'Footer info', 'wp-proud-core' ), // Name
+      'proud_logo', // Base ID
+      __( 'Footer logo', 'wp-proud-core' ), // Name
       array( 'description' => __( 'Footer logo and slogan', 'wp-proud-core' ), ) // Args
     );
   }
@@ -43,7 +43,7 @@ class FooterInfo extends Core\ProudWidget {
 }
 
 // register Foo_Widget widget
-function register_footer_info_widget() {
-  register_widget( 'FooterInfo' );
+function register_logo_widget() {
+  register_widget( 'LogoWidget' );
 }
-add_action( 'widgets_init', 'register_footer_info_widget' );
+add_action( 'widgets_init', 'register_logo_widget' );
