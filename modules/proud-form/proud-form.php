@@ -60,6 +60,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="form-group">
       <?php
         switch ($field['#type']) {
+          case 'html':
+            echo $field['#html'];
+            break;
           case 'fa-icon':
             ?>
             <script>
@@ -143,9 +146,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
                   $this->form_id
                 ); ?>
               </div>
-              <?php $this->printDescription($field['#description']) ?>
               <?php 
             }
+            $this->printDescription($field['#description']);
             break;
 
           case 'checkbox':
@@ -186,14 +189,14 @@ if ( ! class_exists( 'FormHelper' ) ) {
     public function printFields () {
       // Javascript states for hiding / showing fields
       $states = [];
-
       foreach ( $this->fields as $id => $field ) {
+        $field['#id'] = empty($field['#id']) ? $id : $field['#id'];
+        $this->fields[$id]['#id'] = $field['#id'];
         if($field['#type'] == 'group') {
           $this->printGroupFields( $id, $field );
         }
         else {
           $this->printFormItem( $field );
-
           if(!empty($field['#states'])) {
             $states[$field['#id']] = $field['#states'];
           }
@@ -265,6 +268,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $rule_if = [];
           // Run through fields that make it visible or invisible
           foreach( $values as $watch_field => $watch_vals ):
+            $watch_field = str_replace($this->form_id . '-', '', $watch_field);
             // Just the statement glue
             if($watch_field == 'glue') {
               continue;
