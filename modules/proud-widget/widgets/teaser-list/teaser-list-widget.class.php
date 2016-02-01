@@ -317,6 +317,19 @@ class JobTeaserListWidget extends TeaserListWidget {
   }
 }
 
+// Contacts
+class ContactTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_contact_teaser_list', // Base ID
+      __( 'Contacts list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of staff Contacts in a category with a display style', 'wp-proud-core' ), ) // Args
+    );
+
+    $this->post_type = 'staff-member';
+  }
+}
+
 
 // register widgets
 function register_teaser_list_widget() {
@@ -328,5 +341,6 @@ function register_teaser_list_widget() {
   register_widget( 'EventTeaserListWidget' );
   register_widget( 'DocumentTeaserListWidget' );
   register_widget( 'JobTeaserListWidget' );
+  register_widget( 'ContactTeaserListWidget' );
 }
 add_action( 'widgets_init', 'register_teaser_list_widget' );
