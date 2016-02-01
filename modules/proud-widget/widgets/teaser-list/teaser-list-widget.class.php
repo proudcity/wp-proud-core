@@ -74,9 +74,11 @@ class TeaserListWidget extends Core\ProudWidget {
           //'order' => 'ASC',
         ]);
         $options = [];
-        foreach ($categories as $cat) {
-          $options[$cat->term_id] = $cat->name;
-        };
+        if( !empty( $categories ) && empty( $categories['errors'] ) ) {
+          foreach ($categories as $cat) {
+            $options[$cat->term_id] = $cat->name;
+          };
+        }
         $this->settings['proud_teaser_terms'] = [
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',

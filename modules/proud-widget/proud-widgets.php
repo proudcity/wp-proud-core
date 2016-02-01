@@ -30,7 +30,7 @@ function proud_shortcode($atts) {
       'widget_name' => FALSE
   ), $atts));
 
-  $widget_name = wp_specialchars($widget_name);
+  $widget_name = esc_html($widget_name);
 
   if ( !is_a( $wp_widget_factory->widgets[$widget_name], 'ProudWidget') ) {
     // Try to get instance info
