@@ -37,8 +37,6 @@ class FooterInfo extends Core\ProudWidget {
           </a>  
         </div>
       </div>
-      <small><?php echo get_bloginfo( 'description' ); ?></small>
-      <div><?php echo get_bloginfo( 'name' ); ?></div>
     </h4>
     <?php
   }
