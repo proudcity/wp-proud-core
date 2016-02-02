@@ -23,6 +23,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
 
     public function printFormTextLabel($id, $text, $translate = false, $args = array() ) {
+      $after = !empty($args['after']) ? $args['after'] : false;
+      unset($args['after']);
       include $this->template('form-label');
     }
 
@@ -85,8 +87,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
           case 'text':
           case 'email':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
+            // Placeholder ?
+            $label_args = !empty( $field['#args']['placeholder'] ) ? array('class' => 'sr-only') : array();
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
+            // Input args, placeholder, after
+            $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
+            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
             $this->printDescription($field['#description']);
             break;
 
@@ -116,7 +122,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
           case 'checkboxes':
           case 'radios':
-            // Print label
+            // Print label, add class
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
             foreach ($field['#options'] as $value => $title) {
               $name = $field['#name'];
