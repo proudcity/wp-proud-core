@@ -201,7 +201,6 @@ if ( !class_exists( 'TeaserList' ) ) {
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
           '#name' => 'filter_keyword',
           '#args' => array(
-            'hide-title' => true,
             'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
             'after' => '<i class="fa fa-search form-control-search-icon"></i>',
           ),
