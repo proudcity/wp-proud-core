@@ -23,8 +23,6 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
 
     public function printFormTextLabel($id, $text, $translate = false, $args = array() ) {
-      $after = !empty($args['after']) ? $args['after'] : false;
-      unset($args['after']);
       include $this->template('form-label');
     }
 
@@ -87,7 +85,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
           case 'text':
           case 'email':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
             $this->printDescription($field['#description']);
             break;
