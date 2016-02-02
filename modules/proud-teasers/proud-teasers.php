@@ -15,13 +15,14 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $display_type;
     private $query;
     private $filters;
+    private $pagination;
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false ) {
+    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false ) {
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
 
@@ -41,6 +42,10 @@ if ( !class_exists( 'TeaserList' ) ) {
       if($filters) {
         $this->build_filters( $terms );
         $this->process_post( $args );
+      }
+      // Pager?
+      if($pagination) {
+        $this->process_pagination( $args );
       }
 
       //print_r($args);
@@ -155,6 +160,14 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
     }
 
+    /**
+     * Processes pagination if enabled
+     */
+    private function process_pagination(&$args) {
+      $this->pagination = true;
+      $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+      $args['paged'] = $paged;
+    }
 
     /**
      * Adds sort
@@ -315,6 +328,33 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Prints content pager
+     */
+    private function print_pagination() {
+      $template = $this->template_path . 'pagination-default.php';
+      $file = "";
+      // Try to load template from theme
+      if( !( $file = locate_template( $template ) ) ) {
+        // Just load from here
+        $file = plugin_dir_path( __FILE__ ) . 'templates/pagination-default.php';
+      }
+      switch( $this->post_type ) {
+        case 'post':
+        case 'event':
+          $prev_text = '&laquo; Older';
+          $next_text = 'Newer &raquo;';
+          break;
+
+        default: 
+          $prev_text = '&laquo; Previous';
+          $next_text = 'Next &raquo;';
+      }
+      $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
+      $next = get_previous_posts_link( $next_text );
+      include($file);
+    }
+
+    /**
      * Function runs through, builds entire teaser list
      */
     public function print_list() {
@@ -323,7 +363,12 @@ if ( !class_exists( 'TeaserList' ) ) {
         while ( $this->query->have_posts() ) :
           $this->print_content();
         endwhile;
+        // Close wrapper
         $this->print_wrapper_close();
+        // Print pager?
+        if( $this->pagination ) {
+          $this->print_pagination();
+        }
       }
       else {
         $this->print_empty();

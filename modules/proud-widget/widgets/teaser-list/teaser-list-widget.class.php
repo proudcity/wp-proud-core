@@ -202,8 +202,9 @@ class TeaserListWidget extends Core\ProudWidget {
       array(
         'posts_per_page' => $instance[ 'post_count' ],
       ),
-      ($instance['show_filters']),
-      $terms
+      $instance['show_filters'],
+      $terms,
+      $instance['pager']
     );
     if($instance['show_filters']) {
       $teaser_filter_class = new TeaserFilterTracker($instance['teaser_list']);
@@ -221,7 +222,6 @@ class TeaserListWidget extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     extract($instance);
-
     $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-list.php';
     // Include the template file
     include( $file );
