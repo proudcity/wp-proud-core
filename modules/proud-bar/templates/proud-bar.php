@@ -8,7 +8,9 @@
   <?php else: ?>
     Welcome to our future website!
     <a href="https://proudcity.typeform.com/to/duZiun" class="proudbar-btn typeform-share" data-mode="2">Feedback</a>
-    <!--<a href="//proudcity.com/plans" class="proudbar-btn proudbar-btn-circle" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>-->
+    <?php if (current_user_can( 'manage_options' )): ?> 
+      <a href="//proudcity.com/plans" class="proudbar-btn proudbar-btn-circle pull-right" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
+    <?php endif; ?>
   <?php endif; ?>
 
 </div>
