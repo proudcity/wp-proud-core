@@ -81,6 +81,19 @@ if ( !class_exists( 'TeaserList' ) ) {
 
 
     /**
+     * Attaches scripts to list
+     */
+    public function load_resources() {
+      switch( $this->post_type ) {
+        case 'event': 
+          wp_enqueue_style('addtocalendar','//addtocalendar.com/atc/1.5/atc-style-blue.css');
+          wp_enqueue_script('addtocalendar','//addtocalendar.com/atc/1.5/atc.min.js', [], false, true);
+          break;
+      }
+    }
+
+
+    /**
      * Builds out filters if present
      */
     private function build_filters( $terms ) {
@@ -277,6 +290,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $meta;
       switch( $this->post_type ) {
         case 'staff-member':
+        case 'event':
           global $post; 
           $meta = get_post_meta( $post->ID );
           break;
@@ -378,6 +392,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         if( $this->pagination ) {
           $this->print_pagination();
         }
+        // Load Resources
+        $this->load_resources();
       }
       else {
         $this->print_empty();
