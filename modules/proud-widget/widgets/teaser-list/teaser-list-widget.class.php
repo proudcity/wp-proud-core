@@ -106,7 +106,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'Pager',
         '#return_value' => '1',
         '#label_above' => true,
-        '#replace_title' => 'Add pager @todo: this needs to be implemented',
+        '#replace_title' => 'Add pager (Only one pager per page can be active)',
         '#default_value' => false
       ],
       'more_link' => [

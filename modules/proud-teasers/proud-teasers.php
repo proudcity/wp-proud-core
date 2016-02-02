@@ -340,17 +340,26 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
       switch( $this->post_type ) {
         case 'post':
-        case 'event':
           $prev_text = '&laquo; Older';
           $next_text = 'Newer &raquo;';
+          $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
+          $next = get_previous_posts_link( $next_text );
+          break;
+
+        case 'event':
+          // Switched around since ordering is "ASC"
+          $prev_text = '&laquo; Previous';
+          $next_text = 'More &raquo;';
+          $prev = get_previous_posts_link( $prev_text );
+          $next = get_next_posts_link( $next_text, $this->query->max_num_pages );
           break;
 
         default: 
           $prev_text = '&laquo; Previous';
           $next_text = 'Next &raquo;';
+          $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
+          $next = get_previous_posts_link( $next_text );
       }
-      $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
-      $next = get_previous_posts_link( $next_text );
       include($file);
     }
 
