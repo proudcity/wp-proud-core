@@ -123,7 +123,9 @@ if ( !class_exists( 'ProudLayout' ) ) {
         public function load_scripts(){
           // Grab the title early in case it's overridden later by extra loops.
           global $post;
-          $this->title = $post->post_title;
+          if($post) {
+            $this->title = $post->post_title;
+          }
         }
 
 
