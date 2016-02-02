@@ -5,5 +5,5 @@
   <?php else: ?>
     <?php echo $text; ?>
   <?php endif; ?>
-  <?php echo $after ? $after : ''; ?>
+  <?php echo !empty( $after ) ? $after : ''; ?>
 </label>

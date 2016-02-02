@@ -74,9 +74,11 @@ class TeaserListWidget extends Core\ProudWidget {
           //'order' => 'ASC',
         ]);
         $options = [];
-        foreach ($categories as $cat) {
-          $options[$cat->term_id] = $cat->name;
-        };
+        if( !empty( $categories ) && empty( $categories['errors'] ) ) {
+          foreach ($categories as $cat) {
+            $options[$cat->term_id] = $cat->name;
+          };
+        }
         $this->settings['proud_teaser_terms'] = [
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',
@@ -112,7 +114,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'More',
         '#return_value' => '1',
         '#label_above' => true,
-        '#replace_title' => 'Inlcude a more link',
+        '#replace_title' => 'Include a more link',
         '#default_value' => false
       ],
       'link_title' => [
@@ -186,10 +188,13 @@ class TeaserListWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent($args, &$instance) {
-    $terms = $instance['proud_teaser_terms'];
-    unset($terms[0]);
-    $terms = array_keys($terms);
-    $terms = count($terms) ? $terms : false;
+    $terms = [];
+    if( !empty( $instance['proud_teaser_terms'] ) ) {
+      $terms = $instance['proud_teaser_terms'];
+      unset($terms[0]);
+      $terms = array_keys($terms);
+      $terms = count($terms) ? $terms : false;
+    }
 
     $instance['teaser_list'] = new Core\TeaserList(
       $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
@@ -203,7 +208,7 @@ class TeaserListWidget extends Core\ProudWidget {
     if($instance['show_filters']) {
       $teaser_filter_class = new TeaserFilterTracker($instance['teaser_list']);
     }
-    return $true;
+    return true;
   }
 
   /**

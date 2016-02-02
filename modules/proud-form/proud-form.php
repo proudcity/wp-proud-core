@@ -87,8 +87,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
           case 'text':
           case 'email':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, !empty($field['#args']) ? $field['#args'] : array() );
+            // Placeholder ?
+            $label_args = !empty( $field['#args']['placeholder'] ) ? array('class' => 'sr-only') : array();
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
+            // Input args, placeholder, after
+            $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
+            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
             $this->printDescription($field['#description']);
             break;
 
@@ -118,7 +122,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
           case 'checkboxes':
           case 'radios':
-            // Print label
+            // Print label, add class
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
             foreach ($field['#options'] as $value => $title) {
               $name = $field['#name'];
@@ -275,11 +279,19 @@ if ( ! class_exists( 'FormHelper' ) ) {
             }
             // Needs different selectors per type
             $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
+            // Init value criteria
+            $value_criteria = '.val()';
             switch( $this->fields[$watch_field]['#type'] ) {
               case 'radios':
+                $watches[] = $group_id . ' input';
+                $selector = $group_id . ' input:checked';
+                break;
+
               case 'checkbox':
                 $watches[] = $group_id . ' input';
                 $selector = $group_id . ' input:checked';
+                // Check length
+                $value_criteria = '.length';
                 break;
 
               default:
@@ -289,7 +301,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
             // Build if criteria
             $criteria = [];
             foreach ( $watch_vals['value'] as $val ) {
-              $criteria[] = 'jQuery("' . $selector . '").val()' . $watch_vals['operator'] . '"' . $val . '"'; 
+              $criteria[] = 'jQuery("' . $selector . '")' . $value_criteria . $watch_vals['operator'] . '"' . $val . '"'; 
             }
             $rule_if[] = $type == 'visible' 
                        ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
