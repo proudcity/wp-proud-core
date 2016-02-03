@@ -405,10 +405,20 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
      * Prints list filters
      */
-    public function print_filters() {
+    public function print_filters( $include_filters = null, $button_text = 'Filter' ) {
+
+      // Remove filters that we don't want to show
+      if ( !empty($include_filters) ) {
+        foreach ( $this->filters as $key => $filter ) {
+          if (!in_array($key, $include_filters)) {
+            unset($this->filters[$key]);
+          }
+        }
+      }
+
       // Grab form helper
       $form = new \Proud\Core\FormHelper( 'proud-teaser-filter', $this->filters );
-      $form->printForm( ['button_text' => __( 'Filter', 'proud-teaser' )] );
+      $form->printForm( ['button_text' => __( $button_text, 'proud-teaser' )] );
     }
   }
 }
