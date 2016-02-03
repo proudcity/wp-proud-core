@@ -16,6 +16,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $query;
     private $filters;
     private $pagination;
+    private $keyword;
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
@@ -23,8 +24,19 @@ if ( !class_exists( 'TeaserList' ) ) {
      * 'posts_per_page' => 5,
      */
     public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false ) {
+
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
+
+      // Intercept search lists, set keyword
+      if($post_type == 'search') {
+        global $proudsearch;
+        // Collect get parameter
+        $this->search_key = $proudsearch::_SEARCH_PARAM;
+      }
+      else {
+        $this->search_key = 'filter_keyword';
+      }
 
       // Limit to $terms
       if ($terms) {
@@ -53,7 +65,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->add_sort($args);
 
       $args = array_merge( [
-        'post_type' => $this->post_type, 
+        'post_type' => $this->post_type == 'search' ? 'any' : $this->post_type, 
         'post_status' => 'publish',
         'update_post_term_cache' => false, // don't retrieve post terms
         'update_post_meta_cache' => false, // don't retrieve post meta
@@ -98,11 +110,11 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function build_filters( $terms ) {
       $this->filters = [
-        'filter_keyword' => [
-          '#id' => 'filter_keyword',
+        $this->search_key => [
+          '#id' => $this->search_key,
           '#type' => 'text',
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
-          '#name' => 'filter_keyword',
+          '#name' => $this->search_key,
           '#args' => array(
             'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
             'after' => '<i class="fa fa-search form-control-search-icon"></i>',
@@ -132,6 +144,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           ];
         }
       }
+
+      
     }
 
     /**
@@ -161,7 +175,7 @@ if ( !class_exists( 'TeaserList' ) ) {
               break;
 
             // keyword search
-            case 'filter_keyword':
+            case $this->search_key:
               $args['s'] = sanitize_text_field( $_REQUEST[$key] );
               break;
           }
@@ -211,6 +225,10 @@ if ( !class_exists( 'TeaserList' ) ) {
           );
           break;
 
+        // Don't order for search
+        case 'search':
+          break;
+
         default:
           $args['orderby'] = 'title';
           $args['order']   = 'ASC';
@@ -238,11 +256,23 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'table':
           echo '<div class="table-responsive"><table class="table table-striped">';
           switch( $this->post_type ) {
+            case 'agency': 
+               echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',    
+                 __( 'Agency', 'proud-agency' ),   
+                 __( 'Person', 'proud-agency' ),   
+                 __( 'Phone', 'proud-teaser' ),    
+                 __( 'Email', 'proud-teaser' ),    
+                 __( 'Social', 'proud-teaser' )    
+               );    
+               break;
             case 'staff-member':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
+              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
                 __( 'Name', 'proud-teaser' ),
                 __( 'Position', 'proud-teaser' ),
-                __( 'Phone', 'proud-teaser' )
+                __( 'Agency', 'proud-agency' ),     
+                __( 'Phone', 'proud-teaser' ),    
+                __( 'Email', 'proud-teaser' ),    
+                __( 'Social', 'proud-teaser' )    
               );
               break;
             case 'document':
@@ -288,11 +318,25 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->query->the_post();
       // Load Meta info?
       $meta;
+      global $post;
       switch( $this->post_type ) {
         case 'staff-member':
+          $terms = wp_get_post_terms( $post->ID, 'staff-member-group', array("fields" => "all"));
+          // Intentionally no break
+        case 'agency':
         case 'event':
-          global $post; 
           $meta = get_post_meta( $post->ID );
+          break;
+        case 'search':
+          global $proudsearch;
+          $meta = get_post_meta( $post->ID );
+          $search_meta = $proudsearch->post_meta( $post->post_type );
+          break;
+        case 'document':    
+          $src = get_post_meta( $post->ID, 'document', true );    
+          $filename = get_post_meta( $post->ID, 'document_filename', true );    
+          $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));   
+          $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
           break;
       }
 
@@ -360,8 +404,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           $next = get_previous_posts_link( $next_text );
           break;
 
+        // Switched around since ordering is "ASC"
         case 'event':
-          // Switched around since ordering is "ASC"
+        case 'search';
           $prev_text = '&laquo; Previous';
           $next_text = 'More &raquo;';
           $prev = get_previous_posts_link( $prev_text );
