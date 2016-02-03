@@ -5,7 +5,7 @@
 
 function get_proud_logo() {
   $logo = get_theme_mod( 'proud_logo' );
-  return $logo ? $logo : plugins_url( '/assets/images/logo-icon-white.png', __FILE__ );
+  return $logo ? $logo : '/wp-content/uploads/2016/02/logo_sm.png'; //plugins_url( '/assets/images/logo-icon-white.png', __FILE__ );
 }
 
 /**
