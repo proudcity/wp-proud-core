@@ -3,121 +3,6 @@
 namespace Proud\Core;
 
 /**
- * Sets up options for listing on pages
- */
-if ( !class_exists( 'TeaserOptions' ) ) {
-
-  class TeaserOptions {
-
-    private static $fields = [];
-
-    function __construct() {
-      // Set Fields
-      self::$fields =  [
-        'proud_teaser_content' => [
-          '#title' => __('Content Type', 'proud-teaser'),
-          '#type' => 'select',
-          '#options' => [
-            'post' => __('News', 'proud-teaser'),
-            'event' => __('Events', 'proud-teaser'),
-            'agency' => __('Agencies', 'proud-teaser'),
-            'staff-member' => __('People', 'proud-teaser'),
-          ]
-        ],
-        'proud_teaser_display' => [
-          '#title' => __('Teaser Display Mode', 'proud-teaser'),
-          '#type' => 'select',
-          '#options' => [
-            'list' => __('List View', 'proud-teaser'),
-            'mini' => __('Mini List', 'proud-teaser'),
-            'cards' => __('Card View', 'proud-teaser'),
-            'table' => __('Table View', 'proud-teaser'),
-          ]
-        ]
-      ];
-      // Actions
-      //add_action( 'admin_init', array( $this, 'add_teaser_options' ) );
-      //add_action( 'save_post', array( $this, 'on_save' ) );
-      //add_action( 'delete_post', array( $this, 'on_delete' ) );
-    }
-
-    public function add_teaser_options()
-    {
-      // Try to get post ID
-      $post_id = !empty( $_GET['post'] ) ? $_GET['post'] : null;
-      if( !$post_id ) {
-        $post_id = ( $_POST && !empty( $_POST['post_ID'] ) )
-                   ? $_POST['post_ID']
-                   : null;
-      }
-      // have it?
-      if( $post_id ) {
-        $template_file = get_post_meta( $post_id,'_wp_page_template', TRUE );
-        // d($template_file);
-        // check for a template type
-        if ( strpos( $template_file, 'teasers.php' ) > 0 ) {
-          add_meta_box( 'proud_teaser', 'Teaser Configuration', array( $this, 'build_box' ), 'page', 'side' );
-        }
-
-        add_action('save_post', [ $this, 'on_save' ]);
-      }
-    }
-
-    public function build_box( $post ){
-
-      foreach( self::$fields as $id => $field ) {
-        $value = get_post_meta( $post->ID, $id, true );
-        wp_nonce_field( $id . '_dononce', $id . '_noncename' );
-        ?>
-
-        <label><?php echo $field['#title']; ?></label>
-        <select name="<?php echo $id; ?>">
-          <?php foreach ( $field['#options'] as $key => $label ): ?>
-            <option value="<?php echo $key; ?>"<?php if($key == $value) print ' selected="selected"';?>><?php echo $label; ?></option>
-          <?php endforeach; ?>
-        </select>
-        <?php
-      }
-    } // build_box()
-
-    public function on_save( $postID ){
-      // d('uhhhh');
-      foreach( self::$fields as $id => $field ) {
-        if ( ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE )
-          || !isset( $_POST[ $id . '_noncename' ] )
-          || !wp_verify_nonce( $_POST[ $id . '_noncename' ], $id . '_dononce' ) ) {
-          continue;
-        }
-
-        $old = get_post_meta( $postID, $id, true );
-        $new = $_POST[ $id ] ;
-        if( !is_null( $old ) ){
-          if ( is_null( $new ) ){
-            delete_post_meta( $postID, $id );
-          } else {
-            update_post_meta( $postID, $id, $new, $old );
-          }
-        } elseif ( !is_null( $new ) ){
-          add_post_meta( $postID, $id, $new, true );
-        }
-      }
-      return $postID;
-    } // on_save()
-
-    public function on_delete( $postID ){
-      foreach( self::$fields as $id => $field ) {
-        delete_post_meta( $postID, $id );
-      }
-      return $postID;
-    } // on_delete()
-  }
-
-  // init
-  // @todo remove
-  // $options = new TeaserOptions();
-}
-
-/**
  * Prints out a list of teasers
  */
 if ( !class_exists( 'TeaserList' ) ) {
@@ -130,13 +15,14 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $display_type;
     private $query;
     private $filters;
+    private $pagination;
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false ) {
+    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false ) {
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
 
@@ -156,6 +42,10 @@ if ( !class_exists( 'TeaserList' ) ) {
       if($filters) {
         $this->build_filters( $terms );
         $this->process_post( $args );
+      }
+      // Pager?
+      if($pagination) {
+        $this->process_pagination( $args );
       }
 
       //print_r($args);
@@ -191,6 +81,19 @@ if ( !class_exists( 'TeaserList' ) ) {
 
 
     /**
+     * Attaches scripts to list
+     */
+    public function load_resources() {
+      switch( $this->post_type ) {
+        case 'event': 
+          wp_enqueue_style('addtocalendar','//addtocalendar.com/atc/1.5/atc-style-blue.css');
+          wp_enqueue_script('addtocalendar','//addtocalendar.com/atc/1.5/atc.min.js', [], false, true);
+          break;
+      }
+    }
+
+
+    /**
      * Builds out filters if present
      */
     private function build_filters( $terms ) {
@@ -201,7 +104,6 @@ if ( !class_exists( 'TeaserList' ) ) {
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
           '#name' => 'filter_keyword',
           '#args' => array(
-            'hide-title' => true,
             'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
             'after' => '<i class="fa fa-search form-control-search-icon"></i>',
           ),
@@ -271,6 +173,14 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
     }
 
+    /**
+     * Processes pagination if enabled
+     */
+    private function process_pagination(&$args) {
+      $this->pagination = true;
+      $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+      $args['paged'] = $paged;
+    }
 
     /**
      * Adds sort
@@ -380,6 +290,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $meta;
       switch( $this->post_type ) {
         case 'staff-member':
+        case 'event':
           global $post; 
           $meta = get_post_meta( $post->ID );
           break;
@@ -431,6 +342,42 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Prints content pager
+     */
+    private function print_pagination() {
+      $template = $this->template_path . 'pagination-default.php';
+      $file = "";
+      // Try to load template from theme
+      if( !( $file = locate_template( $template ) ) ) {
+        // Just load from here
+        $file = plugin_dir_path( __FILE__ ) . 'templates/pagination-default.php';
+      }
+      switch( $this->post_type ) {
+        case 'post':
+          $prev_text = '&laquo; Older';
+          $next_text = 'Newer &raquo;';
+          $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
+          $next = get_previous_posts_link( $next_text );
+          break;
+
+        case 'event':
+          // Switched around since ordering is "ASC"
+          $prev_text = '&laquo; Previous';
+          $next_text = 'More &raquo;';
+          $prev = get_previous_posts_link( $prev_text );
+          $next = get_next_posts_link( $next_text, $this->query->max_num_pages );
+          break;
+
+        default: 
+          $prev_text = '&laquo; Previous';
+          $next_text = 'Next &raquo;';
+          $prev = get_next_posts_link( $prev_text, $this->query->max_num_pages );
+          $next = get_previous_posts_link( $next_text );
+      }
+      include($file);
+    }
+
+    /**
      * Function runs through, builds entire teaser list
      */
     public function print_list() {
@@ -439,7 +386,14 @@ if ( !class_exists( 'TeaserList' ) ) {
         while ( $this->query->have_posts() ) :
           $this->print_content();
         endwhile;
+        // Close wrapper
         $this->print_wrapper_close();
+        // Print pager?
+        if( $this->pagination ) {
+          $this->print_pagination();
+        }
+        // Load Resources
+        $this->load_resources();
       }
       else {
         $this->print_empty();

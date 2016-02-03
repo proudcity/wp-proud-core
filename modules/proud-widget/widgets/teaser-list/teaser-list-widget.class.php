@@ -106,7 +106,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'Pager',
         '#return_value' => '1',
         '#label_above' => true,
-        '#replace_title' => 'Add pager @todo: this needs to be implemented',
+        '#replace_title' => 'Add pager (Only one pager per page can be active)',
         '#default_value' => false
       ],
       'more_link' => [
@@ -202,8 +202,9 @@ class TeaserListWidget extends Core\ProudWidget {
       array(
         'posts_per_page' => $instance[ 'post_count' ],
       ),
-      ($instance['show_filters']),
-      $terms
+      $instance['show_filters'],
+      $terms,
+      $instance['pager']
     );
     if($instance['show_filters']) {
       $teaser_filter_class = new TeaserFilterTracker($instance['teaser_list']);
@@ -221,7 +222,6 @@ class TeaserListWidget extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     extract($instance);
-
     $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-list.php';
     // Include the template file
     include( $file );
