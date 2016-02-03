@@ -206,6 +206,11 @@ if ( !class_exists( 'TeaserList' ) ) {
           $args['order']   = 'DESC';
           break;
 
+        case 'staff-member':
+          $args['orderby'] = 'menu_order';
+          $args['order']   = 'ASC';
+          break;
+
         case 'event':
           // http://www.billerickson.net/wp-query-sort-by-meta/
           $args['orderby'] = 'meta_value_num';
