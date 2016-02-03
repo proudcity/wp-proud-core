@@ -85,6 +85,10 @@ class Proudcore extends \ProudPlugin {
         'lng' => (float) get_option( 'lng', -86.5861037 ),
       ),
       'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
+      'mapbox' => array(
+        'token' => get_option( 'mapbox_token', 'pk.eyJ1IjoiYWxiYXRyb3NzZGlnaXRhbCIsImEiOiI1cVUxbUxVIn0.SqKOVeohLfY0vfShalVDUw' ),
+        'map' => get_option( 'mapbox_map', 'albatrossdigital.lpkdpcjb' )
+      )
     )));
     self::$libraries = new ProudLibaries;
     self::$layout = new \ProudLayout;
