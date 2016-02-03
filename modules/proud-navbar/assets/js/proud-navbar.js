@@ -79,7 +79,11 @@
       }
     };
 
-    self.triggerOverlay = function(data, hash) {
+    self.triggerOverlay = function(data, hash, classOverride) {
+      if(classOverride) {
+        layerClasses[data] = classOverride;
+      }
+
       $body.trigger({
         type:     "proudNavClick",
         event:    data,
@@ -125,8 +129,9 @@
       $self.click(function(e) {
         e.preventDefault();
         var data = $self.data('proud-navbar');
+
         if(data) {
-          proudNav.triggerOverlay(data);
+          proudNav.triggerOverlay(data, $self.data('proud-navbar-hash'));
         }
       });
     });

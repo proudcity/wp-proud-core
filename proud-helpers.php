@@ -6,7 +6,7 @@
 namespace Proud\Core;
 
 // Hacky copied function to produce exerpt
-function wp_trim_excerpt( $text = '' ) {
+function wp_trim_excerpt( $text = '', $more_link = true ) {
   $raw_excerpt = $text;
   if ( '' == $text ) {
     $text = get_the_content('');
@@ -32,7 +32,7 @@ function wp_trim_excerpt( $text = '' ) {
      *
      * @param string $more_string The string shown within the more link.
      */
-    $excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
+    $excerpt_more = $more_link ? apply_filters( 'excerpt_more', ' ' . '[&hellip;]' ) : '...';
     $text = wp_trim_words( $text, $excerpt_length, $excerpt_more );
   }
   /**
