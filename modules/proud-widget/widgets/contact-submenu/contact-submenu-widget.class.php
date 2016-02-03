@@ -56,7 +56,7 @@ class ContactSubmenu extends Core\ProudWidget {
           </a>
           </li><?php endif; ?>
         <?php foreach ($categories as $cat): ?>
-          <li <?php if($_GET['filter_categories'][0] == $cat->term_id): ?>class="active"<?php endif; ?>>
+          <li <?php if(!empty( $_GET['filter_categories'] ) && $_GET['filter_categories'][0] == $cat->term_id): ?>class="active"<?php endif; ?>>
             <a href="<?php echo esc_url('/' . $instance['contact_page'] . '?filter_categories[]=' . $cat->term_id) ?>"><?php echo $cat->name; ?></a>
           </li>
         <?php endforeach; ?>

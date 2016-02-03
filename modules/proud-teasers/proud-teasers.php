@@ -328,6 +328,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $meta = get_post_meta( $post->ID );
           break;
         case 'search':
+          global $proudsearch;
           $meta = get_post_meta( $post->ID );
           $search_meta = $proudsearch->post_meta( $post->post_type );
           break;
