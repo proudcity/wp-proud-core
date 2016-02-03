@@ -84,6 +84,7 @@ class Proudcore extends \ProudPlugin {
         'lat' => (float) get_option( 'lat', 34.7303688 ),
         'lng' => (float) get_option( 'lng', -86.5861037 ),
       ),
+      'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
     )));
     self::$libraries = new ProudLibaries;
     self::$layout = new \ProudLayout;
