@@ -47,6 +47,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('textarea');
     }
 
+    public function printEditor($id, $name, $value, $rows, $translate = false) {
+      include $this->template('editor');
+    }
+
     public function printOptionBox($type, $id, $name, $text, $value, $active, $translate = false) {
       include $this->template('option-box');
     }
@@ -59,6 +63,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       ?>
       <div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="form-group">
       <?php
+        // @todo: Should we set #name to #id if it isn't set?
         switch ($field['#type']) {
           case 'html':
             echo $field['#html'];
@@ -115,6 +120,18 @@ if ( ! class_exists( 'FormHelper' ) ) {
               $field['#name'], 
               $field['#value'], 
               !empty($field['#rows']) ? $field['#rows'] : 3, 
+              $this->form_id
+            );
+            $this->printDescription($field['#description']);
+            break;
+
+          case 'editor':
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+            $this->printEditor(
+              $field['#id'],
+              $field['#name'],
+              $field['#value'],
+              !empty($field['#rows']) ? $field['#rows'] : 10, 
               $this->form_id
             );
             $this->printDescription($field['#description']);

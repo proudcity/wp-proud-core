@@ -50,8 +50,10 @@ class ContactSubmenu extends Core\ProudWidget {
     $post = get_post(get_the_ID());
     ?>
       <ul class="nav nav-pills <?php if ($instance['format'] == 'stacked'): ?>nav-stacked submenu<?php endif; ?>">
-        <?php if ( !empty($instance['agency_page']) ): ?><li <?php if($post->slug == $instance['agency_page']): ?>class="active"<?php endif; ?>>
-          <a href="<?php echo esc_url('/' . $instance['agency_page']) ?>"><?php echo _x( 'Agencies', 'post name', 'wp-agency' ) ?></a>
+        <?php if ( !empty($instance['agency_page']) ): ?><li <?php if($post->post_name == $instance['agency_page']): ?>class="active"<?php endif; ?>>
+          <a href="<?php echo esc_url('/' . $instance['agency_page']) ?>">
+            <?php echo _x( 'Agencies', 'post name', 'wp-agency' ) ?>
+          </a>
           </li><?php endif; ?>
         <?php foreach ($categories as $cat): ?>
           <li <?php if($_GET['filter_categories'][0] == $cat->term_id): ?>class="active"<?php endif; ?>>

@@ -38,7 +38,7 @@ class GoogleTranslate extends Core\ProudWidget {
   public function printWidget( $args, $instance ) {
     ?>
     <!--<div class="dropdown translate">-->
-      <a href="#" id="translate" data-toggle="dropdown"><i class="fa fa-globe"></i> Translate</a>
+      <a href="#" id="translate" data-toggle="dropdown"><i class="fa fa-fw fa-globe"></i>Translate</a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="translate">
         <li>
           <div id="google_translate_element"></div>
