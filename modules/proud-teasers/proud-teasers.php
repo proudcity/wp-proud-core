@@ -255,7 +255,6 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         case 'table':
           echo '<div class="table-responsive"><table class="table table-striped">';
-          d($this->post_type);
           switch( $this->post_type ) {
             case 'agency': 
                echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',    
