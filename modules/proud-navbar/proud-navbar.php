@@ -74,8 +74,8 @@ function print_proud_navbar() {
   <div class="navbar navbar-header-region navbar-default">
     <div class="navbar-header"><div class="container">
       <h3 class="clearfix">
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="logo"><img style="height:38px;" class="logo pull-left" src="<?php echo get_proud_logo() ?>" alt="Home" title="Home"></a>
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand"><strong><?php bloginfo('name'); ?></strong></a>
+        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo"><img class="logo" src="<?php echo get_proud_logo() ?>" alt="Home" title="Home"></a>
+        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>
   </div>
