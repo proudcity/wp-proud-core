@@ -3,6 +3,18 @@
  * @author ProudCity
  */
 
+/**
+ *  Active navbar, so edit body class
+ */
+function proud_navbar_body_class( $classes ) {
+  $classes[] = 'proud-navbar-active';
+  return $classes;
+}
+add_filter( 'proud_body_class', 'proud_navbar_body_class' );
+
+/**
+ *  Helper prints logo
+ */
 function get_proud_logo() {
   $logo = get_theme_mod( 'proud_logo' );
   return $logo ? $logo : '/wp-content/uploads/2016/02/logo_sm.png'; //plugins_url( '/assets/images/logo-icon-white.png', __FILE__ );
@@ -81,7 +93,7 @@ function enqueue_proud_navbar_frontend() {
 add_action( 'wp_enqueue_scripts', 'enqueue_proud_navbar_frontend' );
 
 /**
- *  Prints the proud navbar
+ *  Prints the proud footer overlay
  */
 function print_proud_navbar_footer() {
   ?>

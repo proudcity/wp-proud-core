@@ -31,10 +31,21 @@ class ProudBar extends \ProudPlugin {
     $this->hook( 'wp_footer',  'proud_bar' );
     $this->hook( 'admin_footer', 'proud_bar' );
 
+    // Body classes
+    add_filter( 'proud_body_class', [$this, 'body_class'] );
+
     // This is needed for the demo angular app
     if ( 'example' === get_option('proud_stage', '') ) {
       $this->hook('init', 'allow_origin');
     }
+  }
+
+  /**
+   *  Active navbar, so edit body class
+   */
+  function body_class( $classes ) {
+    $classes[] = 'proud-bar-active';
+    return $classes;
   }
 
 
