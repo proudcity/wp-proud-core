@@ -6,7 +6,7 @@
     Get started with ProudCity
     <a href="//proudcity.com/start" class="proudbar-btn">Claim your city</a>  
   <?php else: ?>
-    Welcome to our future website!
+    <span class="hidden-xs">Welcome to our future website!</span>
     <a href="https://proudcity.typeform.com/to/duZiun" class="proudbar-btn typeform-share" data-mode="2">Feedback</a>
     <?php if (current_user_can( 'manage_options' )): ?> 
       <a href="//proudcity.com/plans" class="proudbar-btn proudbar-btn-circle pull-right" target="_blank" title="Remove this"><i class="fa fa-times"></i></a>
