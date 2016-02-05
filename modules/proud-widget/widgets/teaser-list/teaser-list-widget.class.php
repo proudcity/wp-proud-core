@@ -274,7 +274,7 @@ class TeaserFilterWidget extends Core\ProudWidget {
 class TeaserFilterSearchWidget extends Core\ProudWidget {
   function __construct() {
     parent::__construct(
-      'proud_teaser_filters', // Base ID
+      'proud_teaser_search', // Base ID
       __( 'Content list search box', 'wp-proud-core' ), // Name
       array( 'description' => __( 'Adds a search box for a specific content list', 'wp-proud-core' ), ) // Args
     );
