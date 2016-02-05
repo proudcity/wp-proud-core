@@ -120,6 +120,19 @@
 
     $(document).ready(function() {
       $body = $('body');
+
+      // Listen for esc key
+      $body.keydown(function(e) {  //keypress did not work with ESC;
+        if (e.which == '27') {
+          var closing = true;
+          _.map(layerOpen, function(val) {
+            if(val && closing) {
+              self.closeLayers();
+              closing = false;
+            }
+          });
+        }
+      }); 
     })
 
     return self;
