@@ -18,7 +18,7 @@
 
     // Closes overlays + menus
     // localLayers = ['menu', 'search']
-    self.closeLayers = function(localLayers) {
+    self.closeLayers = function(localLayers, callback) {
       // Default is all
       localLayers = localLayers || _.keys(layerOpen);
       var classes = [];
@@ -28,14 +28,20 @@
       });
       // Remove
       $body.removeClass(classes.join(' '));
+      if(callback) {
+        callback();
+      }
     };
 
     // Closes overlays + menus
-    self.openLayer = function(layer) {
+    self.openLayer = function(layer, callback) {
       setTimeout(function() {
         $body.addClass(layerClasses[layer]);
         layerOpen[layer] = true;
         $body.trigger('scroll');
+        if(callback) {
+          callback();
+        }
       }, 50);
     };
 
@@ -51,7 +57,7 @@
       }
     };
 
-    self.toggleOverlay = function(item) {
+    self.toggleOverlay = function(item, callback) {
       var thisLayer, otherLayer;
       switch(item) {
         case 'answers':
@@ -70,12 +76,12 @@
 
       // Close all
       if(layerOpen[thisLayer]) {
-        self.closeLayers();
+        self.closeLayers(null, callback);
       }
       else {
         // Close others, open ours
-        self.closeLayers([otherLayer, 'menu']);
-        self.openLayer(thisLayer);
+        self.closeLayers([otherLayer, 'menu'], callback);
+        self.openLayer(thisLayer, callback);
       }
     };
 
@@ -88,7 +94,7 @@
         type:     "proudNavClick",
         event:    data,
         hash:     hash,
-        callback: function(open, scrollId, scrollOffset, forceClose) {
+        callback: function(open, scrollId, scrollOffset, forceClose, callback) {
           // Scrollto id
           if(scrollId) {
             var $scroll = $("#" + scrollId),
@@ -102,11 +108,11 @@
           }
           // Oper layer
           if(open) {
-            self.toggleOverlay(data);
+            self.toggleOverlay(data, callback);
           }
           // Force close layers
           if(forceClose) {
-            self.closeLayers(forceClose);
+            self.closeLayers(forceClose, callback);
           }
         }
       });

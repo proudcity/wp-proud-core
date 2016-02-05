@@ -39,7 +39,7 @@ class ProudLibaries {
       'js_footer' => true,
       'deps' => ['jquery','proud']
     ];
-
+    
     self::$libraries['fontawesome-iconpicker'] = [
       'title' => 'Fontawesome Icon-picker',
       'js' => [
@@ -185,6 +185,7 @@ class ProudLibaries {
     if( $router_animate ) {
       $this->addBundleToLoad( 'angular-router-animate' );
     }
+    // Lazy loading
     if( $lazy ) {
       $this->addBundleToLoad( 'angular-lazy' );
     }
