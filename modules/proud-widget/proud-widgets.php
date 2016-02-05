@@ -16,6 +16,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/jumbotron-header/jumbotron-hea
 require_once plugin_dir_path(__FILE__) . 'widgets/submenu/submenu-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/page-title/page-title-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-submenu/contact-submenu-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form-dropdown/gravity-form-dropdown-widget.class.php';
 
 
 
