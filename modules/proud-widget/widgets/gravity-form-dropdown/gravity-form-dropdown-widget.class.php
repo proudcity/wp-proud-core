@@ -17,7 +17,7 @@ class GravityFormDropdown extends Core\ProudWidget {
 
   function initialize() {
     $this->settings = [
-      'link_title' => [
+      'form_id' => [
         '#title' => 'Gravity form ID',
         '#type' => 'text',
         '#default_value' => '',
@@ -40,7 +40,7 @@ class GravityFormDropdown extends Core\ProudWidget {
     <!--<div class="dropdown translate">-->
       <a href="#" id="sub-dropdown" data-toggle="dropdown"><i class="fa fa-fw fa-envelope"></i>Subscribe <!--<span class="caret"></span>--></a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="sub-dropdown">
-        <li style="padding: 10px 15px;">[gravityform id="1" title="false" description="false"]</li>
+        <li style="padding: 10px 15px;">[gravityform id="<?php echo $instance['form_id'] ?>" title="false" description="false"]</li>
       </ul>
     <!--</div>-->
     <?php
