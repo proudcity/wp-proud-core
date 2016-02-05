@@ -199,6 +199,9 @@ class JumbotronHeader extends Core\ProudWidget {
   function printWidget( $args, $instance ) {
     // Container Styles
     $arr_styles = [];
+    // init classes
+    $classes = [];
+
     if(!empty( $instance['background']) ) {
       switch ( $instance['background'] ) {
 
@@ -219,8 +222,16 @@ class JumbotronHeader extends Core\ProudWidget {
 
         case 'image':
           // Allow [featured-image]
-          $back_image = esc_url( do_shortcode($instance['image']) );
+          $url = do_shortcode($instance['image']);
+          $back_image = esc_url( $url );
           $background_style = "background-image:url('$back_image');";
+          
+          // @todo: should we save image, not just url?
+          global $wpdb;
+          $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+          $media = get_post($media_id);
+          $caption = $media->post_excerpt;
+          array_push($classes, 'media');
           break;
       }
 
@@ -231,15 +242,13 @@ class JumbotronHeader extends Core\ProudWidget {
     $random_id = 'asdkljhaskjd' . rand();
     // init file location
     $file = plugin_dir_path( __FILE__ ) . 'templates/';
-    // init classes
-    $classes = [];
 
     $content = Core\sanitize_input_text_output($instance['text']);
   
     // normal header type
     if( $instance['headertype'] == 'header' ) {
       // Classes
-      $classes = ['jumbotron'];
+      $classes[] = 'jumbotron';
       if ( $instance['background'] == 'pattern' || $instance['background'] == 'image' ) {
         $classes[] = 'jumbotron-image';
       }
@@ -252,7 +261,7 @@ class JumbotronHeader extends Core\ProudWidget {
     // We're doing a "full" style jumbotron
     else if( $instance['headertype'] == 'full' ) {
       // Classes
-      $classes = ['full-image'];
+      $classes[] = 'full-image';
       // Box styles
       // Init classes
       $boxclasses = ['jumbotron', 'jumbotron-image', 'full'];
@@ -264,7 +273,7 @@ class JumbotronHeader extends Core\ProudWidget {
     }    
     else {
       // Classes
-      $classes = ['jumbotron'];
+      $classes[] = 'jumbotron';
       // Inverse?
       if ( $instance['make_inverse'] == 'yes' ) {
         $classes[] = 'jumbotron-inverse';
