@@ -36,11 +36,16 @@ class GravityFormDropdown extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
+    $form = '';
+    if( !empty( $instance['form_id'] ) ) {
+      $form = Core\sanitize_input_text_output( '[gravityform id="' . $instance['form_id'] . '" title="false" description="false"]', true );
+    }
+    
     ?>
     <!--<div class="dropdown translate">-->
       <a href="#" id="sub-dropdown" data-toggle="dropdown"><i class="fa fa-fw fa-envelope"></i>Subscribe <!--<span class="caret"></span>--></a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="sub-dropdown">
-        <li style="padding: 10px 15px;">[gravityform id="<?php echo $instance['form_id'] ?>" title="false" description="false"]</li>
+        <li style="padding: 10px 15px;"><?php echo $form ?></li>
       </ul>
     <!--</div>-->
     <?php
