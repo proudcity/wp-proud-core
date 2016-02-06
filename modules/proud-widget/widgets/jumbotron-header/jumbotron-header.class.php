@@ -204,7 +204,6 @@ class JumbotronHeader extends Core\ProudWidget {
 
     if(!empty( $instance['background']) ) {
       switch ( $instance['background'] ) {
-
         case 'solid':
           $solid_color = $instance['solid_color_value'];
           $background_style  = "background-color: $solid_color;";
@@ -235,7 +234,9 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
       }
 
-      $arr_styles[] = $background_style;
+      if( !empty( $background_style ) ) {
+        $arr_styles[] = $background_style;
+      }
     }
 
     // Init a random id for the element

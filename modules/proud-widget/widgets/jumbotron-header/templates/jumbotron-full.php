@@ -4,5 +4,5 @@
       <div class="jumbotron-bg"><?php print $content; ?></div>
     </div></div></div>
   </div></div>
-  <?php if ($caption): ?><div class="media-byline text-left"><span><?php echo $caption ?></span></div><?php endif; ?>
+  <?php if ( !empty( $caption ) ): ?><div class="media-byline text-left"><span><?php echo $caption ?></span></div><?php endif; ?>
 </div>
