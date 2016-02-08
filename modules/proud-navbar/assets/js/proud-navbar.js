@@ -146,11 +146,14 @@
     $('[data-proud-navbar]').once('proud-navbar', function() {
       var $self = $(this);
       $self.click(function(e) {
-        e.preventDefault();
-        var data = $self.data('proud-navbar');
+        // Allow for link override
+        if(!$self.data('click-external')) {
+          e.preventDefault();
+          var data = $self.data('proud-navbar');
 
-        if(data) {
-          proudNav.triggerOverlay(data, $self.data('proud-navbar-hash'));
+          if(data) {
+            proudNav.triggerOverlay(data, $self.data('proud-navbar-hash'));
+          }
         }
       });
     });
