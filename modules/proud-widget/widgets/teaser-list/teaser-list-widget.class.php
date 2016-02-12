@@ -70,7 +70,7 @@ class TeaserListWidget extends Core\ProudWidget {
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',
           '#options' => $options,
-          '#default_value' => array_values($options),
+          '#default_value' => array_keys($options),
           '#description' => ''
         ];
       }
