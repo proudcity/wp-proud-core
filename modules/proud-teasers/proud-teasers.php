@@ -79,6 +79,8 @@ if ( !class_exists( 'TeaserList' ) ) {
     public function get_taxonomy( $post_type = false ) {
 
       switch( $post_type ? $post_type : $this->post_type ) {
+        case 'event':
+          return 'event-categories';
         case 'staff-member':
           return 'staff-member-group';
         case 'post':
