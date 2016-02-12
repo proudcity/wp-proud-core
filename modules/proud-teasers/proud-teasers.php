@@ -60,7 +60,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->process_pagination( $args );
       }
 
-      print_r($args);
+      //d($args);
 
       $this->add_sort($args);
 
