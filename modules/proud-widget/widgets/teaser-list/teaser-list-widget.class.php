@@ -178,9 +178,6 @@ class TeaserListWidget extends Core\ProudWidget {
     $terms = [];
     if( !empty( $instance['proud_teaser_terms'] ) ) {
       $terms = $instance['proud_teaser_terms'];
-      d($terms);
-      unset($terms[0]);
-      d($terms);
       $terms = array_keys($terms);
       $terms = count($terms) ? $terms : false;
     }
