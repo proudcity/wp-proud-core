@@ -59,16 +59,14 @@ if ( !class_exists( 'TeaserList' ) ) {
       if($pagination) {
         $this->process_pagination( $args );
       }
-
-      //d($args);
-
+      // Sort posts
       $this->add_sort($args);
-
+      // Final build on args
       $args = array_merge( [
         'post_type' => $this->post_type == 'search' ? 'any' : $this->post_type, 
         'post_status' => 'publish',
-        'update_post_term_cache' => false, // don't retrieve post terms
-        'update_post_meta_cache' => false, // don't retrieve post meta
+        'update_post_term_cache' => true, // don't retrieve post terms
+        'update_post_meta_cache' => true, // don't retrieve post meta
       ] , $args );
       $this->query = new \WP_Query( $args );
     }
@@ -147,7 +145,21 @@ if ( !class_exists( 'TeaserList' ) ) {
         }
       }
 
-      
+      // Post specific options
+      switch( $this->post_type ) {
+        case 'job_listing': 
+          $this->filters['filter_show_filled'] = [
+            '#id' => 'filter_show_filled',
+            '#title' => __( 'Show filled positions?', 'proud-teaser' ),
+            '#type' => 'checkbox',
+            '#name' => 'filter_show_filled',
+            '#return_value' => '1',
+            '#label_above' => true,
+            '#replace_title' => __( 'Yes', 'proud-teaser' ),
+            '#default_value' => false
+          ];
+          break;
+      }
     }
 
     /**
@@ -180,6 +192,21 @@ if ( !class_exists( 'TeaserList' ) ) {
             case $this->search_key:
               $args['s'] = sanitize_text_field( $_REQUEST[$key] );
               break;
+
+            // Jobs show filtered positions
+            case 'filter_show_filled':
+              $args['meta_query'] = array(
+                  'relation' => 'OR',
+                  array(
+                      'key' => '_filled',
+                      'compare' => 'NOT EXISTS'
+                  ),
+                  array(
+                      'key' => '_filled',
+                      'compare' => 'EXISTS'
+                  )
+              );
+
           }
           $this->filters[$key]['#value'] = $_REQUEST[$key];
         }
@@ -202,6 +229,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Adds sort
      */
     private function add_sort(&$args) {
+
       switch( $this->post_type ) {
         case 'post':
           $args['orderby'] = 'date';
@@ -213,11 +241,28 @@ if ( !class_exists( 'TeaserList' ) ) {
           $args['order']   = 'ASC';
           break;
 
+        case 'job_listing': 
+          // Featured is the "sticky" option for jobs
+          $args['orderby'] = ['_featured' => 'DESC', 'date' => 'DESC'];
+          $args['meta_key']     = '_featured';
+          // If the filter for "Show filled" is NOT active
+          if( !isset( $args['meta_query'] ) ) {
+            $args['meta_query'] = array(
+                'relation' => 'OR',
+                array(
+                    'key' => '_filled',
+                    'compare' => '!=',
+                    'value' => '1'
+                )
+            );
+          }
+          break;
+
         case 'event':
           // http://www.billerickson.net/wp-query-sort-by-meta/
-          $args['orderby'] = 'meta_value_num';
-          $args['meta_key']     = '_start_ts';
-          $args['order']    = 'ASC';
+          $args['orderby']    = 'meta_value_num';
+          $args['meta_key']   = '_start_ts';
+          $args['order']      = 'ASC';
           $args['meta_query'] = array(
               'relation' => 'AND',
               array(

@@ -169,28 +169,31 @@ if ( ! class_exists( 'FormHelper' ) ) {
               </div>
               <?php 
             }
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'checkbox':
+            if( !empty( $field['#label_above'] ) )
+              $this->printFormTextLabel('', $field['#title'], $this->form_id, array('class' => 'option-box-label'));
             ?>
-            <?php if(!empty($field['#label_above'])): ?>
-              <?php $this->printFormTextLabel('', $field['#title'], $this->form_id); ?>
-            <?php endif; ?> 
             <div class="<?php echo $field['#type'] ?>">
-              <?php $this->printOptionBox(
-                $field['#type'], 
-                $field['#id'], 
-                $field['#name'], 
-                !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
-                $field['#return_value'],
-                $field['#value'], 
-                $this->form_id
-              ); ?>
-              <?php $this->printDescription($field['#description']) ?>
+            <?php
+            $this->printOptionBox(
+              $field['#type'], 
+              $field['#id'], 
+              $field['#name'], 
+              !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
+              $field['#return_value'],
+              $field['#value'], 
+              $this->form_id
+            );
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
+            ?>
             </div>
             <?php
-            break;
+          break;
           
           default:
             ?>
