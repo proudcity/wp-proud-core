@@ -80,14 +80,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
             <?php
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'select_media':
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
             $this->printImageUpload($field['#value'], $this->form_id);
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'text':
@@ -98,7 +100,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
             // Input args, placeholder, after
             $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'select':
@@ -110,7 +113,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
               $field['#options'], 
               $this->form_id
             );
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'textarea':
@@ -122,7 +126,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
               !empty($field['#rows']) ? $field['#rows'] : 3, 
               $this->form_id
             );
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'editor':
@@ -134,7 +139,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
               !empty($field['#rows']) ? $field['#rows'] : 10, 
               $this->form_id
             );
-            $this->printDescription($field['#description']);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
             break;
 
           case 'checkboxes':
