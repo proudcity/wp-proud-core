@@ -98,8 +98,8 @@ class ProudSOPagebuilder {
     $widgets['AgencyHours']['icon'] = 'fa fa-building';
     $widgets['AgencyContact']['icon'] = 'fa fa-building';*/
 
-    unset($widgets['DLM_Widget_Downloads']);
-
+    unset($widgets['WP_Job_Manager_Widget_Recent_Jobs']);
+    unset($widgets['WP_Job_Manager_Widget_Featured_Jobs']);
 
     //print_r($widgets);
     return $widgets;
