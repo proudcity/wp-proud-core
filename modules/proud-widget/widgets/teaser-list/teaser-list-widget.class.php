@@ -5,22 +5,8 @@
 
 use Proud\Core;
 
-class TeaserFilterTracker {
-  static $teaser_class;
-
-  function __construct($teaser_class = null) {
-    if($teaser_class) {
-      self::$teaser_class = $teaser_class;
-    }
-  }
-
-  public function print_filters($include_filters = null, $button_text = 'Filter') {
-
-    if( self::$teaser_class ) {
-      self::$teaser_class->print_filters($include_filters, $button_text);
-    }
-  }
-}
+// Include filter widgets
+require_once plugin_dir_path(__FILE__) . 'teaser-filter-widgets.php';
 
 class TeaserListWidget extends Core\ProudWidget {
 
@@ -84,7 +70,7 @@ class TeaserListWidget extends Core\ProudWidget {
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',
           '#options' => $options,
-          '#default_value' => array_values($options),
+          '#default_value' => array_keys($options),
           '#description' => ''
         ];
       }
@@ -192,7 +178,6 @@ class TeaserListWidget extends Core\ProudWidget {
     $terms = [];
     if( !empty( $instance['proud_teaser_terms'] ) ) {
       $terms = $instance['proud_teaser_terms'];
-      unset($terms[0]);
       $terms = array_keys($terms);
       $terms = count($terms) ? $terms : false;
     }
@@ -229,155 +214,8 @@ class TeaserListWidget extends Core\ProudWidget {
   }
 }
 
-class TeaserFilterWidget extends Core\ProudWidget {
-  function __construct() {
-    parent::__construct(
-      'proud_teaser_filters', // Base ID
-      __( 'Content list filters', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Adds a filter box for a specific content list', 'wp-proud-core' ), ) // Args
-    );
-  }
-
-  function initialize() { 
-    $this->settings = [];
-  }
-
-  /**
-   * Determines if content empty, show widget, title ect?  
-   *
-   * @see self::widget()
-   *
-   * @param array $args     Widget arguments.
-   * @param array $instance Saved values from database.
-   */
-  public function hasContent($args, &$instance) {
-    $instance['teaser_filter_class'] = new TeaserFilterTracker();
-    return $instance['teaser_filter_class']::$teaser_class;
-  }
-
-  /**
-   * Front-end display of widget.
-   *
-   * @see WP_Widget::widget()
-   *
-   * @param array $args     Widget arguments.
-   * @param array $instance Saved values from database.
-   */
-  public function printWidget( $args, $instance ) {
-    extract($instance);
-    $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-filters.php';
-    // Include the template file
-    include( $file );
-  }
-}
-
-class TeaserFilterSearchWidget extends Core\ProudWidget {
-  function __construct() {
-    parent::__construct(
-      'proud_teaser_search', // Base ID
-      __( 'Content list search box', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Adds a search box for a specific content list', 'wp-proud-core' ), ) // Args
-    );
-  }
-
-  function initialize() { 
-    $this->settings = [];
-  }
-
-  /**
-   * Determines if content empty, show widget, title ect?  
-   *
-   * @see self::widget()
-   *
-   * @param array $args     Widget arguments.
-   * @param array $instance Saved values from database.
-   */
-  public function hasContent($args, &$instance) {
-    $instance['teaser_filter_class'] = new TeaserFilterTracker();
-    return $instance['teaser_filter_class']::$teaser_class;
-  }
-
-  /**
-   * Front-end display of widget.
-   *
-   * @see WP_Widget::widget()
-   *
-   * @param array $args     Widget arguments.
-   * @param array $instance Saved values from database.
-   */
-  public function printWidget( $args, $instance ) {
-    extract($instance);
-    $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-filter-search.php';
-    // Include the template file
-    include( $file );
-  }
-}
-
-// Posts
-class PostTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_post_teaser_list', // Base ID
-      __( 'News Posts list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of News Posts in a category with a display style', 'wp-proud-core' ), ) // Args
-    );
-
-    $this->post_type = 'post';
-  }
-}
-
-// Events
-class EventTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_event_teaser_list', // Base ID
-      __( 'Events list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Events in a category with a display style', 'wp-proud-core' ), ) // Args
-    );
-
-    $this->post_type = 'event';
-  }
-}
-
-// Documents
-class DocumentTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_document_teaser_list', // Base ID
-      __( 'Documents list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Documents in a category with a display style', 'wp-proud-core' ), ) // Args
-    );
-
-    $this->post_type = 'document';
-  }
-}
-
-// Jobs
-class JobTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_job_teaser_list', // Base ID
-      __( 'Jobs list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Job Listings in a category with a display style', 'wp-proud-core' ), ) // Args
-    );
-
-    $this->post_type = 'job_listing';
-  }
-}
-
-// Contacts
-class ContactTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_contact_teaser_list', // Base ID
-      __( 'Contacts list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of staff Contacts in a category with a display style', 'wp-proud-core' ), ) // Args
-    );
-
-    $this->post_type = 'staff-member';
-  }
-}
-
+// Post-type specific widgets
+require_once plugin_dir_path(__FILE__) . 'teasers-list-post-specific-widgets.php';
 
 // register widgets
 function register_teaser_list_widget() {
