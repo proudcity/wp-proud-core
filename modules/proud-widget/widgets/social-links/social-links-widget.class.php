@@ -24,6 +24,7 @@ class SocialLinksWidget extends Core\ProudWidget {
       if( !empty( $social ) ) {
         $options = [];
         foreach ($social as $value) {
+          $value = trim( $value );
           $account = $this->socialData($value);
           $options[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
             $account['url'],  
