@@ -33,7 +33,7 @@ class LogoWidget extends Core\ProudWidget {
       <div class="panel-pane pane-page-logo">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
-            <img src="<?php echo esc_url( get_proud_logo() ); ?>" style="max-height:80px;" alt="Home">
+            <img src="<?php echo esc_url( get_proud_logo() ); ?>" alt="Home">
           </a>  
         </div>
       </div>
