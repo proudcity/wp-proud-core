@@ -20,6 +20,18 @@ class ShareLinks extends Core\ProudWidget {
   }
 
   /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent($args, &$instance) {
+    return true;
+  }
+
+  /**
    * Front-end display of widget.
    *
    * @see WP_Widget::widget()

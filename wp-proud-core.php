@@ -185,10 +185,10 @@ class Proudcore extends \ProudPlugin {
 
   // If this post is a page, get the menu information
   public function getPageInfo() {
-    if (is_page()) {
+    if ( is_page( ) ) {
       global $pageInfo;
       global $wpdb;
-      if (empty($pageInfo)) {
+      if ( empty( $pageInfo ) ) {
         // @todo: make this more elegant / cached
         // @todo: this should be in proud core (in some kind of hook_init)
         $row = $wpdb->get_row( $wpdb->prepare( '
@@ -204,7 +204,7 @@ class Proudcore extends \ProudPlugin {
 
           if ( 'primary-links' === $row->slug ) {
             $pageInfo['parent_link'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
-            if ($pageInfo['parent_link']) {
+            if (!empty( $pageInfo['parent_link'] ) && $pageInfo['parent_link'] ) {
               $pageInfo['parent_post'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object_id', true );
             }
           }

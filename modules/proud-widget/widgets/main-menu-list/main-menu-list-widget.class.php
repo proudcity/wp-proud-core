@@ -20,6 +20,18 @@ class MainMenuList extends Core\ProudWidget {
   }
 
   /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent($args, &$instance) {
+    return has_nav_menu('primary_navigation');
+  }
+
+  /**
    * Front-end display of widget.
    *
    * @see WP_Widget::widget()
@@ -28,25 +40,23 @@ class MainMenuList extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
-    if(has_nav_menu('primary_navigation')) {
-      wp_nav_menu( [ 
-        'theme_location'    => 'primary_navigation',
-        'container'         => 'div',
-        'container_class'   => '',
-        'container_id'      => '',
-        'menu_class'        => 'list-unstyled',
-        'menu_id'           => 'main-menu-list',
-        'echo'              => true,
-        'fallback_cb'       => 'wp_page_menu',
-        'before'            => '',
-        'after'             => '',
-        'link_before'       => '',
-        'link_after'        => '',
-        'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-        'depth'             => 1,
-        'walker'            => ''
-      ] );
-    }
+    wp_nav_menu( [ 
+      'theme_location'    => 'primary_navigation',
+      'container'         => 'div',
+      'container_class'   => '',
+      'container_id'      => '',
+      'menu_class'        => 'list-unstyled',
+      'menu_id'           => 'main-menu-list',
+      'echo'              => true,
+      'fallback_cb'       => 'wp_page_menu',
+      'before'            => '',
+      'after'             => '',
+      'link_before'       => '',
+      'link_after'        => '',
+      'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
+      'depth'             => 1,
+      'walker'            => ''
+    ] );
   }
 }
 

@@ -17,14 +17,27 @@ class PageTitle extends Core\ProudWidget {
     }
 
     /**
+     * Determines if content empty, show widget, title ect?  
+     *
+     * @see self::widget()
+     *
+     * @param array $args     Widget arguments.
+     * @param array $instance Saved values from database.
+     */
+    public function hasContent($args, &$instance) {
+        $instance['title'] = get_the_title (  );
+        return true;
+    }
+
+    /**
      * Outputs the content of the widget
      *
      * @param array $args
      * @param array $instance
      */
     public function printWidget( $args, $instance ) {
-      $title = get_the_title (  );
-      ?><h1><?php print $title; ?></h1><?php
+      
+      ?><h1><?php print $instance['title'] ?></h1><?php
     }
 }
 

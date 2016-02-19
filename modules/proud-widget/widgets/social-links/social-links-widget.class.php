@@ -18,30 +18,44 @@ class SocialLinksWidget extends Core\ProudWidget {
 
   function initialize() {
     // @todo: this should be called from proud-teasers.php
-    $social = get_option('social_feeds');
+    $social = $this->getSocialData();
     if( !empty( $social ) ) {
-      $social = explode( PHP_EOL, $social );
-      if( !empty( $social ) ) {
-        $options = [];
-        foreach ($social as $value) {
-          $value = trim( $value );
-          $account = $this->socialData($value);
-          $options[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
-            $account['url'],  
-            $account['service']
-          );
-        }
-        $this->settings += [
-          'social_accounts' => [
-            '#title' => __( 'Limit to social account', 'proud-teaser' ),
-            '#type' => 'checkboxes',
-            '#options' => $options,
-            '#default_value' => array_keys($options),
-            '#description' => 'Choose the social acounts that should display',
-          ]
-        ];
-
+      $this->settings += [
+        'restrict_accounts' => [
+          '#type' => 'checkbox',
+          '#title' => 'Limit visible social accounts?',
+          '#description' => 'Limit visible social accounts?',
+          '#return_value' => '1',
+          '#label_above' => true,
+          '#replace_title' => 'Yes',
+          '#default_value' => false
+        ]
+      ];
+      foreach ($social as $value) {
+        $account = $this->extractSocialData($value);
+        $options[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
+          $account['url'],  
+          $account['service']
+        );
       }
+      $this->settings += [
+        'social_accounts' => [
+          '#title' => __( 'Limit to social account', 'proud-teaser' ),
+          '#type' => 'checkboxes',
+          '#options' => $options,
+          '#default_value' => array_keys($options),
+          '#description' => 'Choose the social acounts that should display',
+          '#states' => [
+            'visible' => [
+              'restrict_accounts' => [
+                'operator' => '!=',
+                'value' => [false],
+                'glue' => '||'
+              ],
+            ],
+          ]
+        ]
+      ];
     }
   }
 
@@ -49,7 +63,7 @@ class SocialLinksWidget extends Core\ProudWidget {
    * Helper function returns useful data for account
    * $string: [service]:[account] eg: 'twitter:proudcity'
    */
-  function socialData($string) {
+  function extractSocialData($string) {
     $account = explode( ':', $string );
     $url = $this->accountUrl( $account[0], $account[1] );
     return [
@@ -57,6 +71,19 @@ class SocialLinksWidget extends Core\ProudWidget {
       'account' => $account[1],
       'url'     => $url
     ];
+  }
+
+  /**
+   * Helper function gets social accounts from options
+   */
+  function getSocialData() {
+    $social = get_option('social_feeds');
+    if( !empty( $social ) ) {
+      $social = explode( PHP_EOL, $social );
+      // Empty? Trim whitespace
+      return !empty( $social ) ? array_filter( array_map('trim', $social) ) : [];
+    }
+    return [];
   }
 
   /**
@@ -81,10 +108,20 @@ class SocialLinksWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent($args, &$instance) {
-    if( !empty( $instance['social_accounts'] ) ) {
-      foreach ($instance['social_accounts'] as $key => $value) {
+    $social = [];
+    if( !empty($instance['restrict_accounts'] ) && !empty( $instance['social_accounts'] ) ) {
+      $social = $instance['social_accounts'];
+    }
+    else {
+      $social = $this->getSocialData();
+      // needs array( MEANINGFUL => ) 
+      $social = array_combine($social, $social);
+    }
+    // We have values, go ahead
+    if( !empty( $social ) ) {
+      foreach ($social as $key => $value) {
         if( $value ) {
-          $instance['social_accounts'][$key] = $this->socialData($value);
+          $instance['social_accounts'][$key] = $this->extractSocialData($value);
         }
       }
       return true;

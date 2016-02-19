@@ -20,6 +20,20 @@ class LogoWidget extends Core\ProudWidget {
   }
 
   /**
+   * Determines if content empty, show widget, title ect?  
+   *
+   * @see self::widget()
+   *
+   * @param array $args     Widget arguments.
+   * @param array $instance Saved values from database.
+   */
+  public function hasContent($args, &$instance) {
+    $instance['logo'] = get_proud_logo();
+    return !empty( $instance['logo'] );
+  }
+
+
+  /**
    * Front-end display of widget.
    *
    * @see WP_Widget::widget()
@@ -33,7 +47,7 @@ class LogoWidget extends Core\ProudWidget {
       <div class="panel-pane pane-page-logo">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
-            <img src="<?php echo esc_url( get_proud_logo() ); ?>" alt="Home">
+            <img src="<?php echo $instance['logo']; ?>" alt="Home">
           </a>  
         </div>
       </div>

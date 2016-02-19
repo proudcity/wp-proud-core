@@ -154,7 +154,7 @@ abstract class ProudWidget extends \WP_Widget {
 
         // How many of these do we have saved ?
         // TODO, fix this
-        $count = 8;//!empty( $instance[$id] ) ? count($instance[$id]) : 1; 
+        $count = !empty( $instance[$id] ) ? count($instance[$id]) : 1; 
         // Init field collection
         $field['#items'] = [];
         // Run through any saved field items
@@ -270,13 +270,17 @@ abstract class ProudWidget extends \WP_Widget {
       $args['before_title']  = '<h2>';
       $args['after_title']   = '</h2>';
     }
+    // do we print??
+    $has_content = $this->hasContent( $args, $instance );
     ?>
-    <?php echo $args['before_widget'] ?>
-      <?php if( $this->hasContent( $args, $instance ) && !empty( $instance['title'] ) ): ?>
-        <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
-      <?php endif; ?>
-      <?php $this->printWidget($args, $instance); ?>
-    <?php echo $args['after_widget'] ?>
+    <?php if( $has_content ): ?>
+      <?php echo $args['before_widget'] ?>
+        <?php if( !empty( $instance['title'] ) ): ?>
+          <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
+        <?php endif; ?>
+        <?php $this->printWidget($args, $instance); ?>
+      <?php echo $args['after_widget'] ?>
+    <?php endif; ?>
     <?php
   }
 }
