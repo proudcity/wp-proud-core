@@ -25,7 +25,7 @@ class PageTitle extends Core\ProudWidget {
      * @param array $instance Saved values from database.
      */
     public function hasContent($args, &$instance) {
-        $instance['title'] = get_the_title (  );
+        $instance['page-title'] = get_the_title (  );
         return true;
     }
 
@@ -37,7 +37,7 @@ class PageTitle extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
       
-      ?><h1><?php print $instance['title'] ?></h1><?php
+      ?><h1><?php print $instance['page-title'] ?></h1><?php
     }
 }
 
