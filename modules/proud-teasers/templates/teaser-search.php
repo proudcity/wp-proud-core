@@ -1,4 +1,4 @@
-<div <?php post_class( "teaser-list search-teaser" ); ?>>
+<div <?php post_class( "teaser search-teaser" ); ?>>
   <div class="row">
     <div class="col-md-12">
       <div class="search-title">

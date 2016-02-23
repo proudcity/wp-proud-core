@@ -293,6 +293,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_wrapper_open() {
       switch( $this->display_type ) {
+        case 'search':
         case 'list':
           echo '<div class="teaser-list">';
           break;
