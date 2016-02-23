@@ -10,7 +10,6 @@ class ContactSubmenu extends Core\ProudWidget {
       array( 'description' => __( "Lists Agencies and Contact categories", 'wp-agency' ), ) // Args
     );
   }
-
   
   function initialize() {
     $this->settings += [
@@ -24,6 +23,24 @@ class ContactSubmenu extends Core\ProudWidget {
         ),
         '#default_value' => 'stacked',
       ],
+    ];
+    // Get answers topics
+    $terms = get_categories( ['type' => 'staff-member', 'taxonomy' => 'staff-member-group'] );
+    $options = [];
+    if( !empty( $terms ) && empty( $terms['errors'] ) ) {
+      foreach ( $terms as $term ) {
+        $options[$term->slug] = $term->name;
+      }
+    }
+    $this->settings += [
+      'layers' => [
+        '#title' => 'Contact categories to show',
+        '#type' => 'checkboxes',
+        '#options' => $options,
+        '#default_value' => ['all'],
+      ],
+    ];
+    $this->settings += [
       'agency_page' => [
         '#type' => 'text',
         '#title' => 'Agency contact page',
@@ -55,11 +72,11 @@ class ContactSubmenu extends Core\ProudWidget {
             <?php echo _x( 'Agencies', 'post name', 'wp-agency' ) ?>
           </a>
           </li><?php endif; ?>
-        <?php foreach ($categories as $cat): ?>
+        <?php foreach ($categories as $cat): ?><?php if( !empty($instance['layers']['all']) || !empty($instance['layers'][$cat->slug]) ): ?>
           <li <?php if(!empty( $_GET['filter_categories'] ) && $_GET['filter_categories'][0] == $cat->term_id): ?>class="active"<?php endif; ?>>
             <a href="<?php echo esc_url('/' . $instance['contact_page'] . '?filter_categories[]=' . $cat->term_id) ?>"><?php echo $cat->name; ?></a>
           </li>
-        <?php endforeach; ?>
+        <?php endif; ?><?php endforeach; ?>
       </ul>
     <?php
   }
