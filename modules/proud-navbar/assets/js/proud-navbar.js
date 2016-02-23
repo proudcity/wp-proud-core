@@ -99,7 +99,7 @@
           if(scrollId) {
             var $scroll = $("#" + scrollId),
                 scrollOffset = scrollOffset || 0,
-                offset = $body.hasClass('proud-toolbar-active') ? 150 : 100;
+                offset = $body.hasClass('admin-bar') ? 170 : 100;
             if($scroll.length) {
               $('html, body').animate({
                   scrollTop: $scroll.offset().top - (offset + scrollOffset)
