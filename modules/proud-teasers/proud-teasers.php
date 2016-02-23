@@ -48,6 +48,8 @@ if ( !class_exists( 'TeaserList' ) ) {
             'operator' => 'IN',
           ]
         ];
+
+        $this->terms = $terms;
       }
 
       // Attach filters
@@ -281,6 +283,11 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'search':
           break;
 
+        case 'document':
+          $args['orderby'] = 'date';
+          $args['order']   = 'DESC';
+          break;
+
         default:
           $args['orderby'] = 'title';
           $args['order']   = 'ASC';
@@ -386,10 +393,12 @@ if ( !class_exists( 'TeaserList' ) ) {
           $search_meta = $proudsearch->post_meta( $post->post_type );
           break;
         case 'document':    
-          $src = get_post_meta( $post->ID, 'document', true );    
+          $src = get_post_meta( $post->ID, 'document', true );
           $filename = get_post_meta( $post->ID, 'document_filename', true );    
-          $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));   
-          $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
+          $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));
+          if (empty($this->terms) || count($this->terms) > 1) {
+            $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
+          } 
           break;
       }
 
