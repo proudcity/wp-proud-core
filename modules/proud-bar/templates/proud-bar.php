@@ -3,7 +3,7 @@
   
   <?php if ( 'example' === $stage ): ?> 
     <a href="//proudcity.com" class="proudbar-logo pull-right" target="_blank">ProudCity</a>
-    Get started with ProudCity
+    <span class="hidden-xs">Get started with ProudCity</span>
     <a href="//proudcity.com/start" class="proudbar-btn">Claim your city</a>  
   <?php else: ?>
     <span class="hidden-xs">Welcome to our future website!</span>
