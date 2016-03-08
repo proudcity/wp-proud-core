@@ -38,6 +38,7 @@ class ContactSubmenu extends Core\ProudWidget {
         '#type' => 'checkboxes',
         '#options' => $options,
         '#default_value' => ['all'],
+        '#description' => 'Leave all boxes unchecked to show all categories.'
       ],
     ];
     $this->settings += [
