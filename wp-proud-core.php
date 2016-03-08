@@ -61,6 +61,7 @@ class Proudcore extends \ProudPlugin {
     $this->hook('admin_enqueue_scripts', 'loadAdminLibraries');
     // Add Javascript settings
     $this->hook('proud_settings', 'printJsSettings');
+    $this->hook('admin_footer', 'printJsSettings');
     // Get the $pageInfo global var for submenu logic
     $this->hook('template_redirect',  'getPageInfo');
     // Set up image styles

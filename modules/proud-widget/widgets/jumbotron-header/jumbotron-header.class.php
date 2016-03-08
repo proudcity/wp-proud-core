@@ -222,15 +222,13 @@ class JumbotronHeader extends Core\ProudWidget {
         case 'image':
           // Allow [featured-image]
           $url = do_shortcode($instance['image']);
-          $back_image = esc_url( $url );
-          $background_style = "background-image:url('$back_image');";
           
+          // Build image attrs 
           // @todo: should we save image, not just url?
           global $wpdb;
           $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
-          $media = get_post($media_id);
-          $caption = $media->post_excerpt;
-          array_push($classes, 'media');
+          $resp_img = Core\build_responsive_image_meta($media_id);
+
           break;
       }
 
@@ -240,7 +238,7 @@ class JumbotronHeader extends Core\ProudWidget {
     }
 
     // Init a random id for the element
-    $random_id = 'asdkljhaskjd' . rand();
+    $random_id = 'proud-header-' . rand();
     // init file location
     $file = plugin_dir_path( __FILE__ ) . 'templates/';
 
@@ -262,7 +260,7 @@ class JumbotronHeader extends Core\ProudWidget {
     // We're doing a "full" style jumbotron
     else if( $instance['headertype'] == 'full' ) {
       // Classes
-      $classes[] = 'full-image';
+      $classes[] = 'full-image jumbotron-header-container';
       // Box styles
       // Init classes
       $boxclasses = ['jumbotron', 'jumbotron-image', 'full'];

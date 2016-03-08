@@ -40,11 +40,11 @@ class IconSet extends Core\ProudWidget {
    * @return  void
    */
   function initialize() {
-    $this->settings = array(
+    $this->settings += array(
       'iconset' => array(
         '#title' => __( 'Icons', 'wp-proud-core' ),
         '#type' => 'group',
-        '#admin_libraries' => ['fontawesome-iconpicker'],
+        '#group_title_field' => 'link_title',
         '#sub_items_template' => array(
           'link_title' => [
             '#title' => 'Link title',

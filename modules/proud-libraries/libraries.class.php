@@ -39,6 +39,18 @@ class ProudLibaries {
       'js_footer' => true,
       'deps' => ['jquery','proud']
     ];
+
+    self::$libraries['dragula'] = [
+      'title' => 'Dragula',
+      'js' => [
+        'dragula' => $path . 'dragula.js/dist/dragula.js',
+      ],
+      'css' => [
+        'dragula' => $path . 'dragula.js/dist/dragula.min.css',
+      ],
+      'js_footer' => true,
+      'deps' => ['proud']
+    ];
     
     self::$libraries['fontawesome-iconpicker'] = [
       'title' => 'Fontawesome Icon-picker',

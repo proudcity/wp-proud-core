@@ -62,3 +62,38 @@ function sanitize_input_text_output($text, $shortcode = true) {
   }
   return $text;
 }
+
+/** 
+ * Sanitize text input
+ */
+function build_responsive_image_meta($media_id, $size_max = 'full', $size_small = 'medium') {
+  // Get meta
+  $media_meta = wp_get_attachment_metadata($media_id);
+  return [
+    'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, $media_meta),
+    'size' => wp_get_attachment_image_sizes($media_id, $size_max),
+    'src' => wp_get_attachment_image_src($media_id, $size_small),
+    'meta' => $media_meta
+  ];
+}
+
+/** 
+ * Sanitize text input
+ */
+function print_responsive_image($resp_img, $classes = []) {
+  $classes[] = 'media';
+  $image_meta = $resp_img['meta']['image_meta'];
+  ?> 
+  <?php if( !empty( $resp_img['src'] ) ): ?> 
+    <div class="<?php echo implode(' ', $classes) ?>"><img src="<?php echo esc_url( $resp_img['src'][0] ); ?>"
+       srcset="<?php echo esc_attr( $resp_img['srcset'] ); ?>"
+       sizes="<?php echo esc_attr( $resp_img['size'] ); ?>"
+       <?php if ( !empty( $image_meta['title'] ) ): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
+       <?php if ( !empty( $image_meta['alt'] ) ): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
+    <?php if ( !empty( $image_meta['caption'] ) ): ?>
+      <div class="media-byline text-left"><span><?php echo $image_meta['caption'] ?></span></div>
+    <?php endif; ?>
+    </div>
+  <?php endif; ?>
+  <?php
+}
