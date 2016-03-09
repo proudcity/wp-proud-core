@@ -17,6 +17,7 @@
     "mapbox.js": "~2.2.3",
     "leaflet.locatecontrol": "~0.45.1",
     "fontawesome-iconpicker": "~1.2.0",
-    "dragula.js": "dragula#~3.6.7"
+    "dragula.js": "dragula#~3.6.7",
+    "picturefill": "~3.0.2"
   }
 }
