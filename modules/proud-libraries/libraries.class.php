@@ -34,7 +34,7 @@ class ProudLibaries {
       'js' => [
         'waitForImages' => $path . 'waitForImages/dist/jquery.waitforimages.min.js',
         'equalizeHeight' => $path . 'jquery.equalizeHeight/jquery.equalizeHeight.js',
-        'picturefill' => $path . 'picturefill/src/plugins/gecko-picture/pf.gecko-picture.js',
+        'picturefill' => $path . 'picturefill/dist/picturefill.min.js',
         'proud-common' => $path . 'proud-common.js'
       ],
       'js_footer' => true,
