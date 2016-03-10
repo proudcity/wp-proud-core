@@ -101,6 +101,9 @@ class ProudSOPagebuilder {
     unset($widgets['WP_Job_Manager_Widget_Recent_Jobs']);
     unset($widgets['WP_Job_Manager_Widget_Featured_Jobs']);
 
+    // hide gravity forms in favor of our own
+    unset($widgets['GFWidget']);
+
     //print_r($widgets);
     return $widgets;
   }

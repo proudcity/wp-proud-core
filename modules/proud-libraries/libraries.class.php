@@ -38,7 +38,7 @@ class ProudLibaries {
         'proud-common' => $path . 'proud-common.js'
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
     ];
 
     self::$libraries['dragula'] = [
@@ -62,7 +62,7 @@ class ProudLibaries {
         'fontawesome-iconpicker.css' => $path . 'fontawesome-iconpicker/dist/css/fontawesome-iconpicker.css',
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
     ];
 
     self::$libraries['maps'] = [
@@ -76,7 +76,7 @@ class ProudLibaries {
         'L.Control.Locate.mapbox.css' => $path . 'leaflet.locatecontrol/dist/L.Control.Locate.mapbox.css'
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
     ];
 
     // Angular.js
