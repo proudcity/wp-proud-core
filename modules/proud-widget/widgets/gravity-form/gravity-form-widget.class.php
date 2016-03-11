@@ -91,6 +91,8 @@ class GravityForm extends Core\ProudWidget {
 
 // register Foo_Widget widget
 function register_gravity_form_widget() {
-  register_widget( 'GravityForm' );
+  if ( class_exists( 'RGForms' ) ) {
+    register_widget( 'GravityForm' );
+  }
 }
 add_action( 'widgets_init', 'register_gravity_form_widget' );
