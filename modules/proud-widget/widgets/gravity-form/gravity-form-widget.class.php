@@ -9,7 +9,7 @@ class GravityForm extends Core\ProudWidget {
 
   function __construct() {
     parent::__construct(
-      'proud_gravity_form_dropdown', // Base ID
+      'proud_gravity_form', // Base ID
       __( 'Form', 'wp-proud-core' ), // Name
       array( 'description' => __( 'Proud Gravity Forms Widget', 'wp-proud-core' ), ) // Args
     );
