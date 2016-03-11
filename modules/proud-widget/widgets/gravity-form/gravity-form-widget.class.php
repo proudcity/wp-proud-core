@@ -58,6 +58,14 @@ class GravityForm extends Core\ProudWidget {
   public function hasContent($args, &$instance) {
     if( !empty( $instance['form_id'] ) ) {
       $instance['shortcode'] = '[gravityform id="' . $instance['form_id'] . '" title="false" description="false"]';
+      // If we're in the loop (content), let form be a shortcode
+      if(in_the_loop()) {
+        $instance['form'] = $instance['shortcode'];
+      }
+      // outside the loop (sidebar ect), so render
+      else {
+        $instance['form'] = Core\sanitize_input_text_output( $instance['shortcode'], true );
+      }
       return true;
     }
     return false;
@@ -78,13 +86,13 @@ class GravityForm extends Core\ProudWidget {
     ?>
       <a href="#" id="sub-dropdown" data-toggle="dropdown"><i class="fa fa-fw fa-envelope"></i>Subscribe <!--<span class="caret"></span>--></a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="sub-dropdown">
-        <li style="padding: 10px 15px;"><?php echo $shortcode ?></li>
+        <li style="padding: 10px 15px;"><?php echo $form ?></li>
       </ul>
     <?php
     }
     // Normal
     else {
-      echo $shortcode;
+      echo $form;
     }
   }
 }
