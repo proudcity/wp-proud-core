@@ -199,12 +199,20 @@ abstract class ProudWidget extends \WP_Widget {
     $this->form->printFields( $fields );
   }
 
+  function contains_array( $array ){
+    foreach( $array as $value ) {
+        if( is_array( $value ) ) {
+          return true;
+        }
+    }
+    return false;
+  }
+
   public function updateWidgetConfig( $new_instance, $old_instance ) {
     $instance = [];
     foreach ( $new_instance as $key => $value ) {
-      // Repeating (0-indexed array) field, 
-      // so process weight
-      if( is_array( $value ) && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
+      // Repeating (0-indexed array) field, with wieght
+      if( is_array( $value ) && $this->contains_array( $value ) && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
         usort($value, function($a, $b) {
             if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
               return 0;
