@@ -75,6 +75,44 @@ class Proudcore extends \ProudPlugin {
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
+
+    // Get get_option() updates from env vars
+    foreach ($this->default_options() as $key => $options) {
+      add_filter('option_' . $key, array($this, 'pre_option'), 10, 2);
+    }
+
+  }
+
+  /**
+   * Returns the variables that we want to provide system default for
+   * Format: ENV_VAR => array('option_name' => '', 'key' => '')
+   **/
+  private function default_options() {
+    return array(
+      'mapbox_token' => array(),
+      'mapbox_map' => array(),
+      'wpmandrill' => array('variable' => 'mandrill_token', 'key' => 'api_key'),
+      // @todo: madrill from email
+    );
+  }
+
+  /**
+   * If no value is for an option, get the default form system variables
+   **/
+  public function pre_option( $value, $key ) {
+    $options = $this->default_options();
+    $option = $options[$key];
+    if ( (!empty($option['key']) && empty($value[$option['key']])) || empty($value) ) {
+      $variable = !empty($option['variable']) ? $option['variable'] : $key;
+      $val = getenv(strtoupper($variable));
+      if (empty($option['key'])) {
+        $value = $val;
+      }
+      else {
+        $value[$option['key']] = $val;
+      }
+    }
+    return $value;
   }
 
   public function init() {
