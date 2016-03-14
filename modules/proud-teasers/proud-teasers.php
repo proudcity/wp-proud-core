@@ -392,13 +392,14 @@ if ( !class_exists( 'TeaserList' ) ) {
           $meta = get_post_meta( $post->ID );
           $search_meta = $proudsearch->post_meta( $post->post_type );
           break;
-        case 'document':    
+        case 'document':   
           $src = get_post_meta( $post->ID, 'document', true );
           $filename = get_post_meta( $post->ID, 'document_filename', true );    
           $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));
-          if (empty($this->terms) || count($this->terms) > 1) {
-            $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
-          } 
+          // if (empty($this->terms) || count($this->terms) > 1) {
+          //   $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
+          // } 
+          $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
           break;
       }
 

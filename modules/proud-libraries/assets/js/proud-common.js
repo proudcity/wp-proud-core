@@ -5,7 +5,7 @@
     jQuery.fn.addBack = jQuery.fn.andSelf;
   }
 
-  Proud.behaviors.proud_common = {
+  Proud.behaviors.height_equalize = {
     attach: function(context, settings) {
       // Run height equalizer
       $('[data-equalizer]').once('equalize-default', function() {

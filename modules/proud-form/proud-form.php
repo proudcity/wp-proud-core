@@ -16,6 +16,42 @@ if ( ! class_exists( 'FormHelper' ) ) {
       $this->form_id = $form_id;
       $this->fields = $fields;
       $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
+      // Add proud admin scripts
+      $this->registerAdminLibraries();
+      // 
+    }
+
+    /**
+     * Register admin libraries from Proud\Core\Libraries
+     */
+    public function registerAdminLibraries() {
+      global $proudcore;
+      foreach ( $this->fields as $key => $value ) {
+        if( $value['#type'] === 'group' ){
+          $proudcore->addJsSettings([
+            'proud_form' => [
+              'draggable' => [
+                $key => $key
+              ]
+            ]
+          ]);
+          $proudcore::$libraries->addBundleToLoad('dragula', true);
+        }
+        else if( $value['#type'] === 'fa-icon' ) {
+          $proudcore->addJsSettings([
+            'proud_form' => [
+              'iconpicker' => [
+                $key => $key
+              ]
+            ]
+          ]);
+          $proudcore::$libraries->addBundleToLoad('fontawesome-iconpicker', true);
+        }
+        // Media upload
+        else if( $value['#type'] === 'select_media' ) {
+          $proudcore::$libraries->addBundleToLoad('upload-media', true);
+        }
+      }
     }
 
     private function template($file) {
@@ -69,17 +105,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
             echo $field['#html'];
             break;
           case 'fa-icon':
-            ?>
-            <script>
-              jQuery(document).ready(function() {
-                jQuery('#<?php echo $field['#id'];?>').once('icon-picker', function() { 
-                  jQuery(this).iconpicker(); 
-                });
-              });
-            </script>
-            <?php
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
+            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, ['class' => 'iconpicker']);
             if( !empty( $field['#description'] ) ) 
               $this->printDescription($field['#description']);
             break;
@@ -212,11 +239,25 @@ if ( ! class_exists( 'FormHelper' ) ) {
       <?php
     }
 
-    public function printGroupFields ($id, $field) {
-      include $this->template('repeating-fields');
+    public function printGroupFields( $id, $field ) {
+      // Build json template
+      $key = 'GROUP_REPLACE_KEY';
+      $group_title = __($field['#title'], $this->form_id) . ' GROUP_REPLACE_TITLE';
+      $group = $field['#json_field_template'];
+      ob_start(); // turn on output buffering
+      include($this->template( 'repeating-fields-template' ));
+      $json = json_encode(ob_get_contents()); // get the contents of the output buffer
+      ob_end_clean(); //  clean (erase) the output buffer and turn off output buffering 
+      // Include path
+      $field['#template'] = 'repeating-fields-template.php';
+      include $this->template( 'repeating-fields' );
     }
 
-    public function printFields () {
+    public function printFields ( $fields = null ) {
+      // Field override?
+      if( $fields ) {
+        $this->fields = $fields;
+      }
       // Javascript states for hiding / showing fields
       $states = [];
       foreach ( $this->fields as $id => $field ) {
@@ -348,3 +389,11 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
   }
 }
+
+
+// register Foo_Widget widget
+function proud_form_load_js() {
+  wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
+}
+    // Load admin scripts from libraries
+add_action('admin_enqueue_scripts',  __NAMESPACE__ . '\\proud_form_load_js');

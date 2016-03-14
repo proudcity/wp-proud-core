@@ -33,6 +33,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.ph
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . 'modules/so-pagebuilder/proud-so-pagebuilder.php';
 require_once plugin_dir_path(__FILE__) . 'modules/wp-job-manager/proud-wp-job-manager.php';
+require_once plugin_dir_path(__FILE__) . 'modules/wp-gravityforms/proud-gravityforms.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
@@ -61,6 +62,7 @@ class Proudcore extends \ProudPlugin {
     $this->hook('admin_enqueue_scripts', 'loadAdminLibraries');
     // Add Javascript settings
     $this->hook('proud_settings', 'printJsSettings');
+    $this->hook('admin_footer', 'printJsSettings');
     // Get the $pageInfo global var for submenu logic
     $this->hook('template_redirect',  'getPageInfo');
     // Set up image styles

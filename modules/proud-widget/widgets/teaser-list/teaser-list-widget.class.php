@@ -55,7 +55,7 @@ class TeaserListWidget extends Core\ProudWidget {
       if( $taxonomy ) {
         $categories = get_categories( [
           'type' => $this->post_type, 
-          'taxonomy' => $this->get_taxonomy( $this->post_type ), 
+          'taxonomy' => $taxonomy, 
           'hide_empty' => 0,
           //'orderby' => 'weight',
           //'order' => 'ASC',
