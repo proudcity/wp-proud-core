@@ -1,10 +1,8 @@
 <div class="proudbar">
   <div class="proudbar-title pull-left"><a href="//proudcity.com/how-it-works" target="_blank" title="How ProudCity works"><?php print $stage ?></a></div>
   
-  <?php if ( 'example' === $stage ): ?> 
-    <a href="//proudcity.com" class="proudbar-logo pull-right" target="_blank">ProudCity</a>
-    <span class="hidden-xs">Get started with ProudCity</span>
-    <a href="//proudcity.com/start" class="proudbar-btn">Claim your city</a>  
+  <?php if ( 'example' === $stage || 'demo' === $stage ): ?> 
+    <a href="//proudcity.com/start" class="proudbar-btn">Get your free BETA</a>  
   <?php else: ?>
     <span class="hidden-xs">Welcome to our future website!</span>
     <a href="https://proudcity.typeform.com/to/duZiun" class="proudbar-btn typeform-share same-window ga-event" data-ga-event="feedbackClick" data-mode="2">Feedback</a>
