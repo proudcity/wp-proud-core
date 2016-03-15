@@ -10,8 +10,12 @@ class ProudSOPagebuilder {
   public function __construct() {
     add_filter( 'siteorigin_panels_widgets', array($this, 'so_panels_widgets'), 11);
     //add_filter( 'siteorigin_panels_css_object', array($this, 'siteorigin_panels_css_object'), -11, 3);
+    add_filter('siteorigin_panels_prebuilt_layouts', array($this, 'proud_prebuilt_layouts'), 10, 2);
+    // filter row styles
+    // add_filter('siteorigin_panels_layout_classes', array($this, 'alter_class'), 10);
+    // add_filter('siteorigin_panels_layout_attributes', array($this, 'alter_attr'), 10);
     add_filter('siteorigin_panels_row_style_attributes', array($this, 'so_row_style_attributes'), 10, 2);
-    add_filter('siteorigin_panels_prebuilt_layouts', array($this, 'proud_prebuilt_layouts'));
+    add_filter('siteorigin_panels_row_classes', array($this, 'so_row_style_classes'), 10, 2);
   }
 
   // Restrict widgets available
@@ -118,10 +122,19 @@ class ProudSOPagebuilder {
 
   // Add container class to rows that aren't full width
   function so_row_style_attributes( $attributes, $args ) {
+
     if( empty( $args['row_stretch'] ) ) {
         array_push($attributes['class'], 'container');
     }
     return $attributes;
+  }
+
+  // Add container class to rows that aren't full width
+  function so_row_style_classes( $classes, $args ) {
+    if( !empty( $args['cells'] ) && $args['cells'] > 1 ) {
+        $classes[] = 'panel-row-multiple';
+    }
+    return $classes;
   }
 
 
