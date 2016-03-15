@@ -379,6 +379,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Load Meta info?
       $meta;
       global $post;
+      // Post type
       switch( $this->post_type ) {
         case 'staff-member':
           $terms = wp_get_post_terms( $post->ID, 'staff-member-group', array("fields" => "all"));
@@ -400,6 +401,17 @@ if ( !class_exists( 'TeaserList' ) ) {
           //   $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
           // } 
           $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
+          break;
+      }
+      // Display type
+      switch( $this->display_type ) {
+        case 'mini':
+          if(in_the_loop()) {
+            $header_tag = 'h4';
+          }
+          else {
+            $header_tag = 'h5';
+          }
           break;
       }
 

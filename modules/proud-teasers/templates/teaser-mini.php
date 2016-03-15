@@ -1,4 +1,4 @@
 <li <?php post_class( "teaser-mini" ); ?>>
-  <?php the_title( sprintf( '<h5 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h5>' ); ?>
+  <<?php echo $header_tag; ?> class="entry-title"><?php the_title( sprintf( '<a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a>' ); ?></<?php echo $header_tag; ?>>
   <p class="muted"><?php echo get_the_date(); ?></p>
 </li>
