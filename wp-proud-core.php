@@ -31,10 +31,14 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php'
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
-require_once plugin_dir_path(__FILE__) . 'modules/so-pagebuilder/proud-so-pagebuilder.php';
-require_once plugin_dir_path(__FILE__) . 'modules/wp-job-manager/proud-wp-job-manager.php';
-require_once plugin_dir_path(__FILE__) . 'modules/wp-gravityforms/proud-gravityforms.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
+
+// Override plugins
+//-------------------------
+require_once plugin_dir_path(__FILE__) . 'plugin_override/so-pagebuilder/proud-so-pagebuilder.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-job-manager/proud-wp-job-manager.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-gravityforms.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-manager.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
