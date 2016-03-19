@@ -17,8 +17,7 @@ class SocialLinksWidget extends Core\ProudWidget {
   }
 
   function initialize() {
-    // @todo: this should be called from proud-teasers.php
-    $social = $this->getSocialData();
+    $social = Core\getSocialData();
     if( !empty( $social ) ) {
       $this->settings += [
         'restrict_accounts' => [
@@ -32,7 +31,7 @@ class SocialLinksWidget extends Core\ProudWidget {
         ]
       ];
       foreach ($social as $value) {
-        $account = $this->extractSocialData($value);
+        $account = Core\extractSocialData($value);
         $options[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
           $account['url'],  
           $account['service']
@@ -60,46 +59,6 @@ class SocialLinksWidget extends Core\ProudWidget {
   }
 
   /**
-   * Helper function returns useful data for account
-   * $string: [service]:[account] eg: 'twitter:proudcity'
-   */
-  function extractSocialData($string) {
-    $account = explode( ':', $string );
-    $url = $this->accountUrl( $account[0], $account[1] );
-    return [
-      'service' => ucfirst( $account[0] ),
-      'account' => $account[1],
-      'url'     => $url
-    ];
-  }
-
-  /**
-   * Helper function gets social accounts from options
-   */
-  function getSocialData() {
-    $social = get_option('social_feeds');
-    if( !empty( $social ) ) {
-      $social = explode( PHP_EOL, $social );
-      // Empty? Trim whitespace
-      return !empty( $social ) ? array_filter( array_map('trim', $social) ) : [];
-    }
-    return [];
-  }
-
-  /**
-   * Helper function returns url to social acount
-   */
-  function accountUrl($service, $account) {
-    switch ($service) {
-      case 'facebook':
-      case 'instagram':
-      case 'twitter':
-        return sprintf( 'https://%s.com/%s', $service, $account);
-        break;
-    }
-  }
-
-  /**
    * Determines if content empty, show widget, title ect?  
    *
    * @see self::widget()
@@ -113,7 +72,7 @@ class SocialLinksWidget extends Core\ProudWidget {
       $social = $instance['social_accounts'];
     }
     else {
-      $social = $this->getSocialData();
+      $social = Core\getSocialData();
       // needs array( MEANINGFUL => ) 
       $social = array_combine($social, $social);
     }
@@ -121,7 +80,7 @@ class SocialLinksWidget extends Core\ProudWidget {
     if( !empty( $social ) ) {
       foreach ($social as $key => $value) {
         if( $value ) {
-          $instance['social_accounts'][$key] = $this->extractSocialData($value);
+          $instance['social_accounts'][$key] = Core\extractSocialData($value);
         }
       }
       return true;

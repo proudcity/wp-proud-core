@@ -97,3 +97,44 @@ function print_responsive_image($resp_img, $classes = []) {
   <?php endif; ?>
   <?php
 }
+
+/**
+ * Helper function returns url to social acount
+ */
+function socialAccountUrl($service, $account) {
+  switch ($service) {
+    case 'facebook':
+    case 'instagram':
+    case 'twitter':
+      return sprintf( 'https://%s.com/%s', $service, $account);
+      break;
+  }
+}
+
+
+/**
+ * Helper function returns useful data for account
+ * $string: [service]:[account] eg: 'twitter:proudcity'
+ */
+function extractSocialData($string) {
+  $account = explode( ':', $string );
+  $url = socialAccountUrl( $account[0], $account[1] );
+  return [
+    'service' => ucfirst( $account[0] ),
+    'account' => $account[1],
+    'url'     => $url
+  ];
+}
+
+/**
+ * Helper function gets social accounts from options
+ */
+function getSocialData() {
+  $social = get_option('social_feeds');
+  if( !empty( $social ) ) {
+    $social = explode( PHP_EOL, $social );
+    // Empty? Trim whitespace
+    return !empty( $social ) ? array_filter( array_map('trim', $social) ) : [];
+  }
+  return [];
+}
