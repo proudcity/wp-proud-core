@@ -31,6 +31,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php'
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytics.php';
 
 // Override plugins
 //-------------------------
