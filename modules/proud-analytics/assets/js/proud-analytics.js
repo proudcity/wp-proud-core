@@ -2,6 +2,7 @@ jQuery(document).ready(function($) {
 
   // Widget click
   var anaylticsWidgetClick = function(e) {
+    var activeClass = 'btn-primary';
     e.preventDefault();
     var title = $(this).attr('data-title') ? $(this).attr('data-title') : $('h1.entry-title').length ? $('h1.entry-title').text() : document.title;
     ga('send', {
@@ -9,10 +10,10 @@ jQuery(document).ready(function($) {
       eventCategory: 'Score',
       eventLabel: title,
       eventAction: window.location.href,
-      eventValue: jQuery(this).hasClass('active') ? -5 : +5
+      eventValue: jQuery(this).hasClass(activeClass) ? -5 : +5
     });
 
-    if (!$(this).hasClass('active')) { 
+    if (!$(this).hasClass(activeClass)) { 
       ga('send', {
         hitType: 'event',
         eventCategory: 'Heart',
@@ -22,7 +23,7 @@ jQuery(document).ready(function($) {
       });
     }
 
-    $(this).toggleClass('active');
+    $(this).toggleClass(activeClass);
   }
 
   $('.proudscore-widget').bind('click', anaylticsWidgetClick);
