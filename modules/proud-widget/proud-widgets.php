@@ -19,6 +19,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/page-title/page-title-widget.c
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-submenu/contact-submenu-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-block/contact-block-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form/gravity-form-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/proudscore-widget/proudscore-widget.class.php';
 
 
 
