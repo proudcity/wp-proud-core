@@ -5,6 +5,9 @@
 
 namespace Proud\Core;
 
+include_once( ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php' );
+use GFAPI as GFAPI;
+
 if ( ! class_exists( 'FormHelper' ) ) {
 
   class FormHelper {
@@ -109,6 +112,20 @@ if ( ! class_exists( 'FormHelper' ) ) {
             $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, ['class' => 'iconpicker']);
             if( !empty( $field['#description'] ) ) 
               $this->printDescription($field['#description']);
+            break;
+
+          case 'gravityform':
+            if (is_plugin_active('gravityforms/gravityforms.php')) {
+              $options = ['' => __('-- Select form --')];
+              $forms = GFAPI::get_forms();
+              foreach ($forms as $key => $form) {
+                $options[  $form['id'] ] = $form['title'];
+              }
+              $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+              $this->printSelectList($field['#id'], $field['#name'], $field['#value'], $options);
+              if( !empty( $field['#description'] ) ) 
+                $this->printDescription($field['#description']);
+            }           
             break;
 
           case 'select_media':
