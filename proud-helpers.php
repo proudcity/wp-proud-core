@@ -85,15 +85,20 @@ function print_responsive_image($resp_img, $classes = []) {
   $image_meta = $resp_img['meta']['image_meta'];
   ?> 
   <?php if( !empty( $resp_img['src'] ) ): ?> 
-    <div class="<?php echo implode(' ', $classes) ?>"><img src="<?php echo esc_url( $resp_img['src'][0] ); ?>"
-       srcset="<?php echo esc_attr( $resp_img['srcset'] ); ?>"
-       sizes="<?php echo esc_attr( $resp_img['size'] ); ?>"
-       <?php if ( !empty( $image_meta['title'] ) ): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
-       <?php if ( !empty( $image_meta['alt'] ) ): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
+    <?php if( !empty( $classes ) ): ?> 
+    <div class="<?php echo implode(' ', $classes) ?>">
+    <?php endif; ?>
+      <img src="<?php echo esc_url( $resp_img['src'][0] ); ?>"
+         srcset="<?php echo esc_attr( $resp_img['srcset'] ); ?>"
+         sizes="<?php echo esc_attr( $resp_img['size'] ); ?>"
+         <?php if ( !empty( $image_meta['title'] ) ): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
+         <?php if ( !empty( $image_meta['alt'] ) ): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
     <?php if ( !empty( $image_meta['caption'] ) ): ?>
       <div class="media-byline text-left"><span><?php echo $image_meta['caption'] ?></span></div>
     <?php endif; ?>
+    <?php if( !empty( $classes ) ): ?>
     </div>
+    <?php endif; ?>
   <?php endif; ?>
   <?php
 }
