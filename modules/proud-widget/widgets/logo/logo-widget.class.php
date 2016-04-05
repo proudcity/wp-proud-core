@@ -44,7 +44,7 @@ class LogoWidget extends Core\ProudWidget {
   public function printWidget( $args, $instance ) {
     ?>
     <h4>
-      <div class="panel-pane pane-page-logo">
+      <div class="panel-pane pane-page-logo text-center">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
             <img src="<?php echo $instance['logo']; ?>" alt="Home">
