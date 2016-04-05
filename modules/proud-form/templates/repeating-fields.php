@@ -1,4 +1,4 @@
-<div id="<?php echo $field['#id']; ?>" class="repeating-group">
+<div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="repeating-group">
   <div id="<?php echo $field['#id']; ?>-draggable" data-draggable="true" class="panel-group" id="<?php echo $field['#id']; ?>-accordion" role="tablist" aria-multiselectable="true">
   <?php 
     // Print children

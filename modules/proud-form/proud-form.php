@@ -285,9 +285,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
         }
         else {
           $this->printFormItem( $field );
-          if(!empty($field['#states'])) {
-            $states[$field['#id']] = $field['#states'];
-          }
+        }
+        if(!empty($field['#states'])) {
+          $states[$field['#id']] = $field['#states'];
         }
       }
 

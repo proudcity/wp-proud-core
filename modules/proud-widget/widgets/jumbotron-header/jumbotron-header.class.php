@@ -37,21 +37,31 @@ class JumbotronHeader extends Core\ProudWidget {
   function initialize() {
 
     $this->settings = [
+      'headertype' => [
+        '#title' => __( 'Header Type', 'wp-proud-core' ),
+        '#type'    => 'radios',
+        '#default_value'     => 'header',
+         '#options' => [
+          'header'    => __( 'Header (good for important pages)', 'wp-proud-core' ),
+          'slideshow' => __( 'Slideshow', 'wp-proud-core' ),
+          'full'      => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
+          'simple'    => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
+        ],
+      ],
       'text'=> [
         '#title' => __( 'Jumbtron text', 'wp-proud-core' ),
         '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
         '#type' => 'textarea',
         '#default_value'  => '',
         'rows' => 15,
-      ],
-      'headertype' => [
-        '#title' => __( 'Header Type', 'wp-proud-core' ),
-        '#type'    => 'radios',
-        '#default_value'     => 'header',
-         '#options' => [
-          'header'   => __( 'Header (good for important pages)', 'wp-proud-core' ),
-          'full'     => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
-          'simple'     => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['slideshow'],
+              'glue' => '&&'
+            ],
+          ],
         ],
       ],
       'background' => [
@@ -69,8 +79,8 @@ class JumbotronHeader extends Core\ProudWidget {
           'visible' => [
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
-              'glue' => '||'
+              'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
             ],
           ],
         ],
@@ -98,7 +108,7 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
+              'value' => ['simple', 'slideshow'],
               'glue' => '&&'
             ],
           ],
@@ -122,7 +132,7 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
+              'value' => ['simple', 'slideshow'],
               'glue' => '&&'
             ],
           ],
@@ -139,11 +149,58 @@ class JumbotronHeader extends Core\ProudWidget {
               'value' => ['image'],
               'glue' => '&&'
             ],
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
+            ],
           ],
-          'invisible' => [
+        ],
+      ],
+      'slideshow' => [
+        '#title' => __( 'Slideshow', 'wp-proud-core' ),
+        '#type' => 'group',
+        '#group_title_field' => 'slide_title',
+        '#sub_items_template' => [
+          'slide_title' => [
+            '#title' => 'Slide title',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Title for the slide',
+            '#to_js_settings' => false
+          ],
+          'description' => [
+            '#title' => 'Text Description',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Brief text to be displayed below title.  This should not contain any html',
+            '#to_js_settings' => false
+          ],
+          'link_title' => [
+            '#title' => 'Link text',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Text for the link displayed as a button',
+            '#to_js_settings' => false
+          ],
+          'link_url' => [
+            '#title' => 'Link url',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Url for the link',
+            '#to_js_settings' => false
+          ],
+          'slide_image' => [
+            '#title' => __( 'Image', 'wp-proud-core' ),
+            '#type' => 'select_media',
+            '#default_value'  => '',
+          ]
+        ],
+        '#states' => [
+          'visible' => [
             'headertype' => [
               'operator' => '==',
-              'value' => ['simple'],
+              'value' => ['slideshow'],
               'glue' => '&&'
             ],
           ],
@@ -188,6 +245,17 @@ class JumbotronHeader extends Core\ProudWidget {
     return $background_repeat;
   }
 
+  function getResponsiveImage($image) {
+    // Allow [featured-image]
+    $url = do_shortcode($image);
+    
+    // Build image attrs 
+    // @todo: should we save image, not just url?
+    global $wpdb;
+    $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+    return Core\build_responsive_image_meta($media_id);
+  }
+
   /**
    * Generate HTML code from shortcode content.
    *
@@ -202,7 +270,7 @@ class JumbotronHeader extends Core\ProudWidget {
     // init classes
     $classes = [];
 
-    if(!empty( $instance['background']) ) {
+    if(!empty( $instance['background']) && $instance['headertype'] !== 'slideshow' ) {
       switch ( $instance['background'] ) {
         case 'solid':
           $solid_color = $instance['solid_color_value'];
@@ -220,15 +288,7 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'image':
-          // Allow [featured-image]
-          $url = do_shortcode($instance['image']);
-          
-          // Build image attrs 
-          // @todo: should we save image, not just url?
-          global $wpdb;
-          $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
-          $resp_img = Core\build_responsive_image_meta($media_id);
-
+          $resp_img = $this->getResponsiveImage($instance['image']);
           break;
       }
 
@@ -236,6 +296,13 @@ class JumbotronHeader extends Core\ProudWidget {
         $arr_styles[] = $background_style;
       }
     }
+    else if ( $instance['headertype'] === 'slideshow' ) {
+      // d($instance);
+      foreach ($instance['slideshow'] as $key => $value) {
+        $instance['slideshow'][$key]['resp_img'] = $this->getResponsiveImage($value['slide_image']);
+      }
+    }
+
 
     // Init a random id for the element
     $random_id = 'proud-header-' . rand();
@@ -269,7 +336,15 @@ class JumbotronHeader extends Core\ProudWidget {
         $boxclasses[] = 'jumbotron-inverse';
       }
       $file .= 'jumbotron-full.php';
-    }    
+    }
+    else if( $instance['headertype'] === 'slideshow' ) {
+      $classes[] = 'jumbotron';
+      // Inverse?
+      if ( $instance['make_inverse'] == 'yes' ) {
+        $classes[] = 'jumbotron-inverse';
+      }
+      $file .= 'jumbotron-slideshow.php';
+    }
     else {
       // Classes
       $classes[] = 'jumbotron';
