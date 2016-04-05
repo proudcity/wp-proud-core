@@ -76,8 +76,6 @@ class ProudSOPagebuilder {
     $widgets['Submenu']['icon'] = 'fa fa-list-ul';
     $widgets['TeaserListWidget']['icon'] = 'fa fa-th-list';
 
-
-    $widgets['MC4WP_Form_Widget']['icon'] = 'fa fa-map';
     $widgets['AgencyMenu']['icon'] = 'fa fa-list';
     $widgets['AgencySocial']['icon'] = 'fa fa-comment';
     $widgets['AgencyHours']['icon'] = 'fa fa-clock-o';
