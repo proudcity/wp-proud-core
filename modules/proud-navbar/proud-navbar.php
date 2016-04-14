@@ -21,18 +21,26 @@ function get_proud_logo() {
 }
 
 /**
+ *  Helper prints logo
+ */
+function get_proud_logo_wrapper_class() {
+  $hide = get_theme_mod( 'proud_logo_includes_title' );
+  return $hide ? 'hide-site-name' : '';
+}
+
+/**
  *  Prints the proud navbar
  */
 function print_proud_navbar() {
   ?>
-  <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom" role="navigation">
+  <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom <?php echo get_proud_logo_wrapper_class(); ?>" role="navigation">
     <ul id="logo-menu" class="nav navbar-nav">
       <li class="nav-logo">
         <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>">
           <img class="logo" src="<?php echo esc_url( get_proud_logo() ); ?>" alt="Home" title="Home">
         </a>    
       </li>
-      <li class="nav-text">
+      <li class="nav-text site-name">
         <a title="Home" rel="home" href="<?= esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
       </li>
     </ul>
@@ -71,11 +79,11 @@ function print_proud_navbar() {
       }
     ?>
   </div>
-  <div class="navbar navbar-header-region navbar-default">
+  <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
     <div class="navbar-header"><div class="container">
       <h3 class="clearfix">
         <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo"><img class="logo" src="<?php echo get_proud_logo() ?>" alt="Home" title="Home"></a>
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text"><strong><?php bloginfo('name'); ?></strong></a>
+        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>
   </div>

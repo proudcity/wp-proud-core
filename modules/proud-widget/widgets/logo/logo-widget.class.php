@@ -31,7 +31,13 @@ class LogoWidget extends Core\ProudWidget {
     $instance['logo'] = get_proud_logo();
     return !empty( $instance['logo'] );
   }
-
+/**
+ *  Helper prints logo
+ */
+function get_proud_logo_wrapper_class() {
+  $hide = get_theme_mod( 'proud_logo_includes_title' );
+  return $hide ? 'hide-site-name' : '';
+}
 
   /**
    * Front-end display of widget.
@@ -42,17 +48,17 @@ class LogoWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
+    $hide = get_theme_mod( 'proud_logo_includes_title' );
+    $hide_class = $hide ? 'hide-site-name' : '';
     ?>
-    <h4>
-      <div class="panel-pane pane-page-logo text-center">
+      <div class="panel-pane pane-page-logo text-center <?php echo $hide_class; ?>">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
             <img src="<?php echo $instance['logo']; ?>" alt="Home">
-            <h4><?php bloginfo(); ?></h4>
+            <h4 class="site-name"><?php bloginfo(); ?></h4>
           </a>  
         </div>
       </div>
-    </h4>
     <?php
   }
 }
