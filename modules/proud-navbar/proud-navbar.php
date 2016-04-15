@@ -3,6 +3,8 @@
  * @author ProudCity
  */
 
+use Proud\Core;
+
 /**
  *  Active navbar, so edit body class
  */
@@ -32,16 +34,41 @@ function get_proud_logo_wrapper_class() {
  *  Prints the proud navbar
  */
 function print_proud_navbar() {
+
+  // Grab logo
+  $logo =  get_proud_logo();
+  global $wpdb;
+  $image_meta = [];
+  $custom_width = false;
+  // Try to grab ID
+  $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+  // Build responsive image, get width
+  if( $media_id ) {
+    $image_meta = Core\build_responsive_image_meta( $media_id, 'medium', 'medium' );
+    $image_meta['meta']['image_meta']['alt'] = 'Home';
+    $image_meta['meta']['image_meta']['title'] = 'Home';
+    $image_meta['meta']['image_meta']['class'] = 'logo';
+    // try to maximize height @ 64px (and not divide by zero)
+    // 64 = max height, 32 = current horizontal padding 
+    $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
+    // 140 max width 
+    $custom_width = $custom_width < 140 ? $custom_width : 140;
+  }
+  
   ?>
   <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom <?php echo get_proud_logo_wrapper_class(); ?>" role="navigation">
     <ul id="logo-menu" class="nav navbar-nav">
-      <li class="nav-logo">
-        <a title="Home" rel="home" id="logo" href="<?= esc_url(home_url('/')); ?>">
-          <img class="logo" src="<?php echo esc_url( get_proud_logo() ); ?>" alt="Home" title="Home">
+      <li class="nav-logo" style="<?php if( $custom_width ) { echo 'width: ' . $custom_width . 'px;'; } ?>">
+        <a title="Home" rel="home" id="logo" href="<?php echo esc_url(home_url('/')); ?>">
+          <?php if( !empty( $image_meta ) ): ?>
+            <?php echo Core\print_responsive_image( $image_meta, false, true ); ?>
+          <?php else: ?>
+            <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
+          <?php endif; ?>
         </a>    
       </li>
       <li class="nav-text site-name">
-        <a title="Home" rel="home" href="<?= esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
+        <a title="Home" rel="home" href="<?php echo esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
       </li>
     </ul>
     <div class="container-fluid menu-box">
@@ -82,8 +109,8 @@ function print_proud_navbar() {
   <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
     <div class="navbar-header"><div class="container">
       <h3 class="clearfix">
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo"><img class="logo" src="<?php echo get_proud_logo() ?>" alt="Home" title="Home"></a>
-        <a href="<?= esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
+        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo"><img class="logo" src="<?php echo esc_url( $logo ) ?>" alt="Home" title="Home"></a>
+        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>
   </div>
