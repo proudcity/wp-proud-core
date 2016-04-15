@@ -21,11 +21,11 @@
     "test",
     "tests"
   ],
-  "_release": "0b7d447055",
+  "_release": "08cfd16214",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "0b7d4470550d5c190c9a2ab915f90d3db3584ffc"
+    "commit": "08cfd1621426d9545f458328131f509666cff304"
   },
   "_source": "git@github.com:aschmoe/angular-lazycompile.git",
   "_target": "master",

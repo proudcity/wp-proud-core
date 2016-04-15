@@ -7,7 +7,7 @@
     "angular-sanitize": "~1.3.17",
     "angular-touch": "~1.3.17",
     "angular-ui-router": "0.2.15",
-    "angular-lazycompile": "git@github.com:aschmoe/angular-lazycompile#master",
+    "angular-lazycompile": "git@github.com:aschmoe/angular-lazycompile#1.0.0",
     "angular-inview": "~1.5.0",
     "lodash": "~3.10.1",
     "lazysizes": "~1.3.1",

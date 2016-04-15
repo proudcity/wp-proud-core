@@ -44,6 +44,7 @@ function print_proud_navbar() {
   $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
   // Build responsive image, get width
   if( $media_id ) {
+    // Build responsive meta
     $image_meta = Core\build_responsive_image_meta( $media_id, 'medium', 'medium' );
     $image_meta['meta']['image_meta']['alt'] = 'Home';
     $image_meta['meta']['image_meta']['title'] = 'Home';
@@ -109,7 +110,13 @@ function print_proud_navbar() {
   <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
     <div class="navbar-header"><div class="container">
       <h3 class="clearfix">
-        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo"><img class="logo" src="<?php echo esc_url( $logo ) ?>" alt="Home" title="Home"></a>
+        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo">
+          <?php if( !empty( $image_meta ) ): ?>
+            <?php echo Core\print_responsive_image( $image_meta, false, true ); ?>
+          <?php else: ?>
+            <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
+          <?php endif; ?>
+        </a>
         <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
       </h3>
     </div></div>
