@@ -275,7 +275,7 @@ if ( !class_exists( 'TeaserList' ) ) {
               array(
                   'key' => $query_key,
                   'compare' => '>=',
-                  'value' => time()
+                  'value' => current_time('timestamp')
               )
           );
           break;
