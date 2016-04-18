@@ -262,17 +262,18 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         case 'event':
           // http://www.billerickson.net/wp-query-sort-by-meta/
+          $query_key =  '_end_ts';
           $args['orderby']    = 'meta_value_num';
-          $args['meta_key']   = '_start_ts';
+          $args['meta_key']   = $query_key;
           $args['order']      = 'ASC';
           $args['meta_query'] = array(
               'relation' => 'AND',
               array(
-                  'key' => '_start_ts',
+                  'key' => $query_key,
                   'compare' => 'EXISTS'
               ),
               array(
-                  'key' => '_start_ts',
+                  'key' => $query_key,
                   'compare' => '>=',
                   'value' => time()
               )
@@ -387,6 +388,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'agency':
         case 'event':
           $meta = get_post_meta( $post->ID );
+          // d($meta);
           break;
         case 'search':
           global $proudsearch;
