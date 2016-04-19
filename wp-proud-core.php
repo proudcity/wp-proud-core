@@ -11,7 +11,10 @@ License:            Affero GPL v3
 */
 namespace Proud\Core;
 
-define('PROUDCITY_API', 'http://localhost:4000');
+//define('PROUDCITY_API', 'http://localhost:4000');
+//define('MY_PROUDCITY', 'http://calypso.localhost:3000');
+define('PROUDCITY_API', 'https://api.proudcity.com:4000');
+define('MY_PROUDCITY', 'https://my.proudcity.com');
 
 // Load Extendibles
 // -----------------------
@@ -86,6 +89,7 @@ class Proudcore extends \ProudPlugin {
   public function init() {
     $this->addJsSettings(array('global' => array(
       'proudcity_api' => PROUDCITY_API,
+      'proudcity_dashboard' => MY_PROUDCITY,
       'proudcity_site_id' => str_replace( array('http://', 'https://'), '', get_site_url() ),
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
