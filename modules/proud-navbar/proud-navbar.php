@@ -5,6 +5,16 @@
 
 use Proud\Core;
 
+// Resgister logo sizes
+function proud_navbar_logo_size() {
+  add_image_size( 'proud-logo', 140, 64 );
+  add_image_size( 'proud-logo-retina', 380, 128 );
+  add_image_size( 'proud-logo-wide', 300, 64 );
+  add_image_size( 'proud-logo-wide-retina', 600, 128 );
+}
+
+add_action( 'init', 'proud_navbar_logo_size' );
+
 /**
  *  Active navbar, so edit body class
  */
@@ -45,15 +55,22 @@ function print_proud_navbar() {
   // Build responsive image, get width
   if( $media_id ) {
     // Build responsive meta
-    $image_meta = Core\build_responsive_image_meta( $media_id, 'medium', 'medium' );
+    if( get_theme_mod( 'proud_logo_includes_title' ) ) {
+      $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
+    }
+    else {
+      $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
+    }
     $image_meta['meta']['image_meta']['alt'] = 'Home';
     $image_meta['meta']['image_meta']['title'] = 'Home';
     $image_meta['meta']['image_meta']['class'] = 'logo';
-    // try to maximize height @ 64px (and not divide by zero)
-    // 64 = max height, 32 = current horizontal padding 
-    $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
-    // 140 max width 
-    $custom_width = $custom_width < 140 ? $custom_width : 140;
+    if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
+      // try to maximize height @ 64px (and not divide by zero)
+      // 64 = max height, 32 = current horizontal padding 
+      $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
+      // 140 max width 
+      $custom_width = $custom_width < 140 ? $custom_width : 140;
+    }
   }
   
   ?>
@@ -62,7 +79,7 @@ function print_proud_navbar() {
       <li class="nav-logo" style="<?php if( $custom_width ) { echo 'width: ' . $custom_width . 'px;'; } ?>">
         <a title="Home" rel="home" id="logo" href="<?php echo esc_url(home_url('/')); ?>">
           <?php if( !empty( $image_meta ) ): ?>
-            <?php echo Core\print_responsive_image( $image_meta, false, true ); ?>
+            <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
           <?php else: ?>
             <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
           <?php endif; ?>
@@ -112,7 +129,7 @@ function print_proud_navbar() {
       <h3 class="clearfix">
         <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo">
           <?php if( !empty( $image_meta ) ): ?>
-            <?php echo Core\print_responsive_image( $image_meta, false, true ); ?>
+            <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
           <?php else: ?>
             <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
           <?php endif; ?>
