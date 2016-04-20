@@ -9,9 +9,12 @@ Author URI:         http://getproudcity.com
 
 License:            Affero GPL v3
 */
-
-
 namespace Proud\Core;
+
+//define('PROUDCITY_API', 'http://localhost:4000');
+//define('MY_PROUDCITY', 'http://calypso.localhost:3000');
+define('PROUDCITY_API', 'https://api.proudcity.com:4000');
+define('MY_PROUDCITY', 'https://my.proudcity.com');
 
 // Load Extendibles
 // -----------------------
@@ -87,11 +90,15 @@ class Proudcore extends \ProudPlugin {
 
   public function init() {
     $this->addJsSettings(array('global' => array(
+      'proudcity_api' => PROUDCITY_API,
+      'proudcity_dashboard' => MY_PROUDCITY,
+      'proudcity_site_id' => str_replace( array('http://', 'https://'), '', get_site_url() ),
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
         'state' => get_option( 'state', 'Alabama' ),
         'lat' => (float) get_option( 'lat', 34.7303688 ),
         'lng' => (float) get_option( 'lng', -86.5861037 ),
+        'code' => str_replace(' ', '_', get_option( 'city', 'Huntsville' ) . ', ' . str_replace(' ', '_', get_option( 'state', 'Alabama' )) ),
       ),
       'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
       'mapbox' => array(
