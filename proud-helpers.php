@@ -63,6 +63,42 @@ function sanitize_input_text_output($text, $shortcode = true) {
   return $text;
 }
 
+/**
+ *  Gets  logo
+ */
+function get_proud_logo($use_theme = true, $logo_file = 'icon-white-1x.png') {
+  if($use_theme) {
+    $logo = get_theme_mod( 'proud_logo' );
+  }
+  else if($logo_file) {
+    $logo = plugins_url( '/assets/images/' . $logo_file,  __FILE__  );
+  }
+  return $logo ? $logo : false;
+}
+
+/**
+ * Prints retina version of proud logo
+ * $logo_version = 'icon-white' || 'logo-white' (with text)
+ */
+function print_proud_logo($logo_version = 'icon-white', $meta = []) {
+  $image_meta = [
+    'srcset' => [
+      '1x' => get_proud_logo( false, $logo_version . '-1x.png' ),
+      '2x' => get_proud_logo( false, $logo_version . '-2x.png' )
+    ],
+    'src' => get_proud_logo( false, $logo_version . '-1x.png' ),
+    'meta' => [
+      'image_meta' => array_merge( [
+        'title' => __('ProudCity - a new way to launch your city site.', 'proud-core'),
+        'alt' => __('ProudCity - a new way to launch your city site.', 'proud-core'),
+        'class' => 'proud-logo'
+      ], $meta )
+    ]
+  ];
+  print_retina_image( $image_meta, false, true );
+}
+
+
 /** 
  * Build responsive image meta
  */

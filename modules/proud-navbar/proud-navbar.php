@@ -27,14 +27,6 @@ add_filter( 'proud_body_class', 'proud_navbar_body_class' );
 /**
  *  Helper prints logo
  */
-function get_proud_logo() {
-  $logo = get_theme_mod( 'proud_logo' );
-  return $logo ? $logo : plugins_url( '/assets/images/logo-icon-white.png', __FILE__ );
-}
-
-/**
- *  Helper prints logo
- */
 function get_proud_logo_wrapper_class() {
   $hide = get_theme_mod( 'proud_logo_includes_title' );
   return $hide ? 'hide-site-name' : '';
@@ -46,30 +38,32 @@ function get_proud_logo_wrapper_class() {
 function print_proud_navbar() {
 
   // Grab logo
-  $logo =  get_proud_logo();
-  global $wpdb;
+  $logo =  Core\get_proud_logo();
   $image_meta = [];
   $custom_width = false;
-  // Try to grab ID
-  $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
-  // Build responsive image, get width
-  if( $media_id ) {
-    // Build responsive meta
-    if( get_theme_mod( 'proud_logo_includes_title' ) ) {
-      $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
-    }
-    else {
-      $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
-    }
-    $image_meta['meta']['image_meta']['alt'] = 'Home';
-    $image_meta['meta']['image_meta']['title'] = 'Home';
-    $image_meta['meta']['image_meta']['class'] = 'logo';
-    if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
-      // try to maximize height @ 64px (and not divide by zero)
-      // 64 = max height, 32 = current horizontal padding 
-      $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
-      // 140 max width 
-      $custom_width = $custom_width < 140 ? $custom_width : 140;
+  if($logo) {
+    global $wpdb;
+    // Try to grab ID
+    $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+    // Build responsive image, get width
+    if( $media_id ) {
+      // Build responsive meta
+      if( get_theme_mod( 'proud_logo_includes_title' ) ) {
+        $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
+      }
+      else {
+        $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
+      }
+      $image_meta['meta']['image_meta']['alt'] = 'Home';
+      $image_meta['meta']['image_meta']['title'] = 'Home';
+      $image_meta['meta']['image_meta']['class'] = 'logo';
+      if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
+        // try to maximize height @ 64px (and not divide by zero)
+        // 64 = max height, 32 = current horizontal padding 
+        $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
+        // 140 max width 
+        $custom_width = $custom_width < 140 ? $custom_width : 140;
+      }
     }
   }
   
@@ -81,7 +75,11 @@ function print_proud_navbar() {
           <?php if( !empty( $image_meta ) ): ?>
             <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
           <?php else: ?>
-            <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
+            <?php echo Core\print_proud_logo( 'icon-white', [
+                'class' => 'logo',
+                'title' => 'Home',
+                'alt' => 'Home'
+            ] ); ?>
           <?php endif; ?>
         </a>    
       </li>
@@ -131,7 +129,11 @@ function print_proud_navbar() {
           <?php if( !empty( $image_meta ) ): ?>
             <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
           <?php else: ?>
-            <img class="logo" src="<?php echo esc_url( $logo ); ?>" alt="Home" title="Home">
+            <?php echo Core\print_proud_logo( 'icon-white', [
+              'class' => 'logo',
+              'title' => 'Home',
+              'alt' => 'Alt'
+            ] ); ?>
           <?php endif; ?>
         </a>
         <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>

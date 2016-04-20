@@ -44,7 +44,10 @@ class ProudBar extends \ProudPlugin {
    *  Active navbar, so edit body class
    */
   function body_class( $classes ) {
-    $classes[] = 'proud-bar-active';
+    $stage = get_option('proud_stage', '');
+    if ('beta' === $stage || 'demo' === $stage || 'example' === $stage) {
+      $classes[] = 'proud-bar-active';
+    }
     return $classes;
   }
 

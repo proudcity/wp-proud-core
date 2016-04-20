@@ -71,6 +71,8 @@ class Proudcore extends \ProudPlugin {
     $this->hook('template_redirect',  'getPageInfo');
     // Set up image styles
     $this->hook( 'after_setup_theme', 'addImageSizes' );
+    // Add powered by content
+    $this->hook( 'proud_footer_after', 'poweredby' );
 
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
@@ -187,6 +189,14 @@ class Proudcore extends \ProudPlugin {
 
   function addImageSizes() {
     add_image_size( 'card-thumb', 300, 170, true );
+  }
+
+  function poweredby() {
+    ?>
+      <div class="powered-by-footer">
+        <?php the_widget( 'PoweredByWidget', [], [] ) ?>
+      </div>
+    <?php
   }
 
   // If this post is a page, get the menu information

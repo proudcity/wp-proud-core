@@ -20,6 +20,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/contact-submenu/contact-submen
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-block/contact-block-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form/gravity-form-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/proudscore-widget/proudscore-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.php';
 
 
 

@@ -28,16 +28,17 @@ class LogoWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent($args, &$instance) {
-    $instance['logo'] = get_proud_logo();
+    $instance['logo'] = Core\get_proud_logo();
     return !empty( $instance['logo'] );
   }
-/**
- *  Helper prints logo
- */
-function get_proud_logo_wrapper_class() {
-  $hide = get_theme_mod( 'proud_logo_includes_title' );
-  return $hide ? 'hide-site-name' : '';
-}
+
+  /**
+   *  Helper prints logo
+   */
+  function get_proud_logo_wrapper_class() {
+    $hide = get_theme_mod( 'proud_logo_includes_title' );
+    return $hide ? 'hide-site-name' : '';
+  }
 
   /**
    * Front-end display of widget.
@@ -54,7 +55,15 @@ function get_proud_logo_wrapper_class() {
       <div class="panel-pane pane-page-logo text-center <?php echo $hide_class; ?>">
         <div class="pane-content">
           <a href="<?php echo get_home_url(); ?>" rel="home" id="logo" title="Home">
-            <img src="<?php echo $instance['logo']; ?>" alt="Home">
+            <?php if( $instance['logo'] ): ?>
+              <img src="<?php echo $instance['logo']; ?>" alt="Home">
+            <?php else: ?>
+              <?php echo Core\print_proud_logo( 'icon-white', [
+                'class' => 'logo',
+                'title' => 'Home',
+                'alt' => 'Alt'
+              ] ); ?> 
+            <?php endif; ?>
             <h4 class="site-name"><?php bloginfo(); ?></h4>
           </a>  
         </div>
