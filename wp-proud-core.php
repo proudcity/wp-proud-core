@@ -13,7 +13,7 @@ namespace Proud\Core;
 
 //define('PROUDCITY_API', 'http://localhost:4000');
 //define('MY_PROUDCITY', 'http://calypso.localhost:3000');
-define('PROUDCITY_API', 'https://api.proudcity.com:4000');
+define('PROUDCITY_API', 'https://api.proudcity.com:8443');
 define('MY_PROUDCITY', 'https://my.proudcity.com');
 
 // Load Extendibles
