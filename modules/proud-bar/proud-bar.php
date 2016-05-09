@@ -45,7 +45,7 @@ class ProudBar extends \ProudPlugin {
    */
   function body_class( $classes ) {
     $stage = get_option('proud_stage', '');
-    if ('beta' === $stage || 'demo' === $stage || 'example' === $stage) {
+    if ('beta' === $stage || 'demo' === $stage || 'example' === $stage || 'test' === $stage || 'testing' === $stage) {
       $classes[] = 'proud-bar-active';
     }
     return $classes;
@@ -55,7 +55,7 @@ class ProudBar extends \ProudPlugin {
   // Add blue "demo" bar to footer @todo: make this work
   function proud_bar() {
     $stage = get_option('proud_stage', '');
-    if ('beta' === $stage || 'demo' === $stage || 'example' === $stage) {
+    if ('beta' === $stage || 'demo' === $stage || 'example' === $stage || 'test' === $stage || 'testing' === $stage) {
       require_once plugin_dir_path(__FILE__) . 'templates/proud-bar.php';
     }
   }
