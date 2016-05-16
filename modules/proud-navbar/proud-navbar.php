@@ -91,7 +91,11 @@ function print_proud_navbar() {
       <div class="btn-toolbar pull-left" role="toolbar">
         <a data-proud-navbar="answers" href="#" class="btn navbar-btn faq-button"><i class="fa fa-question-circle"></i> Answers</a>
         <a data-proud-navbar="payments" href="#" class="btn navbar-btn payments-button"><i class="fa fa-credit-card"></i> Payments</a>
-        <a data-proud-navbar="report" <?php if($link = get_option('311_link_create')): ?>data-click-external="true" href="<?php echo $link ?>"<?php else: ?>href="#"<?php endif; ?> class="btn navbar-btn issue-button"><i class="fa fa-wrench"></i> Issues</a>
+        <?php if(get_option('311_service', 'link') !== 'link'): ?>
+          <a data-proud-navbar="report" href="#" class="btn navbar-btn issue-button"><i class="fa fa-wrench"></i> Issues</a>
+        <?php elseif(!empty(get_option('311_link_create'))): ?>
+          <a data-proud-navbar="report" data-click-external="true" href="<?php echo get_option('311_link_create') ?>" class="btn navbar-btn issue-button"><i class="fa fa-wrench"></i> Issues</a>
+        <?php endif; ?>
       </div>
       <div class="btn-toolbar pull-right" role="toolbar">
         <a id="menu-button" href="#" class="btn navbar-btn menu-button"><span class="hamburger">
