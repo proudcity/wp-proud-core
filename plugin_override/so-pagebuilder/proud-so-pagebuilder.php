@@ -49,11 +49,9 @@ class ProudSOPagebuilder {
 
     $widgets['SiteOrigin_Widget_Editor_Widget']['title'] = 'Text';
     $widgets['SiteOrigin_Widget_Editor_Widget']['icon'] = 'fa fa-font';
-    $widgets['SiteOrigin_Widget_Image_Widget']['title'] = 'Image';
-    $widgets['SiteOrigin_Widget_Image_Widget']['icon'] = 'fa fa-file-image-o';
-    $widgets['SiteOrigin_Widget_Slider_Widget']['title'] = 'Slider';
-    $widgets['SiteOrigin_Widget_Slider_Widget']['icon'] = 'fa fa-camera-retro';
 
+    unset($widgets['SiteOrigin_Widget_Slider_Widget']);
+    unset($widgets['SiteOrigin_Widget_Image_Widget']);
     unset($widgets['SiteOrigin_Widget_Button_Widget']);
     unset($widgets['SiteOrigin_Widget_Features_Widget']);
     unset($widgets['SiteOrigin_Widget_PostCarousel_Widget']);
@@ -106,7 +104,13 @@ class ProudSOPagebuilder {
     // hide gravity forms in favor of our own
     unset($widgets['GFWidget']);
 
-    //print_r($widgets);
+    // hide ProudCity widgets from SO
+    unset($widgets['PoweredByWidget']);
+    unset($widgets['LogoWidget']);
+    unset($widgets['SocialLinksWidget']);
+
+
+    print_r($widgets);
     return $widgets;
   }
 
