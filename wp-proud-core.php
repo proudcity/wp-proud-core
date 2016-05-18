@@ -28,13 +28,13 @@ require_once plugin_dir_path(__FILE__) . 'proud-helpers.php';
 // -----------------------
 require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-menu/proud-menu.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-widget/proud-widgets.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
-require_once plugin_dir_path(__FILE__) . 'modules/proud-menu/proud-menu.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytics.php';
 
 // Override plugins

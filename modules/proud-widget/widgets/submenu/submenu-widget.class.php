@@ -12,7 +12,46 @@ class Submenu extends Core\ProudWidget {
         );
     }
 
+
+    /**
+    * Define shortcode settings.
+    *
+    * @return  void
+    */
     function initialize() {
+        $menus = [];
+        $primary = 0;
+        $default = 0;
+
+        // Try to grab primary
+        $locations = get_nav_menu_locations();
+        if( !empty( $locations['primary_navigation'] ) ) {
+            $primary = $locations['primary_navigation'];
+        }
+        global $proud_menu_util;
+        foreach ( $proud_menu_util::$menus as $key => $menu ) {
+            if( $key === $primary) {
+                $menus[$key] = $menu->name . __( ' (Primary Menu)', 'wp-proud-core' );
+                $default = $key;
+            }
+            else {
+                $menus[$key] = $menu->name;
+            }
+        } 
+        // No default
+        if(!$default) {
+            reset($menus);
+            $default = key($menus);
+        }
+
+        $this->settings += array(
+          'menu_id' => array(
+            '#title' => __( 'Menu to use', 'wp-proud-core' ),
+            '#type' => 'select',
+            '#options' => $menus,
+            '#default_value' => $default
+          )
+        );
     }
 
     /**
@@ -24,13 +63,8 @@ class Submenu extends Core\ProudWidget {
      * @param array $instance Saved values from database.
      */
     public function hasContent($args, &$instance) {
-        $instance['menu_class'] = new Core\ProudMenu('primary_navigation');
+        $instance['menu_class'] = new Core\ProudMenu($instance['menu_id']);
         return true;
-    //     if ( !empty($pageInfo['parent_link']) && $pageInfo['parent_link'] > 0 ) {
-    //       $instance['pageInfo'] = $pageInfo;
-    //       return true;
-    //     }
-    //     return false;
     }
 
     /**
