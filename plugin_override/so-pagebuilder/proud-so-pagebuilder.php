@@ -92,6 +92,7 @@ class ProudSOPagebuilder {
     $widgets['AgencySocial']['icon'] = 'fa fa-building';
     $widgets['AgencyHours']['icon'] = 'fa fa-building';
     $widgets['AgencyContact']['icon'] = 'fa fa-building';
+    $widgets['AgencyTeaserListWidget']['icon'] = 'fa fa-building';
 
     /*$widgets['AgencyMenu']['icon'] = 'fa fa-building';
     $widgets['AgencySocial']['icon'] = 'fa fa-building';

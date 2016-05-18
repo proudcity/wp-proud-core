@@ -317,6 +317,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
 
         case 'cards':
+        case 'icons':
           echo '<div class="card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize">';
           break;
 
@@ -372,6 +373,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Try for post type
       $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
+
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic
@@ -381,6 +383,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
+
       // Init post
       $this->query->the_post();
       // Load Meta info?
@@ -441,6 +444,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
 
         case 'cards':
+        case 'icons':
           echo "</div>";
           break;
 
