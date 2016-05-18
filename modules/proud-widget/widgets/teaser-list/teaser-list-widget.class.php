@@ -229,5 +229,6 @@ function register_teaser_list_widget() {
   register_widget( 'DocumentTeaserListWidget' );
   register_widget( 'JobTeaserListWidget' );
   register_widget( 'ContactTeaserListWidget' );
+  register_widget( 'AgencyTeaserListWidget' );
 }
 add_action( 'widgets_init', 'register_teaser_list_widget' );

@@ -69,3 +69,25 @@ class ContactTeaserListWidget extends TeaserListWidget {
     $this->post_type = 'staff-member';
   }
 }
+
+
+// Contacts
+class AgencyTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_agency_teaser_list', // Base ID
+      __( 'Agency list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of agencies', 'wp-proud-core' ), ) // Args
+    );
+
+    $this->post_type = 'agency';
+  }
+
+  function displayModes() {
+      return [
+        'icons' => __('Icon Buttons', 'proud-teaser'),
+        'cards' => __('Card View (with thumbnails)', 'proud-teaser'),
+        'table' => __('Table View', 'proud-teaser'),
+      ];
+    }
+}

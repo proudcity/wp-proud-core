@@ -25,7 +25,6 @@ abstract class ProudWidget extends \WP_Widget {
           '#title' => 'Widget Title',
           '#type' => 'text',
           '#default_value' => '',
-          '#description' => 'Title',
           '#to_js_settings' => false
         ]
       ], $this->settings);
