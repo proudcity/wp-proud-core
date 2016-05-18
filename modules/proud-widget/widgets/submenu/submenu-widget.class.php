@@ -24,19 +24,13 @@ class Submenu extends Core\ProudWidget {
      * @param array $instance Saved values from database.
      */
     public function hasContent($args, &$instance) {
-        global $pageInfo;
-        global $post;
-
-        $menu_name = 'primary_navigation';
-        $instance['menu'] = Core\print_custom_menu($menu_name);
-
+        $instance['menu_class'] = new Core\ProudMenu('primary_navigation');
         return true;
-
-        if ( !empty($pageInfo['parent_link']) && $pageInfo['parent_link'] > 0 ) {
-          $instance['pageInfo'] = $pageInfo;
-          return true;
-        }
-        return false;
+    //     if ( !empty($pageInfo['parent_link']) && $pageInfo['parent_link'] > 0 ) {
+    //       $instance['pageInfo'] = $pageInfo;
+    //       return true;
+    //     }
+    //     return false;
     }
 
     /**
@@ -47,17 +41,7 @@ class Submenu extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
         extract($instance);
-        // $args = array(
-        //   'menu' => $pageInfo['menu'],
-        //   'submenu' => $pageInfo['parent_link'],
-        //   'menu_class' => 'nav nav-pills nav-stacked submenu',
-        //   'fallback_cb' => false,
-        // );
-
-        // d($args);
-
-        // wp_nav_menu( $args );
-        echo $menu;
+        $menu_class->print_menu();
     }
 }
 
