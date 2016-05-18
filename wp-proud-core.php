@@ -126,37 +126,9 @@ class Proudcore extends \ProudPlugin {
     self::$libraries->loadLibraries('true');
   }
 
-
-  // Recusive array merging from 
-  // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
-  public function arrayMergeDeepArray($arrays) {
-    $result = array();
-
-    foreach ($arrays as $array) {
-      foreach ($array as $key => $value) {
-        // Renumber integer keys as array_merge_recursive() does. Note that PHP
-        // automatically converts array keys that are integer strings (e.g., '1')
-        // to integers.
-        if (is_integer($key)) {
-          $result[] = $value;
-        }
-        // Recurse when both values are arrays.
-        elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
-          $result[$key] = $this->arrayMergeDeepArray(array($result[$key], $value));
-        }
-        // Otherwise, use the latter value, overriding any previous value.
-        else {
-          $result[$key] = $value;
-        }
-      }
-    }
-
-    return $result;
-  }
-
   // Add js settings to Proud js var
   public function addJsSettings($settings) {
-    self::$jsSettings = $this->arrayMergeDeepArray([self::$jsSettings, $settings]);
+    self::$jsSettings = array_merge_deep_array([self::$jsSettings, $settings]);
   }
 
   // Prints out Proud js settings

@@ -63,6 +63,165 @@ function sanitize_input_text_output($text, $shortcode = true) {
   return $text;
 }
 
+// Recusive array merging from 
+// https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
+function array_merge_deep_array($arrays) {
+  $result = array();
+
+  foreach ($arrays as $array) {
+    foreach ($array as $key => $value) {
+      // Recurse when both values are arrays.
+      if (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
+        $result[$key] = array_merge_deep_array(array($result[$key], $value));
+      }
+      // Otherwise, use the latter value, overriding any previous value.
+      else {
+        $result[$key] = $value;
+      }
+    }
+  }
+
+  return $result;
+}
+
+/** 
+ * Helper attaches children onto menu
+ * http://stackoverflow.com/a/2447631/1327637
+ */
+function insert_into_deep(&$array, array $keys, $value) {
+  $last = array_pop($keys);       
+  if( !empty($keys) ) {
+    foreach( $keys as $key ) {
+      if(!array_key_exists( $key, $array ) || 
+          array_key_exists( $key, $array ) && !is_array( $array[$key] )) {
+            $array[$key] = array();
+            $array[$key]['children'] = array();
+            if(!empty($value['active'])) {
+              $array[$key]['active_trail'] = true;
+            }
+
+      }
+      $array = &$array[$key]['children'];
+    }
+  }
+  $array[$last] = $value;
+}
+
+/** 
+ * Helper attaches children onto menu
+ */
+function menu_structure_attach_link( &$menu_structure, $menu_depth_stack, $link_obj) {
+  $merge_arr = [];
+  insert_into_deep($merge_arr, $menu_depth_stack, $link_obj);
+  $menu_structure = array_merge_deep_array([$menu_structure, $merge_arr]);
+}
+
+/** 
+ * Prints submenu
+ * See comments https://developer.wordpress.org/reference/functions/wp_get_nav_menu_items/
+ */
+function get_custom_menu_structure( $menu_name ) {
+  // menu arr
+  $menu_structure = [];
+  if ( ($menu_name) && ( $locations = get_nav_menu_locations() ) && isset( $locations[$menu_name] ) ) {
+    global $post;
+
+    // grab menu info
+    $menu = get_term( $locations[$menu_name], 'nav_menu' );
+    $menu_items = wp_get_nav_menu_items( $menu->term_id );
+    // How deep we are into children
+    $menu_depth_stack = [];
+     
+    foreach( $menu_items as $menu_item ) {
+      $link_obj = [
+        'url' => $menu_item->url,
+        'title' => $menu_item->title
+      ];
+      // Top level
+      if ( !$menu_item->menu_item_parent ) {
+        // Reset stack
+        $menu_depth_stack = [$menu_item->ID];
+      }
+      else {
+        // Find the right parent item
+        while(end( $menu_depth_stack )) {
+          // Found parent
+          if( end( $menu_depth_stack ) === (int) $menu_item->menu_item_parent ) {
+            break;
+          }
+          array_pop( $menu_depth_stack );
+        }
+        array_push( $menu_depth_stack, $menu_item->ID );
+        $link_obj['pid'] = $menu_item->menu_item_parent;
+        // Active item
+        if(!empty( $menu_item->object_id ) && $post->ID === (int) $menu_item->object_id) {
+          $link_obj['active'] = true;
+        }
+      }
+      menu_structure_attach_link( $menu_structure, $menu_depth_stack, $link_obj );
+    }
+  }
+  return $menu_structure;
+}
+
+/** 
+ * Builds submenu markup
+ */
+function build_custom_menu_recursive( $current_menu, &$menus, &$active, $parent = FALSE) {
+  d($current_menu);
+  $count = count( $menus ) + 1;
+  $menu_level = 'level-' . $count;
+
+  // init menu
+  $menus[$menu_level] = '<div class="' . $menu_level . '">';
+
+  // Have parent?  Add backbutton
+  if( !empty($parent) ) {
+    $menus[$menu_level] .= '<a data-back="' . $parent['count'] . '" href="' . $parent['url'] . '" title="' . $parent['title'] .  '">'
+                        .  '<i class="fa fa-chevron-left"></i> ' . $parent['title'] . '</a>';
+  }
+
+  foreach( $current_menu as $key => $item ) {
+    $children = !empty( $item['children'] );
+
+    // We active? 
+    if( !empty( $item['active'] ) ) {
+      $active = ($children) ? $count + 1 : $count;
+    }
+
+    if( $children ) {
+      build_custom_menu_recursive( $item['children'], $menus, $active, [
+        'count' => $count, 
+        'title' => $item['title'],
+        'url' => $item['url']
+      ]);
+    }
+
+    $menus[$menu_level] .= '<a href="' . $item['url'] . '" title="' . $item['title'] . '"'
+                        .  (!empty( $item['active'] ) ? ' class="active"' : '')
+                        .  (!empty( $item['active_trail'] ) ? ' data-active-click="' . $active . '"' : '')
+                        .  '>' . $item['title'] . '</a>';
+
+  }
+
+  // close menu
+  $menus[$menu_level] .= '</div>';
+}
+
+/** 
+ * Prints submenu
+ * See comments https://developer.wordpress.org/reference/functions/wp_get_nav_menu_items/
+ */
+function print_custom_menu( $menu_name ) {
+  $menu_structure = get_custom_menu_structure( $menu_name );
+  $active = 0;
+  $menus = array();
+  build_custom_menu_recursive($menu_structure, $menus, $active);
+  d($menus);
+  return $menus;
+}
+
+
 /**
  *  Gets  logo
  */

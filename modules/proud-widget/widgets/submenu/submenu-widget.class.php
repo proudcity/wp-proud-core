@@ -25,6 +25,13 @@ class Submenu extends Core\ProudWidget {
      */
     public function hasContent($args, &$instance) {
         global $pageInfo;
+        global $post;
+
+        $menu_name = 'primary_navigation';
+        $instance['menu'] = Core\print_custom_menu($menu_name);
+
+        return true;
+
         if ( !empty($pageInfo['parent_link']) && $pageInfo['parent_link'] > 0 ) {
           $instance['pageInfo'] = $pageInfo;
           return true;
@@ -40,14 +47,17 @@ class Submenu extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
         extract($instance);
-        $args = array(
-          'menu' => $pageInfo['menu'],
-          'submenu' => $pageInfo['parent_link'],
-          'menu_class' => 'nav nav-pills nav-stacked submenu',
-          'fallback_cb' => false,
-        );
+        // $args = array(
+        //   'menu' => $pageInfo['menu'],
+        //   'submenu' => $pageInfo['parent_link'],
+        //   'menu_class' => 'nav nav-pills nav-stacked submenu',
+        //   'fallback_cb' => false,
+        // );
 
-        wp_nav_menu( $args );
+        // d($args);
+
+        // wp_nav_menu( $args );
+        echo $menu;
     }
 }
 

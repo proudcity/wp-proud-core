@@ -110,7 +110,7 @@ class ProudSOPagebuilder {
     unset($widgets['SocialLinksWidget']);
 
 
-    print_r($widgets);
+    // print_r($widgets);
     return $widgets;
   }
 
