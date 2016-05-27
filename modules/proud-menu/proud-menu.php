@@ -152,7 +152,7 @@ class ProudMenu {
 
       // We active? 
       if( !empty( $item['active'] ) ) {
-        $active = ($children) ? $count + 1 : $count;
+        $active = ($children) ? count( $menus ) + 1 : $count;
       }
 
       if( $children ) {
