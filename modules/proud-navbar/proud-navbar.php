@@ -33,120 +33,142 @@ function get_proud_logo_wrapper_class() {
 }
 
 /**
+ *  Helper gets URL for navbar logo
+ */
+function get_logo_link_url() {
+  static $logo_url = null;
+  if( null === $logo_url ) {
+    $logo_url = apply_filters( 'proud_navbar_logo_url', esc_url( home_url('/') ) );
+  } 
+  return $logo_url;
+}
+
+/**
+ *  Helper gets URL for navbar site name
+ */
+function get_site_name_link_url() {
+  static $site_name = null;
+  if( null === $site_name ) {
+    $site_name = apply_filters( 'proud_navbar_site_name_url', esc_url( home_url('/') ) );
+  } 
+  return $site_name;
+}
+
+/**
+ *  Returns logo html
+ */
+function get_navbar_logo() {
+  static $logo_markup  = null;
+  if( null === $logo_markup ) {
+    // Grab logo
+    $logo =  Core\get_proud_logo();
+    $image_meta = [];
+    $custom_width = false;
+    if($logo) {
+      global $wpdb;
+      // Try to grab ID
+      $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+      // Build responsive image, get width
+      if( $media_id ) {
+        // Build responsive meta
+        if( get_theme_mod( 'proud_logo_includes_title' ) ) {
+          $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
+        }
+        else {
+          $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
+        }
+        $image_meta['meta']['image_meta']['alt'] = 'Home';
+        $image_meta['meta']['image_meta']['title'] = 'Home';
+        $image_meta['meta']['image_meta']['class'] = 'logo';
+        if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
+          // try to maximize height @ 64px (and not divide by zero)
+          // 64 = max height, 32 = current horizontal padding 
+          $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
+          // 140 max width 
+          $custom_width = $custom_width < 140 ? $custom_width : 140;
+        }
+      }
+    }
+    // Build user uploaded logo
+    if( !empty( $image_meta ) ) {
+      ob_start();
+      Proud\Core\print_retina_image( $image_meta, false, true );
+      $logo_markup = ob_get_contents();
+      ob_clean();
+    }
+    // Build proud logo
+    else {
+      ob_start();
+      Proud\Core\print_proud_logo( 'icon-white', [
+          'class' => 'logo',
+          'title' => 'Home',
+          'alt' => 'Home'
+      ] );
+      $logo_markup = ob_get_contents();
+      ob_clean();
+    }
+  }
+
+  return $logo_markup;
+}
+
+/**
+ * Prints primary menu
+ */
+function get_nav_action_toolbar() {
+  $toolbar = '';
+  $toolbar = apply_filters( 'proud_nav_action_toolbar', $toolbar );
+
+  // No plugin overtaking, print template
+  if( !$toolbar ) {
+    ob_start();
+    include plugin_dir_path(__FILE__) . 'templates/nav-toolbar.php';
+    $toolbar = ob_get_contents();
+    ob_end_clean();
+  }
+
+  return $toolbar;
+}
+
+/**
+ * Prints primary menu
+ */
+function get_nav_primary_menu() {
+  $menu = '';
+  $menu = apply_filters( 'proud_nav_primary_menu', $menu );
+
+  // No plugin overtaking, try primary
+  if( !$menu && has_nav_menu( 'primary_navigation' ) ) {
+    ob_start();
+    wp_nav_menu( [ 
+      'theme_location'    => 'primary_navigation',
+      'container'         => 'div',
+      'container_class'   => 'below',
+      'container_id'      => '',
+      'menu_class'        => 'nav navbar-nav',
+      'menu_id'           => 'main-menu',
+      'echo'              => true,
+      'fallback_cb'       => 'wp_page_menu',
+      'before'            => '',
+      'after'             => '',
+      'link_before'       => '',
+      'link_after'        => '',
+      'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
+      'depth'             => 1,
+      'walker'            => ''
+    ] );
+    $menu = ob_get_contents();
+    ob_end_clean();
+  }
+
+  return $menu;  
+}
+
+/**
  *  Prints the proud navbar
  */
 function print_proud_navbar() {
-
-  // Grab logo
-  $logo =  Core\get_proud_logo();
-  $image_meta = [];
-  $custom_width = false;
-  if($logo) {
-    global $wpdb;
-    // Try to grab ID
-    $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
-    // Build responsive image, get width
-    if( $media_id ) {
-      // Build responsive meta
-      if( get_theme_mod( 'proud_logo_includes_title' ) ) {
-        $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
-      }
-      else {
-        $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
-      }
-      $image_meta['meta']['image_meta']['alt'] = 'Home';
-      $image_meta['meta']['image_meta']['title'] = 'Home';
-      $image_meta['meta']['image_meta']['class'] = 'logo';
-      if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
-        // try to maximize height @ 64px (and not divide by zero)
-        // 64 = max height, 32 = current horizontal padding 
-        $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
-        // 140 max width 
-        $custom_width = $custom_width < 140 ? $custom_width : 140;
-      }
-    }
-  }
-  
-  ?>
-  <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom <?php echo get_proud_logo_wrapper_class(); ?>" role="navigation">
-    <ul id="logo-menu" class="nav navbar-nav">
-      <li class="nav-logo" style="<?php if( $custom_width ) { echo 'width: ' . $custom_width . 'px;'; } ?>">
-        <a title="Home" rel="home" id="logo" href="<?php echo esc_url(home_url('/')); ?>">
-          <?php if( !empty( $image_meta ) ): ?>
-            <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
-          <?php else: ?>
-            <?php echo Core\print_proud_logo( 'icon-white', [
-                'class' => 'logo',
-                'title' => 'Home',
-                'alt' => 'Home'
-            ] ); ?>
-          <?php endif; ?>
-        </a>    
-      </li>
-      <li class="nav-text site-name">
-        <a title="Home" rel="home" href="<?php echo esc_url(home_url('/')); ?>"><strong><?php bloginfo('name'); ?></strong></a>
-      </li>
-    </ul>
-    <div class="container-fluid menu-box">
-      <div class="btn-toolbar pull-left" role="toolbar">
-        <?php if( !get_option('proud_hide_toolbar_nav') ): ?>
-          <a data-proud-navbar="answers" href="#" class="btn navbar-btn faq-button"><i class="fa fa-question-circle"></i> Answers</a>
-          <a data-proud-navbar="payments" href="#" class="btn navbar-btn payments-button"><i class="fa fa-credit-card"></i> Payments</a>
-          <?php if(get_option('311_service', 'link') !== 'link'): ?>
-            <a data-proud-navbar="report" href="#" class="btn navbar-btn issue-button"><i class="fa fa-wrench"></i> Issues</a>
-          <?php elseif(!empty(get_option('311_link_create'))): ?>
-            <a data-proud-navbar="report" data-click-external="true" href="<?php echo get_option('311_link_create') ?>" class="btn navbar-btn issue-button"><i class="fa fa-wrench"></i> Issues</a>
-          <?php endif; ?>
-        <?php endif; ?>
-      </div>
-      <div class="btn-toolbar pull-right" role="toolbar">
-        <a id="menu-button" href="#" class="btn navbar-btn menu-button"><span class="hamburger">
-          <span>toggle menu</span>
-        </span></a>
-        <a data-proud-navbar="search" href="#" class="btn navbar-btn search-btn"><i class="fa fa-search"></i> <span class="text sr-only">Search</span></a>
-      </div>
-    </div>
-    <?php //do_action('get_theme_menu'); 
-      if(has_nav_menu('primary_navigation')) {
-        wp_nav_menu( [ 
-          'theme_location'    => 'primary_navigation',
-          'container'         => 'div',
-          'container_class'   => 'below',
-          'container_id'      => '',
-          'menu_class'        => 'nav navbar-nav',
-          'menu_id'           => 'main-menu',
-          'echo'              => true,
-          'fallback_cb'       => 'wp_page_menu',
-          'before'            => '',
-          'after'             => '',
-          'link_before'       => '',
-          'link_after'        => '',
-          'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-          'depth'             => 1,
-          'walker'            => ''
-        ] );
-      }
-    ?>
-  </div>
-  <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
-    <div class="navbar-header"><div class="container">
-      <h3 class="clearfix">
-        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" id="header-logo" class="nav-logo">
-          <?php if( !empty( $image_meta ) ): ?>
-            <?php echo Core\print_retina_image( $image_meta, false, true ); ?>
-          <?php else: ?>
-            <?php echo Core\print_proud_logo( 'icon-white', [
-              'class' => 'logo',
-              'title' => 'Home',
-              'alt' => 'Alt'
-            ] ); ?>
-          <?php endif; ?>
-        </a>
-        <a href="<?php echo esc_url(home_url('/')); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
-      </h3>
-    </div></div>
-  </div>
-  <?php
+  include plugin_dir_path(__FILE__) . 'templates/navbar.php';
 }
 
 add_action( 'get_header', 'print_proud_navbar' );
