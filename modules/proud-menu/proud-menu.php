@@ -159,7 +159,7 @@ class ProudMenu {
 
         // in active trail, so add click level
         if( !empty( $item['active'] ) || !empty( $item['active_trail'] ) ) {
-          $item['active_click_level'] = $count + 1;
+          $item['active_click_level'] = count( $menus ) + 1;
         } 
 
         self::build_recursive( $item['children'], $menus, $active, [
