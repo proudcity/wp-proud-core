@@ -397,7 +397,6 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'agency':
         case 'event':
           $meta = get_post_meta( $post->ID );
-          // d($meta);
           break;
         case 'search':
           global $proudsearch;

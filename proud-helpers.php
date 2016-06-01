@@ -6,9 +6,14 @@
 namespace Proud\Core;
 
 // Hacky copied function to produce exerpt
-function wp_trim_excerpt( $text = '', $more_link = true ) {
+function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false ) {
   $raw_excerpt = $text;
-  if ( '' == $text ) {
+  // Try using yoast ?
+  if( $use_yoast ) {
+    global $post;
+    $text = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true );
+  }
+  if ( empty( $text ) ) {
     $text = get_the_content('');
 
     $text = strip_shortcodes( $text );
