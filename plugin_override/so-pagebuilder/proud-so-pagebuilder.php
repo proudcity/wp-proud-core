@@ -51,7 +51,7 @@ class ProudSOPagebuilder {
     $widgets['SiteOrigin_Widget_Editor_Widget']['icon'] = 'fa fa-font';
 
     unset($widgets['SiteOrigin_Widget_Slider_Widget']);
-    unset($widgets['SiteOrigin_Widget_Image_Widget']);
+    //unset($widgets['SiteOrigin_Widget_Image_Widget']);
     unset($widgets['SiteOrigin_Widget_Button_Widget']);
     unset($widgets['SiteOrigin_Widget_Features_Widget']);
     unset($widgets['SiteOrigin_Widget_PostCarousel_Widget']);
@@ -110,6 +110,11 @@ class ProudSOPagebuilder {
     unset($widgets['LogoWidget']);
     unset($widgets['SocialLinksWidget']);
 
+    foreach ($widgets as $key => $widget) {
+      if ( empty($widget['class']) ) {
+        unset($widgets[$key]);
+      }
+    }
 
     //print_r($widgets);
     return $widgets;
