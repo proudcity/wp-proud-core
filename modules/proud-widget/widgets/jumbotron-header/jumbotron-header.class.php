@@ -170,7 +170,7 @@ class JumbotronHeader extends Core\ProudWidget {
             '#to_js_settings' => false
           ],
           'description' => [
-            '#title' => 'Text Description',
+            '#title' => 'Text description',
             '#type' => 'text',
             '#default_value' => '',
             '#description' => 'Brief text to be displayed below title.  This should not contain any html',
@@ -205,6 +205,30 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
           ],
         ],
+      ],
+      'box_position' => [
+        '#title' => __( 'Text box position', 'wp-proud-core' ),
+        '#type' => 'radios',
+        '#default_value'  => 'middle_left',
+        '#options' => [ 
+          'middle_left' => __( 'Middle Left', 'wp-proud-core' ), 
+          'middle_right' => __( 'Middle Right', 'wp-proud-core' ),
+          'middle_center' => __( 'Middle Center', 'wp-proud-core' ),
+          'top_left' => __( 'Top Left', 'wp-proud-core' ), 
+          'top_right' => __( 'Top Right', 'wp-proud-core' ),
+          'bottom_left' => __( 'Bottom Left', 'wp-proud-core' ), 
+          'bottom_right' => __( 'Bottom Right', 'wp-proud-core' ) 
+        ],
+        '#description' => __( 'Position of the header text', 'wp-proud-core' ),
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['full'],
+              'glue' => '||'
+            ]
+          ]
+        ]
       ],
       'make_inverse' => [
         '#title' => __( 'Style', 'wp-proud-core' ),
@@ -335,6 +359,12 @@ class JumbotronHeader extends Core\ProudWidget {
       if ( $instance['make_inverse'] == 'yes' ) {
         $boxclasses[] = 'jumbotron-inverse';
       }
+      // Vertical horizontal positions
+      $pos_options = !empty( $instance['box_position'] )
+                   ? explode( '_', $instance['box_position'] )
+                   : ['middle', 'left'];
+      $boxclasses[] = 'full-v-align-' . $pos_options[0];
+      $boxclasses[] = 'full-h-align-' . $pos_options[1];
       $file .= 'jumbotron-full.php';
     }
     else if( $instance['headertype'] === 'slideshow' ) {
