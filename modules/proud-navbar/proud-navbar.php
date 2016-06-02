@@ -139,8 +139,7 @@ function get_nav_primary_menu() {
 
   // No plugin overtaking, try primary
   if( !$menu && has_nav_menu( 'primary_navigation' ) ) {
-    ob_start();
-    wp_nav_menu( [ 
+    $menu_args = [ 
       'theme_location'    => 'primary_navigation',
       'container'         => 'div',
       'container_class'   => 'below',
@@ -156,7 +155,20 @@ function get_nav_primary_menu() {
       'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
       'depth'             => 1,
       'walker'            => ''
-    ] );
+    ];
+    // Dropdown menu?
+    if( get_option( 'proud_navbar_dropdown', false ) ) {
+      // Load Extendible
+      // -----------------------
+      if ( ! class_exists( 'wp_bootstrap_navwalker' ) ) {
+        require_once( plugin_dir_path(__FILE__) . 'lib/wp_bootstrap_navwalker/wp_bootstrap_navwalker.php' );
+      }
+      $menu_args['walker'] = new wp_bootstrap_navwalker();
+      $menu_args['menu_class'] .= ' navbar-depth';
+      $menu_args['depth'] = '2';
+    }
+    ob_start();
+    wp_nav_menu( $menu_args );
     $menu = ob_get_contents();
     ob_end_clean();
   }
