@@ -94,7 +94,7 @@ function get_navbar_logo() {
       ob_start();
       Proud\Core\print_retina_image( $image_meta, false, true );
       $logo_markup = ob_get_contents();
-      ob_clean();
+      ob_end_clean();
     }
     // Build proud logo
     else {
@@ -105,7 +105,7 @@ function get_navbar_logo() {
           'alt' => 'Home'
       ] );
       $logo_markup = ob_get_contents();
-      ob_clean();
+      ob_end_clean();
     }
   }
 
