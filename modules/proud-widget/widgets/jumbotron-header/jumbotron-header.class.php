@@ -235,8 +235,8 @@ class JumbotronHeader extends Core\ProudWidget {
         '#type' => 'radios',
         '#default_value'  => 'no',
         '#options' => [ 
-          'yes' => __( 'Black text on light background', 'wp-proud-core' ), 
-          'no' => __( 'White text on dark background', 'wp-proud-core' ) 
+          'yes' => __( 'White text on dark background', 'wp-proud-core' ), 
+          'no' => __( 'Black text on light background', 'wp-proud-core' ) 
         ],
       ]
     ];
