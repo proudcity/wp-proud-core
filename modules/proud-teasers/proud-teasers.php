@@ -538,7 +538,6 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints list filters
      */
     public function print_filters( $include_filters = null, $button_text = 'Filter' ) {
-
       // Remove filters that we don't want to show
       if ( !empty($include_filters) ) {
         foreach ( $this->filters as $key => $filter ) {

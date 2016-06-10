@@ -10,14 +10,22 @@ require_once plugin_dir_path(__FILE__) . 'teaser-filter-widgets.php';
 
 class TeaserListWidget extends Core\ProudWidget {
 
-  function __construct( $base_id = false, $name = false, $description = false ) {
+  public static $filter_present = 'init'; // check for filters?
+  public static $filter_parent_instance; // if filter, attach settings
+  public $built_instance = []; // for pre-running widget in case of filter
+  public $child_class; // the actual classname of class
+
+  function __construct( $base_id = false, $name = false, $description = false, $child_class = false ) {
     parent::__construct(
       $base_id ? $base_id : 'proud_teaser_list', // Base ID
       $name ? $name : __( 'Content list', 'wp-proud-core' ), // Name
       $description ? $description : array( 'description' => __( 'List of content with a customizable display style', 'wp-proud-core' ), ) // Args
     );
-
+    // Set child class
+    $this->child_class = !empty( $child_class ) ? $child_class : get_class($this);
     $this->post_type = false;
+    // set filter for making sure teasers get rendered before filter
+    add_filter( 'siteorigin_panels_before_content', array($this, 'pre_build_teasers'), 10, 2 );
   }
 
   function postTypes() {
@@ -166,6 +174,69 @@ class TeaserListWidget extends Core\ProudWidget {
     return false;
   }
 
+  /** 
+   * Builds the teaser list
+   */
+  public function build_teasers(&$instance) {
+    if( empty( $this->built_instance ) ) {
+      $terms = [];
+      if( !empty( $instance['proud_teaser_terms'] ) ) {
+        $terms = $instance['proud_teaser_terms'];
+        $terms = array_keys($terms);
+        $terms = count($terms) ? $terms : false;
+      }
+
+      $this->built_instance['teaser_list'] = new Core\TeaserList(
+        $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
+        $instance['proud_teaser_display'], 
+        array(
+          'posts_per_page' => $instance[ 'post_count' ],
+        ),
+        $instance['show_filters'],
+        $terms,
+        !empty( $instance['pager'] )
+      );
+      if($instance['show_filters']) {
+        $teaser_filter_class = new TeaserFilterTracker( $this->built_instance['teaser_list'] );
+      }
+    }
+  }
+
+  /** 
+   * Makes sure teaser content is built before filters 
+   */
+  public function pre_build_teasers($content, $panels_data) {
+    if( empty( $this->built_instance ) ) {
+      // First run ?
+      $run_init = !empty( $panels_data['widgets'] ) && self::$filter_present === 'init';
+      if( $run_init ) {
+        $instance = [];
+        self::$filter_present = false;
+        foreach ($panels_data['widgets'] as $key => $widget) {
+          if( !empty( $widget['panels_info']['class'] ) ) {
+            // Set filter present ?
+            if( strpos( $widget['panels_info']['class'], 'TeaserFilter' ) === 0 ) {
+              self::$filter_present = true;
+            }
+            // set filter parent class ?
+            if( strpos( $widget['panels_info']['class'], 'TeaserListWidget' ) !== false ) {
+              self::$filter_parent_instance = $widget;
+            }
+          }
+        }
+      }
+      // Run build?
+      $run_build = self::$filter_present 
+                && !empty( self::$filter_parent_instance['panels_info']['class'] )
+                && self::$filter_parent_instance['panels_info']['class'] === $this->child_class;
+      //  we have teaser list, so build
+      if( $run_build ) {
+        $this->build_teasers( self::$filter_parent_instance );
+      }
+    }
+    return $content;
+  }
+
   /**
    * Determines if content empty, show widget, title ect?  
    *
@@ -175,26 +246,7 @@ class TeaserListWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function hasContent($args, &$instance) {
-    $terms = [];
-    if( !empty( $instance['proud_teaser_terms'] ) ) {
-      $terms = $instance['proud_teaser_terms'];
-      $terms = array_keys($terms);
-      $terms = count($terms) ? $terms : false;
-    }
-
-    $instance['teaser_list'] = new Core\TeaserList(
-      $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
-      $instance['proud_teaser_display'], 
-      array(
-        'posts_per_page' => $instance[ 'post_count' ],
-      ),
-      $instance['show_filters'],
-      $terms,
-      $instance['pager']
-    );
-    if($instance['show_filters']) {
-      $teaser_filter_class = new TeaserFilterTracker($instance['teaser_list']);
-    }
+    $this->build_teasers($instance);
     return true;
   }
 
@@ -208,6 +260,7 @@ class TeaserListWidget extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     extract($instance);
+    $teaser_list = $this->built_instance['teaser_list'];
     $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-list.php';
     // Include the template file
     include( $file );
@@ -220,8 +273,6 @@ require_once plugin_dir_path(__FILE__) . 'teasers-list-post-specific-widgets.php
 // register widgets
 function register_teaser_list_widget() {
   register_widget( 'TeaserListWidget' );
-  register_widget( 'TeaserFilterWidget' );
-  register_widget( 'TeaserFilterSearchWidget' );
 
   // Post-type specific widgets
   register_widget( 'PostTeaserListWidget' );
@@ -231,4 +282,12 @@ function register_teaser_list_widget() {
   register_widget( 'ContactTeaserListWidget' );
   register_widget( 'AgencyTeaserListWidget' );
 }
-add_action( 'widgets_init', 'register_teaser_list_widget' );
+add_action( 'widgets_init', 'register_teaser_list_widget', 10 );
+
+
+// register widgets
+function register_teaser_list_filter_widget() {
+  register_widget( 'TeaserFilterWidget' );
+  register_widget( 'TeaserFilterSearchWidget' );
+}
+add_action( 'widgets_init', 'register_teaser_list_filter_widget', 11 );

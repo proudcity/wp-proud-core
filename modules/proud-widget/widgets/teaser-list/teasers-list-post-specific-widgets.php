@@ -11,7 +11,8 @@ class PostTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_post_teaser_list', // Base ID
       __( 'News Posts list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of News Posts in a category with a display style', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of News Posts in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'post';
@@ -24,7 +25,8 @@ class EventTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_event_teaser_list', // Base ID
       __( 'Events list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Events in a category with a display style', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of Events in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'event';
@@ -37,7 +39,8 @@ class DocumentTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_document_teaser_list', // Base ID
       __( 'Documents list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Documents in a category with a display style', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of Documents in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'document';
@@ -50,7 +53,8 @@ class JobTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_job_teaser_list', // Base ID
       __( 'Jobs list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Job Listings in a category with a display style', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of Job Listings in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'job_listing';
@@ -63,7 +67,8 @@ class ContactTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_contact_teaser_list', // Base ID
       __( 'Contacts list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of staff Contacts in a category with a display style', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of staff Contacts in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'staff-member';
@@ -77,7 +82,8 @@ class AgencyTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_agency_teaser_list', // Base ID
       __( 'Agency list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of agencies', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'List of agencies', 'wp-proud-core' ), ), // Args
+      get_class($this)
     );
 
     $this->post_type = 'agency';
