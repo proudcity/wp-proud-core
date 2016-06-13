@@ -33,6 +33,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         global $proudsearch;
         // Collect get parameter
         $this->search_key = $proudsearch::_SEARCH_PARAM;
+        // Add key for search
+        $args['proud_search'] = true;
       }
       else {
         $this->search_key = 'filter_keyword';
@@ -70,6 +72,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         'update_post_term_cache' => true, // don't retrieve post terms
         'update_post_meta_cache' => true, // don't retrieve post meta
       ] , $args );
+
       $this->query = new \WP_Query( $args );
     }
 
