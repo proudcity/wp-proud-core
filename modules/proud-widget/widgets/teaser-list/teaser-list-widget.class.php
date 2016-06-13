@@ -177,35 +177,34 @@ class TeaserListWidget extends Core\ProudWidget {
   /** 
    * Builds the teaser list
    */
-  public function build_teasers(&$instance) {
-    if( empty( $this->built_instance ) ) {
-      $terms = [];
-      if( !empty( $instance['proud_teaser_terms'] ) ) {
-        $terms = $instance['proud_teaser_terms'];
-        $terms = array_keys($terms);
-        $terms = count($terms) ? $terms : false;
-      }
-
-      $this->built_instance['teaser_list'] = new Core\TeaserList(
-        $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
-        $instance['proud_teaser_display'], 
-        array(
-          'posts_per_page' => $instance[ 'post_count' ],
-        ),
-        $instance['show_filters'],
-        $terms,
-        !empty( $instance['pager'] )
-      );
-      if($instance['show_filters']) {
-        $teaser_filter_class = new TeaserFilterTracker( $this->built_instance['teaser_list'] );
-      }
+  public function build_teasers( $instance ) {
+    $terms = [];
+    if( !empty( $instance['proud_teaser_terms'] ) ) {
+      $terms = $instance['proud_teaser_terms'];
+      $terms = array_keys($terms);
+      $terms = count($terms) ? $terms : false;
     }
+
+    $instance['teaser_list'] = new Core\TeaserList(
+      $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
+      $instance['proud_teaser_display'], 
+      array(
+        'posts_per_page' => $instance[ 'post_count' ],
+      ),
+      !empty ( $instance['show_filters'] ),
+      $terms,
+      !empty( $instance['pager'] )
+    );
+    if( !empty ( $instance['show_filters'] ) ) {
+      $teaser_filter_class = new TeaserFilterTracker( $instance['teaser_list'] );
+    }
+    return $instance;
   }
 
   /** 
    * Makes sure teaser content is built before filters 
    */
-  public function pre_build_teasers($content, $panels_data) {
+  public function pre_build_teasers( $content, $panels_data ) {
     if( empty( $this->built_instance ) ) {
       // First run ?
       $run_init = !empty( $panels_data['widgets'] ) && self::$filter_present === 'init';
@@ -219,7 +218,7 @@ class TeaserListWidget extends Core\ProudWidget {
               self::$filter_present = true;
             }
             // set filter parent class ?
-            if( strpos( $widget['panels_info']['class'], 'TeaserListWidget' ) !== false ) {
+            if( !empty( $widget['show_filters'] ) && strpos( $widget['panels_info']['class'], 'TeaserListWidget' ) !== false ) {
               self::$filter_parent_instance = $widget;
             }
           }
@@ -231,7 +230,7 @@ class TeaserListWidget extends Core\ProudWidget {
                 && self::$filter_parent_instance['panels_info']['class'] === $this->child_class;
       //  we have teaser list, so build
       if( $run_build ) {
-        $this->build_teasers( self::$filter_parent_instance );
+        $this->built_instance = $this->build_teasers( self::$filter_parent_instance );
       }
     }
     return $content;
@@ -245,8 +244,15 @@ class TeaserListWidget extends Core\ProudWidget {
    * @param array $args     Widget arguments.
    * @param array $instance Saved values from database.
    */
-  public function hasContent($args, &$instance) {
-    $this->build_teasers($instance);
+  public function hasContent( $args, &$instance ) {
+    // Dealing with a filter page
+    if( !empty ( $instance['show_filters'] ) && !empty( $this->built_instance ) ) {
+      $instance = $this->built_instance;
+    }
+    // normal listing
+    else {
+      $instance = $this->build_teasers( $instance );
+    }
     return true;
   }
 
@@ -260,7 +266,6 @@ class TeaserListWidget extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     extract($instance);
-    $teaser_list = $this->built_instance['teaser_list'];
     $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-list.php';
     // Include the template file
     include( $file );
