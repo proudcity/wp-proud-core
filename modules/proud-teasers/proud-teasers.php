@@ -584,7 +584,8 @@ function process_filter_submit() {
         wp_redirect( get_permalink() . '?' . implode( '&', $params ) );
       }
       else {
-        wp_redirect( sanitize_text_field( $_REQUEST['q'] ) );
+        $url = strtok($_SERVER['REQUEST_URI'],'?');
+        wp_redirect( sanitize_text_field( $url ) );
       }
       exit();
     }
