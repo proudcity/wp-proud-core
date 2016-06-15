@@ -570,7 +570,6 @@ function process_filter_submit() {
         // Sanitize
         $key = sanitize_key( $key );
         if( strpos( $key, 'filter_' ) === 0 && !empty( $value ) ) {
-          echo $key;
           if( is_array( $value ) ) {
             foreach ($value as $val) {
               $params[] = $key . '[]=' . urlencode( sanitize_text_field( $val ) );
