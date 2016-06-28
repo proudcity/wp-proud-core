@@ -5,7 +5,7 @@ class ContactSubmenu extends Core\ProudWidget {
 
   function __construct() {
     parent::__construct(
-      'submenu', // Base ID
+      'contact_submenu', // Base ID
       __( 'Contact submenu', 'wp-agency' ), // Name
       array( 'description' => __( "Lists Agencies and Contact categories", 'wp-agency' ), ) // Args
     );

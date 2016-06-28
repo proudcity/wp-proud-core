@@ -202,6 +202,7 @@ class Proudcore extends \ProudPlugin {
             $pageInfo['parent_link'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
             if (!empty( $pageInfo['parent_link'] ) && $pageInfo['parent_link'] ) {
               $pageInfo['parent_post'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object_id', true );
+              $pageInfo['parent_post_type'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object', true );
             }
           }
           else {
