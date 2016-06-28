@@ -1,5 +1,5 @@
 <div class="<?php print implode( ' ', $classes ) ?>" id="<?php print $random_id ?>" style="<?php print implode( '', $arr_styles ) ?>">
-  <?php Proud\Core\print_responsive_image( $resp_img, ['jumbo-image-container'] ); ?>
+  <?php if( !empty( $resp_img ) ) { Proud\Core\print_responsive_image( $resp_img, ['jumbo-image-container'] ); } ?>
   <div class="container"><div class="full-container">
     <div class="<?php print implode( ' ', $boxclasses ) ?>"><div class="row"><div class="col-lg-7 col-md-8 col-sm-9">
       <div class="jumbotron-bg"><?php print $content; ?></div>

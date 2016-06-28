@@ -146,7 +146,7 @@ function build_responsive_image_meta( $media_id, $size_max = 'full', $size_small
  */
 function print_responsive_image( $resp_img, $classes = [], $skip_media = false ) {
   $classes[] = 'media';
-  $image_meta = $resp_img['meta']['image_meta'];
+  $image_meta = !empty( $resp_img['meta']['image_meta'] ) ? $resp_img['meta']['image_meta'] : [];
   ?> 
   <?php if( !empty( $resp_img['src'] ) ): ?> 
     <?php if( !$skip_media && !empty( $classes ) ): ?> 

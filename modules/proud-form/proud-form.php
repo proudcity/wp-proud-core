@@ -78,7 +78,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('select-list');
     }
 
-    public function printImageUpload($value, $translate) {
+    public function printImageUpload($media_id, $url, $translate) {
       include $this->template('image-upload');
     }
 
@@ -132,8 +132,37 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // add extra class
           $extra_group_class = ' clearfix';
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-          $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-          $this->printImageUpload($field['#value'], $this->form_id);
+          // Image should be a media['ID'], but due to 
+          // https://github.com/proudcity/wp-proudcity/issues/436
+          // old values could be a URL
+          $media_id = '';
+          $url = '';
+          if( !empty( $field['#value'] ) ) {
+            // Already have media value
+            if( is_numeric ( $field['#value'] ) ) {
+              $media_id = $field['#value'];
+            }
+            // featured image on post... would be nice to convert this
+            // but global $post is empty on site origins form.
+            else if( '[featured-image]' === $field['#value'] ) {
+              $media_id = '[featured-image]';
+            }
+            // URL... this option should be slowly phased out
+            else {
+              global $wpdb;
+              $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $field['#value'] ) );
+              // Don't set the URL unless we have a value
+              if( !empty( $media_id ) ) {
+                $url = $field['#value'];
+              } 
+            }
+            // Have media ID but not URL, so query
+            if( !empty( $media_id ) && is_numeric ( $media_id ) && empty( $url ) ) {
+              $url = wp_get_attachment_image_url($media_id, 'thumbnail');
+            }
+          }
+          $this->printTextInput($field['#id'], $field['#name'], $media_id, $this->form_id, array('class' => 'visible-print-block'));
+          $this->printImageUpload($media_id, $url, $this->form_id);
           if( !empty( $field['#description'] ) ) 
             $this->printDescription($field['#description']);
           break;
@@ -312,7 +341,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         'id' => $this->form_id
       ], $args);
       ?>
-      <form id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
+      <form class="proud-settings" id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
         <?php wp_nonce_field( $args['id'] ); ?>
         <?php $this->printFields(); ?>
         <button type="submit" class="btn btn-primary"><?php print $args['button_text']; ?></button>

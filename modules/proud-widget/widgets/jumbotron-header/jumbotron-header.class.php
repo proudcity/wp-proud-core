@@ -138,6 +138,30 @@ class JumbotronHeader extends Core\ProudWidget {
           ],
         ],
       ],
+      'featured_image' => [
+        '#title' => __( 'Image: Use featured image from post?', 'wp-proud-core' ),
+        '#type' => 'radios',
+        '#default_value'  => 'no',
+        '#options' => [ 
+          'yes' => __( 'Yes', 'wp-proud-core' ), 
+          'no' => __( 'No', 'wp-proud-core' ) 
+        ],
+        '#description' => __('If yes, the image used will be from the "Featured Image" field', 'wp-proud-core' ),
+        '#states' => [
+          'visible' => [
+            'background' => [
+              'operator' => '==',
+              'value' => ['image'],
+              'glue' => '&&'
+            ],
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
+            ],
+          ]
+        ]
+      ],
       'image' => [
         '#title' => __( 'Image', 'wp-proud-core' ),
         '#type' => 'select_media',
@@ -152,6 +176,11 @@ class JumbotronHeader extends Core\ProudWidget {
             'headertype' => [
               'operator' => '!=',
               'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
+            ],
+            'featured_image' => [
+              'operator' => '!=',
+              'value' => ['yes'],
               'glue' => '&&'
             ],
           ],
@@ -243,6 +272,25 @@ class JumbotronHeader extends Core\ProudWidget {
   }
 
   /**
+   * OVERRIDE: Back-end widget form.
+   *
+   * @see WP_Widget::form()
+   *
+   * @param array $instance Previously saved values from database.
+   */
+  public function form( $instance ) {
+    // $instance['image'] should be a media['ID'], but due to 
+    // https://github.com/proudcity/wp-proudcity/issues/436
+    // Old values may be [featured-image]
+    // Set new value 'featured_image' if that is the case
+    if( !empty( $instance['image'] ) && $instance['image'] === '[featured-image]' ) {
+      $instance['featured_image'] = 'yes';
+    }
+    parent::form($instance);
+  }
+
+
+  /**
    * Return CSS for background-repeat
    *
    * @param string $bg_repeat
@@ -269,15 +317,24 @@ class JumbotronHeader extends Core\ProudWidget {
     return $background_repeat;
   }
 
-  function getResponsiveImage($image) {
-    // Allow [featured-image]
-    $url = do_shortcode($image);
+  // Image should be a media['ID'], but due to 
+  // https://github.com/proudcity/wp-proudcity/issues/436
+  // Some values may be a url
+  function getResponsiveImage( $image ) {
+    $media_id = '';
+    // $image is ID
+    if( is_numeric ( $image ) ) {
+      $media_id = $image;
+    }
+    // $image is a URL
+    else {//if( false !== filter_var( $image, FILTER_VALIDATE_URL ) ) {
+      $url = do_shortcode($image);
+      global $wpdb;
+      $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+    }
     
     // Build image attrs 
-    // @todo: should we save image, not just url?
-    global $wpdb;
-    $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
-    return Core\build_responsive_image_meta($media_id);
+    return !empty( $media_id ) ? Core\build_responsive_image_meta( $media_id ) : [];
   }
 
   /**
@@ -302,9 +359,9 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'pattern':
-          $pattern_img     = $instance['pattern'];
+          $pattern_img = wp_get_attachment_image_url( $instance['pattern'], 'full' );
           $background_style = "background-image:url('$pattern_img');";
-
+          $background_style .= "background-size:initial;";
           $background_repeat = self::background_repeat( $instance['repeat'] );
           if ( ! empty( $background_repeat ) ) {
             $background_style .= "background-repeat:$background_repeat;";
@@ -312,6 +369,11 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'image':
+          // Use featured image?
+          if($instance['featured_image'] === 'yes') {
+            global $post;
+            $instance['image'] = get_post_thumbnail_id( $post->ID );
+          }
           $resp_img = $this->getResponsiveImage($instance['image']);
           break;
       }
