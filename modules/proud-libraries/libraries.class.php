@@ -41,6 +41,18 @@ class ProudLibaries {
       'deps' => ['jquery-core','proud']
     ];
 
+    self::$libraries['select2'] = [
+      'title' => 'Select 2',
+      'js' => [
+        'select2' => $path . 'select2/select2.min.js',
+      ],
+      'css'  => [ 
+        'select2' => $path . 'select2/select2.css',
+      ],
+      'js_footer' => true,
+      'deps' => ['jquery-core']
+    ];
+
     self::$libraries['dragula'] = [
       'title' => 'Dragula',
       'js' => [
