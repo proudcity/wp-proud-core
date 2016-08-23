@@ -1,6 +1,5 @@
 {
   "name": "fontawesome-iconpicker",
-  "version": "1.2.0",
   "main": [
     "dist/css/fontawesome-iconpicker.css",
     "dist/css/fontawesome-iconpicker.min.css",
@@ -19,14 +18,14 @@
     "/package.json",
     "/Gruntfile.js"
   ],
-  "homepage": "https://github.com/mjolnic/fontawesome-iconpicker",
-  "_release": "1.2.0",
+  "homepage": "https://github.com/aschmoe/fontawesome-iconpicker",
+  "_release": "62882415c0",
   "_resolution": {
-    "type": "version",
-    "tag": "1.2.0",
-    "commit": "363c2a632c3e8d5a73710f18b370767a732557b7"
+    "type": "branch",
+    "branch": "updating-fontawesome-version",
+    "commit": "62882415c0be52d3360995ff49a25d688dd128a2"
   },
-  "_source": "git://github.com/mjolnic/fontawesome-iconpicker.git",
-  "_target": "~1.2.0",
-  "_originalSource": "fontawesome-iconpicker"
+  "_source": "git@github.com:aschmoe/fontawesome-iconpicker.git",
+  "_target": "updating-fontawesome-version",
+  "_originalSource": "git@github.com:aschmoe/fontawesome-iconpicker"
 }
