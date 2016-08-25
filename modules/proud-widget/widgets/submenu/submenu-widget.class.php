@@ -20,14 +20,10 @@ class Submenu extends Core\ProudWidget {
     */
     function initialize() {
         $menus = [];
-        $primary = 0;
-        $default = 0;
+        $primary = 'primary-links';
+        $default = 'primary-links';
 
         // Try to grab primary
-        $locations = get_nav_menu_locations();
-        if( !empty( $locations['primary_navigation'] ) ) {
-            $primary = $locations['primary_navigation'];
-        }
         global $proud_menu_util;
         foreach ( $proud_menu_util::$menus as $key => $menu ) {
             if( $key === $primary) {

@@ -9,7 +9,7 @@ class ProudMenuUtil {
   function __construct( ) {
     self::$menus = [];
     foreach( wp_get_nav_menus() as $menu ) {
-      self::$menus[$menu->term_id] = $menu;
+      self::$menus[$menu->slug] = $menu;
     }
   }
 
