@@ -132,12 +132,16 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
 function build_responsive_image_meta( $media_id, $size_max = 'full', $size_small = 'medium' ) {
   // Get meta
   $media_meta = wp_get_attachment_metadata($media_id);
-  return [
+
+  $return = [
     'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, $media_meta),
     'size' => wp_get_attachment_image_sizes($media_id, $size_max),
     'src' => wp_get_attachment_image_src($media_id, $size_small),
     'meta' => $media_meta
   ];
+  //$return['meta']['caption'] = get_the_excerpt( $media_id );
+  //print_r($return);die();
+  return $return;
 }
 
 
