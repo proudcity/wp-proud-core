@@ -7,8 +7,8 @@ class Submenu extends Core\ProudWidget {
     function __construct() {
         parent::__construct(
             'submenu', // Base ID
-            __( 'Primary links submenu', 'wp-agency' ), // Name
-            array( 'description' => __( "A submenu of the Primary Links menu", 'wp-agency' ), ) // Args
+            __( 'Submenu', 'wp-agency' ), // Name
+            array( 'description' => __( "Select a menu to display or, display a submenu from the Primary Menu", 'wp-agency' ), ) // Args
         );
     }
 
