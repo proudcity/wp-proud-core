@@ -44,6 +44,7 @@ class JumbotronHeader extends Core\ProudWidget {
          '#options' => [
           'header'    => __( 'Header (good for important pages)', 'wp-proud-core' ),
           'slideshow' => __( 'Slideshow', 'wp-proud-core' ),
+          'random' => __( 'Random image', 'wp-proud-core' ),
           'full'      => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
           'simple'    => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
         ],
@@ -79,7 +80,7 @@ class JumbotronHeader extends Core\ProudWidget {
           'visible' => [
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple', 'slideshow'],
+              'value' => ['simple', 'slideshow', 'random'],
               'glue' => '&&'
             ],
           ],
@@ -235,6 +236,27 @@ class JumbotronHeader extends Core\ProudWidget {
           ],
         ],
       ],
+      'random' => [
+        '#title' => __( 'Image', 'wp-proud-core' ),
+        '#type' => 'group',
+        '#group_title_field' => 'slide_title',
+        '#sub_items_template' => [
+          'random_image' => [
+            '#title' => __( 'Image', 'wp-proud-core' ),
+            '#type' => 'select_media',
+            '#default_value'  => '',
+          ]
+        ],
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['random'],
+              'glue' => '&&'
+            ],
+          ],
+        ],
+      ],
       'box_position' => [
         '#title' => __( 'Text box position', 'wp-proud-core' ),
         '#type' => 'radios',
@@ -352,6 +374,13 @@ class JumbotronHeader extends Core\ProudWidget {
     $classes = [];
 
     if(!empty( $instance['background']) && $instance['headertype'] !== 'slideshow' ) {
+       
+      if ($instance['headertype']) {
+        $rand = array_rand( $instance['random'] );
+        $instance['image'] = $instance['random'][$rand]['random_image'];
+        $instance['background'] = 'image';
+      }
+
       switch ( $instance['background'] ) {
         case 'solid':
           $solid_color = $instance['solid_color_value'];
