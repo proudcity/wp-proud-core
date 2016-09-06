@@ -39,7 +39,7 @@ class ProudSOPagebuilder {
     unset($widgets['WP_Widget_Recent_Posts']);
     unset($widgets['WP_Widget_Categories']);
     //unset($widgets['WP_Widget_Text']);
-    $widgets['WP_Widget_Text']['title'] = 'Code';
+    $widgets['WP_Widget_Text']['title'] = 'Code or iFrame embed';
     $widgets['WP_Widget_Text']['icon'] = 'fa fa-code';
     unset($widgets['WP_Widget_Search']);
     unset($widgets['WP_Widget_Meta']);
