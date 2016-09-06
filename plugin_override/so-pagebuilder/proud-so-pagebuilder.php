@@ -20,6 +20,7 @@ class ProudSOPagebuilder {
 
   // Restrict widgets available
   function so_panels_widgets( $widgets ){
+    //return $widgets;
     unset($widgets['WP_Auth0_Embed_Widget']);
     unset($widgets['WP_Auth0_Popup_Widget']);
     unset($widgets['WP_Nav_Menu_Widget']);
@@ -50,8 +51,12 @@ class ProudSOPagebuilder {
     $widgets['SiteOrigin_Widget_Editor_Widget']['title'] = 'Text';
     $widgets['SiteOrigin_Widget_Editor_Widget']['icon'] = 'fa fa-font';
 
-    unset($widgets['SiteOrigin_Widget_Slider_Widget']);
+    $widgets['SiteOrigin_Widget_Image_Widget']['title'] = 'Image';
+    $widgets['SiteOrigin_Widget_Image_Widget']['icon'] = 'fa fa-camera';
+
     //unset($widgets['SiteOrigin_Widget_Image_Widget']);
+
+    unset($widgets['SiteOrigin_Widget_Slider_Widget']);
     unset($widgets['SiteOrigin_Widget_Button_Widget']);
     unset($widgets['SiteOrigin_Widget_Features_Widget']);
     unset($widgets['SiteOrigin_Widget_PostCarousel_Widget']);
