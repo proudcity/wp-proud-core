@@ -375,7 +375,7 @@ class JumbotronHeader extends Core\ProudWidget {
 
     if(!empty( $instance['background']) && $instance['headertype'] !== 'slideshow' ) {
        
-      if ($instance['headertype']) {
+      if ( $instance['headertype'] === 'random' ) {
         $rand = array_rand( $instance['random'] );
         $instance['image'] = $instance['random'][$rand]['random_image'];
         $instance['background'] = 'image';
