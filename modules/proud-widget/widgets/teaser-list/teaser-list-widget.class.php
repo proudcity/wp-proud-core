@@ -32,7 +32,7 @@ class TeaserListWidget extends Core\ProudWidget {
     return [
       'post' => __('News', 'proud-teaser'),
       'event' => __('Events', 'proud-teaser'),
-      'agency' => __('Agencies', 'proud-teaser'),
+      'agency' => _x( 'Agencies', 'post name', 'wp-agency' ),
       'staff-member' => __('Staff Members', 'proud-teaser'),
       'document' => __('Documents', 'proud-teaser'),
       'job_listing' => __('Jobs', 'proud-teaser'),
@@ -193,7 +193,8 @@ class TeaserListWidget extends Core\ProudWidget {
       ),
       !empty ( $instance['show_filters'] ),
       $terms,
-      !empty( $instance['pager'] )
+      !empty( $instance['pager'] ),
+      !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null
     );
     if( !empty ( $instance['show_filters'] ) ) {
       $teaser_filter_class = new TeaserFilterTracker( $instance['teaser_list'] );
