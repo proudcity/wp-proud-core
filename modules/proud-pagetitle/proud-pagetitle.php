@@ -39,7 +39,8 @@ function proud_pagetitle_callback() {
     if( isset( $_POST['_wpnonce'] ) && wp_verify_nonce($_POST['_wpnonce'], 'proud_pagetitle_check') ) {
         if( proud_pagetitle_get_duplicates( $_POST['title'], $_POST['post_id'] ) ) {
             wp_send_json(array(
-                'duplicate_exists' => 1
+                'duplicate_exists' => 1,
+                'duplicate_message' => __('There is already a post with this title, please choose a new one or make sure the permalink below does not already exist!', 'wp-proud-core')
             ));
         }
     }

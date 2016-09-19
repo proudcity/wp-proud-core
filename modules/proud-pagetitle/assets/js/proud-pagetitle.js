@@ -17,7 +17,7 @@ jQuery(document).ready(function($) {
             // We can also pass the url value separately from ajaxurl for front end AJAX implementations
             jQuery.post(proud_title.ajax_url, data, function(response) {
                 if(response.duplicate_exists){
-                    $('#titlewrap').append('<div id="title-alert" class="alert alert-danger"><p>There is already a post with this title, please choose a new one or make sure the permalink below is unique!</p></div>');
+                    $('#titlewrap').append('<div id="title-alert" class="alert alert-danger"><p>' + response.duplicate_message + '</p></div>');
                 }
             });
         }
