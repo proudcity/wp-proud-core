@@ -46,7 +46,16 @@ class Submenu extends Core\ProudWidget {
             '#type' => 'select',
             '#options' => $menus,
             '#default_value' => $default
-          )
+          ),
+          'format' => array(
+            '#title' => __( 'Format', 'wp-proud-core' ),
+            '#type' => 'radios',
+            '#options' => [
+              'sidebar' => 'Sidebar',
+              'pills' => 'Pills',
+            ],
+            '#default_value' => 'sidebar',
+          ),
         );
     }
 
@@ -59,7 +68,7 @@ class Submenu extends Core\ProudWidget {
      * @param array $instance Saved values from database.
      */
     public function hasContent($args, &$instance) {
-        $instance['menu_class'] = new Core\ProudMenu($instance['menu_id']);
+        $instance['menu_class'] = new Core\ProudMenu( $instance['menu_id'], $instance['format'] );
         return true;
     }
 

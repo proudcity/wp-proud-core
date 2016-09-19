@@ -31,17 +31,26 @@ class ProudMenu {
 
   static $back_template;
   static $link_template;
+  static $show_level;
   static $wrapper_template;
   static $warning_template;
   static $menu_structure;
 
-  function __construct( $menu_id = false ) {
+  function __construct( $menu_id = false, $format = 'sidebar' ) {
     // Actually build
     if( $menu_id ) {
       // Init templates
-      self::$back_template = plugin_dir_path( __FILE__ ) . 'templates/back-link.php';;
-      self::$link_template = plugin_dir_path( __FILE__ ) . 'templates/menu-item.php';;
-      self::$wrapper_template = plugin_dir_path( __FILE__ ) . 'templates/menu-wrapper.php'; 
+      if ($format == 'pills') {
+        self::$link_template = plugin_dir_path( __FILE__ ) . 'templates/pills-item.php';
+        self::$wrapper_template = plugin_dir_path( __FILE__ ) . 'templates/pills-wrapper.php';
+        self::$show_level = false;
+      }
+      else {
+        self::$link_template = plugin_dir_path( __FILE__ ) . 'templates/menu-item.php';
+        self::$wrapper_template = plugin_dir_path( __FILE__ ) . 'templates/menu-wrapper.php';
+        self::$back_template = plugin_dir_path( __FILE__ ) . 'templates/back-link.php';      
+        self::$show_level = true;
+      }
       // Build menu structure
       self::$menu_structure = $this->get_nested_menu( $menu_id );
     }
@@ -137,7 +146,7 @@ class ProudMenu {
     $menu_level = 'level-' . $count;
 
     // init menu
-    $menus[$menu_level] = '<div class="' . $menu_level . '">';
+    $menus[$menu_level] = !empty(self::$show_level) ? '<div class="' . $menu_level . '">' : '';
 
     // Have parent?  Add backbutton
     if( !empty($parent) ) {
@@ -176,7 +185,7 @@ class ProudMenu {
     }
 
     // close menu
-    $menus[$menu_level] .= '</div>';
+    $menus[$menu_level] .= !empty(self::$show_level) ? '</div>' : '';
   }
 
   /** 
@@ -184,7 +193,6 @@ class ProudMenu {
    * See comments https://developer.wordpress.org/reference/functions/wp_get_nav_menu_items/
    */
   static function print_menu( ) {
-
     if( !empty( self::$menu_structure ) ) {
       $active = 0;
       $menus = array();

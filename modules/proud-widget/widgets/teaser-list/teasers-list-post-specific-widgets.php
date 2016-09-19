@@ -70,9 +70,34 @@ class ContactTeaserListWidget extends TeaserListWidget {
       array( 'description' => __( 'List of staff Contacts in a category with a display style', 'wp-proud-core' ), ), // Args
       get_class($this)
     );
-
     $this->post_type = 'staff-member';
   }
+
+  function initialize() {
+    parent::initialize();
+    $this->settings += [
+      'proud_teaser_hide' => [
+        '#title' => __('Hide Columns', 'proud-teaser'),
+        '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => [],
+        '#options' => [
+          'agency' => _x( 'Agency', 'post type singular name', 'wp-agency' ),
+          'social' => __( 'Social', 'proud-teaser' ),
+        ],
+        '#states' => [
+          'hidden' => [
+            'proud_teaser_display' => [
+              'operator' => '!=',
+              'value' => ['table'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+    ];
+  }
+
 }
 
 
@@ -90,10 +115,36 @@ class AgencyTeaserListWidget extends TeaserListWidget {
   }
 
   function displayModes() {
-      return [
-        'icons' => __('Icon Buttons', 'proud-teaser'),
-        'cards' => __('Card View (with thumbnails)', 'proud-teaser'),
-        'table' => __('Table View', 'proud-teaser'),
-      ];
-    }
+    return [
+      'icons' => __('Icon Buttons', 'proud-teaser'),
+      'cards' => __('Card View (with thumbnails)', 'proud-teaser'),
+      'table' => __('Table View', 'proud-teaser'),
+    ];
+  }
+
+  function initialize() {
+    parent::initialize();
+    $this->settings += [
+      'proud_teaser_hide' => [
+        '#title' => __('Hide Columns', 'proud-teaser'),
+        '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => [],
+        '#options' => [
+          'person' => __( 'Person', 'proud-teaser' ),
+          'social' => __( 'Social', 'proud-teaser' ),
+        ],
+        '#states' => [
+          'hidden' => [
+            'proud_teaser_display' => [
+              'operator' => '!=',
+              'value' => ['table'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+    ];
+  }
+
 }

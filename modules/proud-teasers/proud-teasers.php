@@ -17,16 +17,18 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $filters;
     private $pagination;
     private $keyword;
+    private $hide;
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false ) {
+    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false, $hide = [] ) {
 
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
+      $this->hide = $hide;
 
       // Intercept search lists, set keyword
       if($post_type == 'search') {
@@ -324,64 +326,36 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Wraps teaser list: open
      */
     private function print_wrapper_open() {
+      $class = '';
       switch( $this->display_type ) {
         case 'search':
         case 'list':
-          echo '<div class="teaser-list">';
+          $class = 'teaser-list';
           break;
 
         case 'mini':
-          echo '<ul class="title-list list-unstyled">';
+          $class = 'title-list list-unstyled';
           break;
 
         case 'cards':
         case 'icons':
-          echo '<div class="card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize">';
-          break;
-
-        case 'table':
-          echo '<div class="table-responsive"><table class="table table-striped">';
-          switch( $this->post_type ) {
-            case 'agency': 
-               echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',    
-                 __( 'Agency', 'proud-agency' ),   
-                 __( 'Person', 'proud-agency' ),   
-                 __( 'Phone', 'proud-teaser' ),    
-                 __( 'Email', 'proud-teaser' ),    
-                 __( 'Social', 'proud-teaser' )    
-               );    
-               break;
-            case 'staff-member':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Position', 'proud-teaser' ),
-                __( 'Agency', 'proud-agency' ),     
-                __( 'Phone', 'proud-teaser' ),    
-                __( 'Email', 'proud-teaser' ),    
-                __( 'Social', 'proud-teaser' )    
-              );
-              break;
-            case 'document':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Category', 'proud-teaser' ),
-                __( 'Date', 'proud-teaser' ),
-                __( 'Download', 'proud-teaser' )
-              );
-              break;
-            case 'job_listing':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Position', 'proud-teaser' ),
-                __( 'Phone', 'proud-teaser' )
-              );
-              break;
-            default:
-              break;
-          }
-          echo '<tbody>';
+          $class = 'card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize';
           break;
       }
+
+      // Try for post type
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-header.php';
+      $file = "";
+      // Try to load template from theme
+      if( '' === ( $file = locate_template( $template ) ) ) {
+        // Try for generic
+        $template = $this->template_path . 'teaser-' . $this->display_type . '-header.php';
+        if( '' === ( $file = locate_template( $template ) ) ) {
+          // Just load from here
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-header.php';
+        }
+      }
+      include($file);     
     }
 
     /**
@@ -431,6 +405,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
           break;
       }
+      $hide = $this->hide;
       // Display type
       switch( $this->display_type ) {
         case 'mini':
@@ -446,29 +421,24 @@ if ( !class_exists( 'TeaserList' ) ) {
       include($file);
     }
 
+
     /**
-     * Wraps teaser list: close
+     * Wraps teaser list: open
      */
     private function print_wrapper_close() {
-      switch( $this->display_type ) {
-        case 'search':
-        case 'list':
-          echo "</div>";
-          break;
-
-        case 'mini':
-          echo "</ul>";
-          break;
-
-        case 'cards':
-        case 'icons':
-          echo "</div>";
-          break;
-
-        case 'table':
-          echo "</tbody></table></div>";
-          break;
+      // Try for post type
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-footer.php';
+      $file = "";
+      // Try to load template from theme
+      if( '' === ( $file = locate_template( $template ) ) ) {
+        // Try for generic
+        $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
+        if( !file_exists( $file ) ) {
+          // Just load from here
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-footer.php';
+        }
       }
+      include($file);     
     }
 
     /**
@@ -537,6 +507,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $this->print_content();
         endwhile;
         // Close wrapper
+
         $this->print_wrapper_close();
         // Print pager?
         if( $this->pagination ) {
