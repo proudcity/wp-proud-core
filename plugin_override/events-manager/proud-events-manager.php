@@ -4,7 +4,7 @@
 function events_manager_script_enqueue() {
   global $post;
 
-  if( preg_match( '/id\=\"event\-form\"/', $post->post_content ) ) {
+  if( !empty($post) && preg_match( '/id\=\"event\-form\"/', $post->post_content ) ) {
     global $proudcore;
     $proudcore::$libraries->addBundleToLoad('select2');
     wp_enqueue_script('proud-events-manager/js', plugins_url( 'assets/js/',__FILE__ ) . 'proud-events-manager.js', ['select2', 'proud'], true);
