@@ -74,6 +74,9 @@ if ( !class_exists( 'TeaserList' ) ) {
       ] , $args );
 
       $this->query = new \WP_Query( $args );
+
+      // Alter pagination links to deal with issues with documents, ext
+      add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
     }
 
     /**
@@ -219,6 +222,18 @@ if ( !class_exists( 'TeaserList' ) ) {
           $this->filters[$key]['#value'] = ($key == 'filter_categories') ? 0 : '';
         }
       }
+    }
+
+    /**
+     * Alters pager paths from /news/page/2 -> /news?paged=2
+     */
+    public function alter_pagination_path($result) {
+      $preg_page = "/\/page\/([0-9]*?)\//";
+      if(preg_match($preg_page, $result)) {
+        $result = preg_replace("/\?/", "&", $result);
+        $result = preg_replace($preg_page, "?paged=$1", $result);
+      }
+      return $result;
     }
 
     /**
