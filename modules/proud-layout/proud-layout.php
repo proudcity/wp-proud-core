@@ -77,7 +77,6 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
 
         public function head_insert(){
-
           // indicate that the header has run so we can hopefully prevent adding span tags to the meta attributes, etc.
           $this->afterHead = true;
 

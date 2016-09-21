@@ -10,7 +10,7 @@ jQuery(document).ready( function($){
           _custom_media = true;
           wp.media.editor.send.attachment = function(props, attachment){
               if ( _custom_media  ) {
-                 $input.val(attachment.url);
+                 $input.val(attachment.id);
                  $img.attr('src',attachment.url);   
               } else {
                   return _orig_send_attachment.apply( $input.attr('id'), [props, attachment] );

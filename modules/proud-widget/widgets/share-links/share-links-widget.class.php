@@ -45,13 +45,8 @@ class ShareLinks extends Core\ProudWidget {
     $url = add_query_arg( $wp->query_string, '', home_url( $wp->request ) );
     $title = the_title_attribute( [ 'echo'=>0 ] ) . ' from ' . get_bloginfo( 'name' );
 
-    // @ TODO finish this .directive('shareBlock' in getproudcity
     // Get meta information 
-    global $post;
-    $desc = get_post_meta($post->ID, '_yoast_wpseo_metadesc', true);
-    if (empty($desc)) {
-      $desc = \Proud\Core\wp_trim_excerpt();
-    }
+    $desc = \Proud\Core\wp_trim_excerpt( '', false, true );
 
     ?>
     <!--<div class="dropdown share">-->

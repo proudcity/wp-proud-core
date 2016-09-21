@@ -11,6 +11,8 @@ abstract class ProudWidget extends \WP_Widget {
   public $settings = [];
   // proud libraries
   public static $libaries;
+  // proud form
+  public $form;
   // Simple version of class name
   public $shortcode_name;
 
@@ -23,7 +25,6 @@ abstract class ProudWidget extends \WP_Widget {
           '#title' => 'Widget Title',
           '#type' => 'text',
           '#default_value' => '',
-          '#description' => 'Title',
           '#to_js_settings' => false
         ]
       ], $this->settings);
@@ -35,7 +36,7 @@ abstract class ProudWidget extends \WP_Widget {
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
     // Add proud admin scripts
-    add_action( 'init', [$this,'registerAdminLibraries']);
+    add_action( 'init', [$this,'attachAdminForm']);
   }
 
   /**
@@ -61,20 +62,13 @@ abstract class ProudWidget extends \WP_Widget {
 
 
   /**
-   * Register admin libraries from Proud\Core\Libraries
+   * Attach form, and load admin libraries
    */
-  public function registerAdminLibraries() {
-    global $proudcore;
-    foreach ($this->settings as $key => $value) {
-      if(!empty($value['#admin_libraries'])) {
-        foreach ($value['#admin_libraries'] as $library) {
-          $proudcore::$libraries->addBundleToLoad($library, true);
-        }
-      }
-      // Media upload
-      if($value['#type'] == 'select_media') {
-        $proudcore::$libraries->addBundleToLoad('upload-media', true);
-      }
+  public function attachAdminForm() {
+    // Are we admin?
+    if( is_admin( ) ) {
+      // Attach form
+      $this->form = new FormHelper($this->id_base, $this->settings);
     }
   }
 
@@ -141,6 +135,30 @@ abstract class ProudWidget extends \WP_Widget {
     }
   }
 
+  public function buildGroupSubFieldConfig( &$field, $id, $i, $instance = [] ) {
+    $sub_fields = [];
+    foreach( $field['#sub_items_template'] as $sub_id => $sub_item ) {
+      // build sub children id
+      $local_id = $id . '[' . $i . '][' . $sub_id . ']';
+      // get field settings
+      $sub_item['#id'] = $this->get_field_id( $local_id );
+      $sub_item['#name'] = $this->get_field_name( $local_id );
+      $sub_item['#description'] = !empty( $sub_item['#description'] ) ? $sub_item['#description'] : false;
+      // Set default value
+      $sub_item['#value'] = isset( $instance[$id][$i][$sub_id] ) 
+        ? $instance[$id][$i][$sub_id]
+        : $sub_item['#default_value'];
+      
+      if($field['#group_title_field'] === $sub_id) {
+        $field['#group_titles'][] = $sub_item['#value'];
+      }
+
+      // Attach to return
+      $sub_fields[$local_id] = $sub_item;
+    }
+    return $sub_fields;
+  }
+
   public function printWidgetConfig( $instance ) {
     $fields = [];
     foreach ( $this->settings as $id => $field ) {
@@ -151,26 +169,19 @@ abstract class ProudWidget extends \WP_Widget {
 
       // Repeating Group fields
       if( $field['#type'] == 'group') {
-
         // How many of these do we have saved ?
         // TODO, fix this
-        $count = !empty( $instance[$id] ) ? count($instance[$id]) : 1; 
+        $count = !empty( $instance[$id] ) ? count( $instance[$id] ) : 1; 
         // Init field collection
         $field['#items'] = [];
+        // Init group titles
+        $field['#group_titles'] = []; 
         // Run through any saved field items
-        for($i = 0; $i < $count; $i++) {
-          foreach($field['#sub_items_template'] as $sub_id => $sub_field) {
-            // build sub children id
-            $local_id = $id . '[' . $i . '][' . $sub_id . ']';
-            // get field settings
-            $sub_field['#id'] = $this->get_field_id( $local_id );
-            $sub_field['#name'] = $this->get_field_name( $local_id );
-            $sub_field['#description'] = !empty( $sub_field['#description'] ) ? $sub_field['#description'] : false;
-            // Set default value
-            $sub_field['#value'] = isset( $instance[$id][$i][$sub_id] ) 
-              ? $instance[$id][$i][$sub_id]
-              : $sub_field['#default_value'];
-            $field['#items'][$i][$local_id] = $sub_field;
+        for( $i = 0; $i < $count; $i++ ) {
+          $field['#items'][$i] = $this->buildGroupSubFieldConfig( $field, $id, $i, $instance );
+          // Now attach a json template default
+          if( ( $i + 1 ) === $count ) {
+            $field['#json_field_template'] = $this->buildGroupSubFieldConfig( $field, $id, 'GROUP_REPLACE_KEY', $instance );
           }
         }
       }
@@ -184,14 +195,34 @@ abstract class ProudWidget extends \WP_Widget {
       $fields[$id] = $field;
     }
 
-    $form = new FormHelper($this->id_base, $fields);
-    $form->printFields( );
+    $this->form->printFields( $fields );
+  }
+
+  function contains_array( $array ){
+    foreach( $array as $value ) {
+        if( is_array( $value ) ) {
+          return true;
+        }
+    }
+    return false;
   }
 
   public function updateWidgetConfig( $new_instance, $old_instance ) {
     $instance = [];
-    foreach ($new_instance as $key => $value) {
-      $instance[$key] = $value;
+    foreach ( $new_instance as $key => $value ) {
+      // Repeating (0-indexed array) field, with wieght
+      if( is_array( $value ) && $this->contains_array( $value ) && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
+        usort($value, function($a, $b) {
+            if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
+              return 0;
+            }
+            return intval( $a['weight'] ) - intval( $b['weight'] );
+        });
+        $instance[$key] = $value;
+      }
+      else {
+        $instance[$key] = $value;
+      }
     }
     return $instance;
   }

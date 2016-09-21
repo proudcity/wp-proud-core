@@ -7,12 +7,56 @@ class Submenu extends Core\ProudWidget {
     function __construct() {
         parent::__construct(
             'submenu', // Base ID
-            __( 'Primary links submenu', 'wp-agency' ), // Name
-            array( 'description' => __( "A submenu of the Primary Links menu", 'wp-agency' ), ) // Args
+            __( 'Submenu', 'wp-agency' ), // Name
+            array( 'description' => __( "Select a menu to display or, display a submenu from the Primary Menu", 'wp-agency' ), ) // Args
         );
     }
 
+
+    /**
+    * Define shortcode settings.
+    *
+    * @return  void
+    */
     function initialize() {
+        $menus = [];
+        $primary = 'primary-links';
+        $default = 'primary-links';
+
+        // Try to grab primary
+        global $proud_menu_util;
+        foreach ( $proud_menu_util::$menus as $key => $menu ) {
+            if( $key === $primary) {
+                $menus[$key] = $menu->name . __( ' (Primary Menu)', 'wp-proud-core' );
+                $default = $key;
+            }
+            else {
+                $menus[$key] = $menu->name;
+            }
+        } 
+        // No default
+        if(!$default) {
+            reset($menus);
+            $default = key($menus);
+        }
+
+        $this->settings += array(
+          'menu_id' => array(
+            '#title' => __( 'Menu to use', 'wp-proud-core' ),
+            '#type' => 'select',
+            '#options' => $menus,
+            '#default_value' => $default
+          ),
+          'format' => array(
+            '#title' => __( 'Format', 'wp-proud-core' ),
+            '#type' => 'radios',
+            '#options' => [
+              'sidebar' => 'Sidebar',
+              'pills' => 'Pills',
+            ],
+            '#default_value' => 'sidebar',
+          ),
+        );
     }
 
     /**
@@ -24,12 +68,8 @@ class Submenu extends Core\ProudWidget {
      * @param array $instance Saved values from database.
      */
     public function hasContent($args, &$instance) {
-        global $pageInfo;
-        if ( !empty($pageInfo['parent_link']) && $pageInfo['parent_link'] > 0 ) {
-          $instance['pageInfo'] = $pageInfo;
-          return true;
-        }
-        return false;
+        $instance['menu_class'] = new Core\ProudMenu( $instance['menu_id'], $instance['format'] );
+        return true;
     }
 
     /**
@@ -40,14 +80,7 @@ class Submenu extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
         extract($instance);
-        $args = array(
-          'menu' => $pageInfo['menu'],
-          'submenu' => $pageInfo['parent_link'],
-          'menu_class' => 'nav nav-pills nav-stacked submenu',
-          'fallback_cb' => false,
-        );
-
-        wp_nav_menu( $args );
+        $menu_class->print_menu();
     }
 }
 

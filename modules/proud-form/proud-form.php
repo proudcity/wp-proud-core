@@ -5,6 +5,9 @@
 
 namespace Proud\Core;
 
+include_once( ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php' );
+use GFAPI as GFAPI;
+
 if ( ! class_exists( 'FormHelper' ) ) {
 
   class FormHelper {
@@ -16,6 +19,42 @@ if ( ! class_exists( 'FormHelper' ) ) {
       $this->form_id = $form_id;
       $this->fields = $fields;
       $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
+      // Add proud admin scripts
+      $this->registerAdminLibraries();
+      // 
+    }
+
+    /**
+     * Register admin libraries from Proud\Core\Libraries
+     */
+    public function registerAdminLibraries() {
+      global $proudcore;
+      foreach ( $this->fields as $key => $value ) {
+        if( $value['#type'] === 'group' ){
+          $proudcore->addJsSettings([
+            'proud_form' => [
+              'draggable' => [
+                $key => $key
+              ]
+            ]
+          ]);
+          $proudcore::$libraries->addBundleToLoad('dragula', true);
+        }
+        else if( $value['#type'] === 'fa-icon' ) {
+          $proudcore->addJsSettings([
+            'proud_form' => [
+              'iconpicker' => [
+                $key => $key
+              ]
+            ]
+          ]);
+          $proudcore::$libraries->addBundleToLoad('fontawesome-iconpicker', true);
+        }
+        // Media upload
+        else if( $value['#type'] === 'select_media' ) {
+          $proudcore::$libraries->addBundleToLoad('upload-media', true);
+        }
+      }
     }
 
     private function template($file) {
@@ -39,7 +78,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('select-list');
     }
 
-    public function printImageUpload($value, $translate) {
+    public function printImageUpload($media_id, $url, $translate) {
       include $this->template('image-upload');
     }
 
@@ -60,163 +99,217 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
 
     public function printFormItem($field) {
-      ?>
-      <div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="form-group">
-      <?php
-        // @todo: Should we set #name to #id if it isn't set?
-        switch ($field['#type']) {
-          case 'html':
-            echo $field['#html'];
-            break;
-          case 'fa-icon':
-            ?>
-            <script>
-              jQuery(document).ready(function() {
-                jQuery('#<?php echo $field['#id'];?>').once('icon-picker', function() { 
-                  jQuery(this).iconpicker(); 
-                });
-              });
-            </script>
-            <?php
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'select_media':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id);
-            $this->printImageUpload($field['#value'], $this->form_id);
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'text':
-          case 'email':
-            // Placeholder ?
-            $label_args = !empty( $field['#args']['placeholder'] ) ? array('class' => 'sr-only') : array();
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
-            // Input args, placeholder, after
-            $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
-            $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'select':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printSelectList(
-              $field['#id'], 
-              $field['#name'], 
-              $field['#value'], 
-              $field['#options'], 
-              $this->form_id
-            );
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'textarea':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printTextArea(
-              $field['#id'], 
-              $field['#name'], 
-              $field['#value'], 
-              !empty($field['#rows']) ? $field['#rows'] : 3, 
-              $this->form_id
-            );
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'editor':
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-            $this->printEditor(
-              $field['#id'],
-              $field['#name'],
-              $field['#value'],
-              !empty($field['#rows']) ? $field['#rows'] : 10, 
-              $this->form_id
-            );
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'checkboxes':
-          case 'radios':
-            // Print label, add class
-            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
-            foreach ($field['#options'] as $value => $title) {
-              $name = $field['#name'];
-              if($field['#type'] == 'checkboxes') {
-                $type = 'checkbox';
-                // Make name array
-                $name .= '[' .  $value . ']';
-                // Chekc in active
-                $field['#value'] = empty($field['#value']) ? [] : $field['#value'];
-                $active = in_array($value, $field['#value']);
-              }
-              else {
-                $type = 'radio';
-                $active = $value == $field['#value'];
-              }
-              ?>
-              <div class="<?php echo $type ?>">
-                <?php $this->printOptionBox(
-                  $type, 
-                  $field['#id'] . '-' . $value, 
-                  $name, 
-                  $title, 
-                  $value,
-                  $active, 
-                  $this->form_id
-                ); ?>
-              </div>
-              <?php 
-            }
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            break;
-
-          case 'checkbox':
-            if( !empty( $field['#label_above'] ) )
-              $this->printFormTextLabel('', $field['#title'], $this->form_id, array('class' => 'option-box-label'));
-            ?>
-            <div class="<?php echo $field['#type'] ?>">
-            <?php
-            $this->printOptionBox(
-              $field['#type'], 
-              $field['#id'], 
-              $field['#name'], 
-              !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
-              $field['#return_value'],
-              $field['#value'], 
-              $this->form_id
-            );
-            if( !empty( $field['#description'] ) ) 
-              $this->printDescription($field['#description']);
-            ?>
-            </div>
-            <?php
+      // @todo: Should we set #name to #id if it isn't set?
+      // Extra class for field group
+      $extra_group_class = '';
+      ob_start();
+      switch ($field['#type']) {
+        case 'html':
+          echo $field['#html'];
           break;
-          
-          default:
+        case 'fa-icon':
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, ['class' => 'iconpicker']);
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'gravityform':
+          if (is_plugin_active('gravityforms/gravityforms.php')) {
+            $options = ['' => __('-- Select form --')];
+            $forms = GFAPI::get_forms();
+            foreach ($forms as $key => $form) {
+              $options[  $form['id'] ] = $form['title'];
+            }
+            $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+            $this->printSelectList($field['#id'], $field['#name'], $field['#value'], $options);
+            if( !empty( $field['#description'] ) ) 
+              $this->printDescription($field['#description']);
+          }           
+          break;
+
+        case 'select_media':
+          // add extra class
+          $extra_group_class = ' clearfix';
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          // Image should be a media['ID'], but due to 
+          // https://github.com/proudcity/wp-proudcity/issues/436
+          // old values could be a URL
+          $media_id = '';
+          $url = '';
+          if( !empty( $field['#value'] ) ) {
+            // Already have media value
+            if( is_numeric ( $field['#value'] ) ) {
+              $media_id = $field['#value'];
+            }
+            // featured image on post... would be nice to convert this
+            // but global $post is empty on site origins form.
+            else if( '[featured-image]' === $field['#value'] ) {
+              $media_id = '[featured-image]';
+            }
+            // URL... this option should be slowly phased out
+            else {
+              global $wpdb;
+              $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $field['#value'] ) );
+              // Don't set the URL unless we have a value
+              if( !empty( $media_id ) ) {
+                $url = $field['#value'];
+              } 
+            }
+            // Have media ID but not URL, so query
+            if( !empty( $media_id ) && is_numeric ( $media_id ) && empty( $url ) ) {
+              $url = wp_get_attachment_image_url($media_id, 'thumbnail');
+            }
+          }
+          $this->printTextInput($field['#id'], $field['#name'], $media_id, $this->form_id, array('class' => 'visible-print-block'));
+          $this->printImageUpload($media_id, $url, $this->form_id);
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'text':
+        case 'email':
+          // Placeholder ?
+          $label_args = !empty( $field['#args']['placeholder'] ) ? array('class' => 'sr-only') : array();
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
+          // Input args, placeholder, after
+          $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
+          $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'select':
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printSelectList(
+            $field['#id'], 
+            $field['#name'], 
+            $field['#value'], 
+            $field['#options'], 
+            $this->form_id
+          );
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'textarea':
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printTextArea(
+            $field['#id'], 
+            $field['#name'], 
+            $field['#value'], 
+            !empty($field['#rows']) ? $field['#rows'] : 3, 
+            $this->form_id
+          );
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'editor':
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printEditor(
+            $field['#id'],
+            $field['#name'],
+            $field['#value'],
+            !empty($field['#rows']) ? $field['#rows'] : 10, 
+            $this->form_id
+          );
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'checkboxes':
+        case 'radios':
+          // Print label, add class
+          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
+          foreach ($field['#options'] as $value => $title) {
+            $name = $field['#name'];
+            if($field['#type'] == 'checkboxes') {
+              $type = 'checkbox';
+              // Make name array
+              $name .= '[' .  $value . ']';
+              // Chekc in active
+              $field['#value'] = empty($field['#value']) ? [] : $field['#value'];
+              $active = in_array($value, $field['#value']);
+            }
+            else {
+              $type = 'radio';
+              $active = $value == $field['#value'];
+            }
             ?>
-            <div class="alert alert-danger">Form type not handled</div>
-            <?php
-            break;
-        }
+            <div class="<?php echo $type ?>">
+              <?php $this->printOptionBox(
+                $type, 
+                $field['#id'] . '-' . $value, 
+                $name, 
+                $title, 
+                $value,
+                $active, 
+                $this->form_id
+              ); ?>
+            </div>
+            <?php 
+          }
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          break;
+
+        case 'checkbox':
+          if( !empty( $field['#label_above'] ) )
+            $this->printFormTextLabel('', $field['#title'], $this->form_id, array('class' => 'option-box-label'));
+          ?>
+          <div class="<?php echo $field['#type'] ?>">
+          <?php
+          $this->printOptionBox(
+            $field['#type'], 
+            $field['#id'], 
+            $field['#name'], 
+            !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
+            $field['#return_value'],
+            $field['#value'], 
+            $this->form_id
+          );
+          if( !empty( $field['#description'] ) ) 
+            $this->printDescription($field['#description']);
+          ?>
+          </div>
+          <?php
+        break;
+        
+        default:
+          ?>
+          <div class="alert alert-danger">Form type not handled</div>
+          <?php
+          break;
+      }
+      $field_markup = ob_get_contents();
+      ob_end_clean();
       ?>
+      <div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="form-group<?php echo $extra_group_class ?>">
+        <?php echo $field_markup; ?>
       </div>
       <?php
     }
 
-    public function printGroupFields ($id, $field) {
-      include $this->template('repeating-fields');
+    public function printGroupFields( $id, $field ) {
+      // Build json template
+      $key = 'GROUP_REPLACE_KEY';
+      $group_title = __($field['#title'], $this->form_id) . ' GROUP_REPLACE_TITLE';
+      $group = $field['#json_field_template'];
+      ob_start(); // turn on output buffering
+      include($this->template( 'repeating-fields-template' ));
+      $json = json_encode(ob_get_contents()); // get the contents of the output buffer
+      ob_end_clean(); //  clean (erase) the output buffer and turn off output buffering 
+      // Include path
+      $field['#template'] = 'repeating-fields-template.php';
+      include $this->template( 'repeating-fields' );
     }
 
-    public function printFields () {
+    public function printFields ( $fields = null ) {
+      // Field override?
+      if( $fields ) {
+        $this->fields = $fields;
+      }
       // Javascript states for hiding / showing fields
       $states = [];
       foreach ( $this->fields as $id => $field ) {
@@ -227,9 +320,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
         }
         else {
           $this->printFormItem( $field );
-          if(!empty($field['#states'])) {
-            $states[$field['#id']] = $field['#states'];
-          }
+        }
+        if(!empty($field['#states'])) {
+          $states[$field['#id']] = $field['#states'];
         }
       }
 
@@ -248,7 +341,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         'id' => $this->form_id
       ], $args);
       ?>
-      <form id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
+      <form class="proud-settings" id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
         <?php wp_nonce_field( $args['id'] ); ?>
         <?php $this->printFields(); ?>
         <button type="submit" class="btn btn-primary"><?php print $args['button_text']; ?></button>
@@ -348,3 +441,11 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
   }
 }
+
+
+// register Foo_Widget widget
+function proud_form_load_js() {
+  wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
+}
+    // Load admin scripts from libraries
+add_action('admin_enqueue_scripts',  __NAMESPACE__ . '\\proud_form_load_js');

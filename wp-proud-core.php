@@ -3,16 +3,18 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            1.0.0
+Version:            1.0
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
-License:            MIT License
-License URI:        http://opensource.org/licenses/MIT
+License:            Affero GPL v3
 */
-
-
 namespace Proud\Core;
+
+//define('PROUDCITY_API', 'http://localhost:4000');
+//define('MY_PROUDCITY', 'http://calypso.localhost:3000');
+define('PROUDCITY_API', 'https://api.proudcity.com:8443');
+define('MY_PROUDCITY', 'https://my.proudcity.com');
 
 // Load Extendibles
 // -----------------------
@@ -26,14 +28,22 @@ require_once plugin_dir_path(__FILE__) . 'proud-helpers.php';
 // -----------------------
 require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-menu/proud-menu.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-widget/proud-widgets.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-navbar/proud-navbar.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-layout/proud-layout.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-teasers/proud-teasers.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-pagetitle/proud-pagetitle.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
-require_once plugin_dir_path(__FILE__) . 'modules/so-pagebuilder/proud-so-pagebuilder.php';
-require_once plugin_dir_path(__FILE__) . 'modules/wp-job-manager/proud-wp-job-manager.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-bar/proud-bar.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytics.php';
+
+// Override plugins
+//-------------------------
+require_once plugin_dir_path(__FILE__) . 'plugin_override/so-pagebuilder/proud-so-pagebuilder.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-job-manager/proud-wp-job-manager.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-gravityforms.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-manager.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -61,10 +71,13 @@ class Proudcore extends \ProudPlugin {
     $this->hook('admin_enqueue_scripts', 'loadAdminLibraries');
     // Add Javascript settings
     $this->hook('proud_settings', 'printJsSettings');
+    $this->hook('admin_footer', 'printJsSettings');
     // Get the $pageInfo global var for submenu logic
     $this->hook('template_redirect',  'getPageInfo');
     // Set up image styles
     $this->hook( 'after_setup_theme', 'addImageSizes' );
+    // Add powered by content
+    $this->hook( 'proud_footer_after', 'poweredby' );
 
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
@@ -117,11 +130,15 @@ class Proudcore extends \ProudPlugin {
 
   public function init() {
     $this->addJsSettings(array('global' => array(
+      'proudcity_api' => PROUDCITY_API,
+      'proudcity_dashboard' => MY_PROUDCITY,
+      'proudcity_site_id' => str_replace( array('http://', 'https://'), '', get_site_url() ),
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
         'state' => get_option( 'state', 'Alabama' ),
         'lat' => (float) get_option( 'lat', 34.7303688 ),
         'lng' => (float) get_option( 'lng', -86.5861037 ),
+        'code' => str_replace(' ', '_', get_option( 'city', 'Huntsville' ) . ', ' . str_replace(' ', '_', get_option( 'state', 'Alabama' )) ),
       ),
       'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
       'mapbox' => array(
@@ -149,37 +166,9 @@ class Proudcore extends \ProudPlugin {
     self::$libraries->loadLibraries('true');
   }
 
-
-  // Recusive array merging from 
-  // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
-  public function arrayMergeDeepArray($arrays) {
-    $result = array();
-
-    foreach ($arrays as $array) {
-      foreach ($array as $key => $value) {
-        // Renumber integer keys as array_merge_recursive() does. Note that PHP
-        // automatically converts array keys that are integer strings (e.g., '1')
-        // to integers.
-        if (is_integer($key)) {
-          $result[] = $value;
-        }
-        // Recurse when both values are arrays.
-        elseif (isset($result[$key]) && is_array($result[$key]) && is_array($value)) {
-          $result[$key] = $this->arrayMergeDeepArray(array($result[$key], $value));
-        }
-        // Otherwise, use the latter value, overriding any previous value.
-        else {
-          $result[$key] = $value;
-        }
-      }
-    }
-
-    return $result;
-  }
-
   // Add js settings to Proud js var
   public function addJsSettings($settings) {
-    self::$jsSettings = $this->arrayMergeDeepArray([self::$jsSettings, $settings]);
+    self::$jsSettings = array_merge_deep_array([self::$jsSettings, $settings]);
   }
 
   // Prints out Proud js settings
@@ -221,6 +210,14 @@ class Proudcore extends \ProudPlugin {
     add_image_size( 'card-thumb', 300, 170, true );
   }
 
+  function poweredby() {
+    ?>
+      <div class="powered-by-footer">
+        <?php the_widget( 'PoweredByWidget', [], [] ) ?>
+      </div>
+    <?php
+  }
+
   // If this post is a page, get the menu information
   public function getPageInfo() {
     if ( is_page( ) ) {
@@ -244,6 +241,7 @@ class Proudcore extends \ProudPlugin {
             $pageInfo['parent_link'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
             if (!empty( $pageInfo['parent_link'] ) && $pageInfo['parent_link'] ) {
               $pageInfo['parent_post'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object_id', true );
+              $pageInfo['parent_post_type'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object', true );
             }
           }
           else {

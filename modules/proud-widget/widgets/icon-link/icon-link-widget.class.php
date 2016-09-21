@@ -54,7 +54,7 @@ class IconLink extends Core\ProudWidget {
     ?>
     <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block">
       <i class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
-      <h3><?php echo $instance['link_title']; ?></h3>
+      <h4><?php echo $instance['link_title']; ?></h4>
     </a></div>
     <?php
   }

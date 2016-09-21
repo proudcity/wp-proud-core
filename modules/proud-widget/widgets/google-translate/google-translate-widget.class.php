@@ -21,10 +21,10 @@ class GoogleTranslate extends Core\ProudWidget {
 
   public function enqueueFrontend() {
     $path = plugins_url('js/',__FILE__);
-    // Load translate
-    wp_enqueue_script('google-translate', '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', [], '3', true);
     // Function init
-    wp_enqueue_script('google-translate-widget', $path . 'google-translate.js', ['google-translate'], '3', true);
+    wp_enqueue_script('google-translate-widget', $path . 'google-translate.js', [], '3', true);
+    // Load translate
+    wp_enqueue_script('google-translate', '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', ['google-translate-widget'], '3', true);
   }
 
   /**

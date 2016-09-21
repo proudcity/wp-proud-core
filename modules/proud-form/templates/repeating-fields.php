@@ -1,23 +1,37 @@
-<div id="<?php echo $field['#id']; ?>" class="repeating-group">
-  <div class="panel-group" id="<?php echo $field['#id']; ?>-accordion" role="tablist" aria-multiselectable="true">
-  <?php foreach($field['#items'] as $key => $group): ?>
-    <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
-        <h4 class="panel-title">
-          <a role="button" data-toggle="collapse" data-parent="#<?php echo $field['#id']; ?>-accordion" href="#<?php echo $field['#id']; ?>-<?php echo $key; ?>" aria-expanded="true" aria-controls="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
-            <?php echo __($field['#title'], $this->form_id) . ' ' . ( $key + 1 ); ?>
-          </a>
-        </h4>
-      </div>
-      <div id="<?php echo $field['#id']; ?>-<?php echo $key; ?>" class="panel-collapse collapse<?php if( $key == 0 ) echo ' in'; ?> " role="tabpanel" aria-labelledby="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
-        <div class="panel-body">
-          <?php foreach($group as $sub_field): ?>
-            <?php $this->printFormItem( $sub_field ); ?>
-          <?php endforeach; ?>
-        </div>
-      </div>            
-    </div>
-  <?php endforeach; ?>
+<div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="repeating-group">
+  <div id="<?php echo $field['#id']; ?>-draggable" data-draggable="true" class="panel-group" id="<?php echo $field['#id']; ?>-accordion" role="tablist" aria-multiselectable="true">
+  <?php 
+    // Print children
+    foreach($field['#items'] as $key => $group) {
+      // Try to get group title
+      $group_title = !empty( $field['#group_titles'][$key] )
+                   ? $field['#group_titles'][$key]
+                   : __($field['#title'], $this->form_id) . ' ' . ( $key + 1 );
+      include($field['#template']);
+    }
+  ?>
   </div>
-  <button id="<?php echo $field['#id']; ?>-add" class="add-row">Add Set</button>
+  <div data-group-field-template style="display:none;">
+    <script>
+      // Save json template
+      jQuery('#<?php echo $field['#id']; ?>-draggable').data('json_template', <?php echo $json ?>);
+      // init Draggable
+      jQuery(document).ready(function($) {
+
+        $('#<?php echo $field['#id']; ?>-draggable').once('panelsopen', function() { 
+          var that = this;
+          dragula([that], {
+            moves: function (el, container, handle) {
+              console.log(handle.className);
+              return handle.className.indexOf('handle') > 0;
+            }
+          }).on('drop', function (el) {
+            Proud.behaviors.groups.recalulateWeight(jQuery(that));
+          });
+        });
+      });
+    </script>
+    ?>
+  </div>
+  <a href="#" id="<?php echo $field['#id']; ?>-add" class="btn btn-primary group-add-row">Add Another</a>
 </div>

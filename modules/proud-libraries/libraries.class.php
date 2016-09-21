@@ -34,10 +34,35 @@ class ProudLibaries {
       'js' => [
         'waitForImages' => $path . 'waitForImages/dist/jquery.waitforimages.min.js',
         'equalizeHeight' => $path . 'jquery.equalizeHeight/jquery.equalizeHeight.js',
+        'picturefill' => $path . 'picturefill/dist/picturefill.min.js',
         'proud-common' => $path . 'proud-common.js'
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
+    ];
+
+    self::$libraries['select2'] = [
+      'title' => 'Select 2',
+      'js' => [
+        'select2' => $path . 'select2/select2.min.js',
+      ],
+      'css'  => [ 
+        'select2' => $path . 'select2/select2.css',
+      ],
+      'js_footer' => true,
+      'deps' => ['jquery-core']
+    ];
+
+    self::$libraries['dragula'] = [
+      'title' => 'Dragula',
+      'js' => [
+        'dragula' => $path . 'dragula.js/dist/dragula.js',
+      ],
+      'css' => [
+        'dragula' => $path . 'dragula.js/dist/dragula.min.css',
+      ],
+      'js_footer' => true,
+      'deps' => ['proud']
     ];
     
     self::$libraries['fontawesome-iconpicker'] = [
@@ -49,7 +74,7 @@ class ProudLibaries {
         'fontawesome-iconpicker.css' => $path . 'fontawesome-iconpicker/dist/css/fontawesome-iconpicker.css',
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
     ];
 
     self::$libraries['maps'] = [
@@ -63,7 +88,7 @@ class ProudLibaries {
         'L.Control.Locate.mapbox.css' => $path . 'leaflet.locatecontrol/dist/L.Control.Locate.mapbox.css'
       ],
       'js_footer' => true,
-      'deps' => ['jquery','proud']
+      'deps' => ['jquery-core','proud']
     ];
 
     // Angular.js

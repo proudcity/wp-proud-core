@@ -17,22 +17,26 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $filters;
     private $pagination;
     private $keyword;
+    private $hide;
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false ) {
+    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false, $hide = [] ) {
 
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
+      $this->hide = $hide;
 
       // Intercept search lists, set keyword
       if($post_type == 'search') {
         global $proudsearch;
         // Collect get parameter
         $this->search_key = $proudsearch::_SEARCH_PARAM;
+        // Add key for search
+        $args['proud_search'] = true;
       }
       else {
         $this->search_key = 'filter_keyword';
@@ -70,7 +74,11 @@ if ( !class_exists( 'TeaserList' ) ) {
         'update_post_term_cache' => true, // don't retrieve post terms
         'update_post_meta_cache' => true, // don't retrieve post meta
       ] , $args );
+
       $this->query = new \WP_Query( $args );
+
+      // Alter pagination links to deal with issues with documents, ext
+      add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
     }
 
     /**
@@ -219,6 +227,18 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Alters pager paths from /news/page/2 -> /news?paged=2
+     */
+    public function alter_pagination_path($result) {
+      $preg_page = "/\/page\/([0-9]*?)\//";
+      if(preg_match($preg_page, $result)) {
+        $result = preg_replace("/\?/", "&", $result);
+        $result = preg_replace($preg_page, "?paged=$1", $result);
+      }
+      return $result;
+    }
+
+    /**
      * Processes pagination if enabled
      */
     private function process_pagination(&$args) {
@@ -262,20 +282,27 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         case 'event':
           // http://www.billerickson.net/wp-query-sort-by-meta/
+          $query_key =  '_end_ts';
+          // @ TODO figure out optimized query that allows 
+          // 1. All day
+          // 2. ENd time greater than now
+          // For now, just does specificity == beginning of day
+          $current_time = wpGetTimestamp();
+          $day_start = strtotime(date( 'Y-m-d', $current_time ));
           $args['orderby']    = 'meta_value_num';
-          $args['meta_key']   = '_start_ts';
+          $args['meta_key']   = $query_key;
           $args['order']      = 'ASC';
           $args['meta_query'] = array(
-              'relation' => 'AND',
-              array(
-                  'key' => '_start_ts',
-                  'compare' => 'EXISTS'
-              ),
-              array(
-                  'key' => '_start_ts',
-                  'compare' => '>=',
-                  'value' => time()
-              )
+            'relation' => 'AND',
+            array(
+                'key' => $query_key,
+                'compare' => 'EXISTS'
+            ),
+            array(
+                'key' => $query_key,
+                'compare' => '>=',
+                'value' => $day_start
+            ),
           );
           break;
 
@@ -299,63 +326,36 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Wraps teaser list: open
      */
     private function print_wrapper_open() {
+      $class = '';
       switch( $this->display_type ) {
         case 'search':
         case 'list':
-          echo '<div class="teaser-list">';
+          $class = 'teaser-list';
           break;
 
         case 'mini':
-          echo '<ul class="title-list list-unstyled">';
+          $class = 'title-list list-unstyled';
           break;
 
         case 'cards':
-          echo '<div class="card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize">';
-          break;
-
-        case 'table':
-          echo '<div class="table-responsive"><table class="table table-striped">';
-          switch( $this->post_type ) {
-            case 'agency': 
-               echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',    
-                 __( 'Agency', 'proud-agency' ),   
-                 __( 'Person', 'proud-agency' ),   
-                 __( 'Phone', 'proud-teaser' ),    
-                 __( 'Email', 'proud-teaser' ),    
-                 __( 'Social', 'proud-teaser' )    
-               );    
-               break;
-            case 'staff-member':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Position', 'proud-teaser' ),
-                __( 'Agency', 'proud-agency' ),     
-                __( 'Phone', 'proud-teaser' ),    
-                __( 'Email', 'proud-teaser' ),    
-                __( 'Social', 'proud-teaser' )    
-              );
-              break;
-            case 'document':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Category', 'proud-teaser' ),
-                __( 'Date', 'proud-teaser' ),
-                __( 'Download', 'proud-teaser' )
-              );
-              break;
-            case 'job_listing':
-              echo sprintf( '<thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead>',
-                __( 'Name', 'proud-teaser' ),
-                __( 'Position', 'proud-teaser' ),
-                __( 'Phone', 'proud-teaser' )
-              );
-              break;
-            default:
-              break;
-          }
-          echo '<tbody>';
+        case 'icons':
+          $class = 'card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize';
           break;
       }
+
+      // Try for post type
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-header.php';
+      $file = "";
+      // Try to load template from theme
+      if( '' === ( $file = locate_template( $template ) ) ) {
+        // Try for generic
+        $template = $this->template_path . 'teaser-' . $this->display_type . '-header.php';
+        if( '' === ( $file = locate_template( $template ) ) ) {
+          // Just load from here
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-header.php';
+        }
+      }
+      include($file);     
     }
 
     /**
@@ -365,6 +365,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Try for post type
       $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
+
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic
@@ -374,11 +375,13 @@ if ( !class_exists( 'TeaserList' ) ) {
           $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
         }
       }
+
       // Init post
       $this->query->the_post();
       // Load Meta info?
       $meta;
       global $post;
+      // Post type
       switch( $this->post_type ) {
         case 'staff-member':
           $terms = wp_get_post_terms( $post->ID, 'staff-member-group', array("fields" => "all"));
@@ -392,41 +395,50 @@ if ( !class_exists( 'TeaserList' ) ) {
           $meta = get_post_meta( $post->ID );
           $search_meta = $proudsearch->post_meta( $post->post_type );
           break;
-        case 'document':    
+        case 'document':   
           $src = get_post_meta( $post->ID, 'document', true );
           $filename = get_post_meta( $post->ID, 'document_filename', true );    
           $meta = json_decode(get_post_meta( $post->ID, 'document_meta', true ));
-          if (empty($this->terms) || count($this->terms) > 1) {
-            $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
-          } 
+          // if (empty($this->terms) || count($this->terms) > 1) {
+          //   $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
+          // } 
+          $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
+          break;
+      }
+      $hide = $this->hide;
+      // Display type
+      switch( $this->display_type ) {
+        case 'mini':
+          if(in_the_loop()) {
+            $header_tag = 'h4';
+          }
+          else {
+            $header_tag = 'h5';
+          }
           break;
       }
 
       include($file);
     }
 
+
     /**
-     * Wraps teaser list: close
+     * Wraps teaser list: open
      */
     private function print_wrapper_close() {
-      switch( $this->display_type ) {
-        case 'search':
-        case 'list':
-          echo "</div>";
-          break;
-
-        case 'mini':
-          echo "</ul>";
-          break;
-
-        case 'cards':
-          echo "</div>";
-          break;
-
-        case 'table':
-          echo "</tbody></table></div>";
-          break;
+      // Try for post type
+      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-footer.php';
+      $file = "";
+      // Try to load template from theme
+      if( '' === ( $file = locate_template( $template ) ) ) {
+        // Try for generic
+        $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
+        if( !file_exists( $file ) ) {
+          // Just load from here
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-footer.php';
+        }
       }
+      include($file);     
     }
 
     /**
@@ -495,6 +507,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $this->print_content();
         endwhile;
         // Close wrapper
+
         $this->print_wrapper_close();
         // Print pager?
         if( $this->pagination ) {
@@ -514,7 +527,6 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints list filters
      */
     public function print_filters( $include_filters = null, $button_text = 'Filter' ) {
-
       // Remove filters that we don't want to show
       if ( !empty($include_filters) ) {
         foreach ( $this->filters as $key => $filter ) {
@@ -544,7 +556,6 @@ function process_filter_submit() {
         // Sanitize
         $key = sanitize_key( $key );
         if( strpos( $key, 'filter_' ) === 0 && !empty( $value ) ) {
-          echo $key;
           if( is_array( $value ) ) {
             foreach ($value as $val) {
               $params[] = $key . '[]=' . urlencode( sanitize_text_field( $val ) );
@@ -559,7 +570,8 @@ function process_filter_submit() {
         wp_redirect( get_permalink() . '?' . implode( '&', $params ) );
       }
       else {
-        wp_redirect( sanitize_text_field( $_REQUEST['q'] ) );
+        $url = strtok($_SERVER['REQUEST_URI'],'?');
+        wp_redirect( sanitize_text_field( $url ) );
       }
       exit();
     }

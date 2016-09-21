@@ -29,29 +29,40 @@ class JumbotronHeader extends Core\ProudWidget {
   public function __construct() {
     parent::__construct(
       'proud_jumbotron_header', // Base ID
-      __( 'Jumbotron hero unit', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'A hero unit for the header of the page', 'wp-proud-core' ), ) // Args
+      __( 'Hero unit (page header)', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'Image / slideshow / title unit for the header of the page', 'wp-proud-core' ), ) // Args
     );
   }
 
   function initialize() {
 
     $this->settings = [
+      'headertype' => [
+        '#title' => __( 'Header Type', 'wp-proud-core' ),
+        '#type'    => 'radios',
+        '#default_value'     => 'header',
+         '#options' => [
+          'header'    => __( 'Header (good for important pages)', 'wp-proud-core' ),
+          'slideshow' => __( 'Slideshow', 'wp-proud-core' ),
+          'random' => __( 'Random image', 'wp-proud-core' ),
+          'full'      => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
+          'simple'    => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
+        ],
+      ],
       'text'=> [
         '#title' => __( 'Jumbtron text', 'wp-proud-core' ),
         '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
         '#type' => 'textarea',
         '#default_value'  => '',
         'rows' => 15,
-      ],
-      'headertype' => [
-        '#title' => __( 'Header Type', 'wp-proud-core' ),
-        '#type'    => 'radios',
-        '#default_value'     => 'header',
-         '#options' => [
-          'header'   => __( 'Header (good for important pages)', 'wp-proud-core' ),
-          'full'     => __( 'Full-height (good for landing pages)', 'wp-proud-core' ),
-          'simple'     => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['slideshow'],
+              'glue' => '&&'
+            ],
+          ],
         ],
       ],
       'background' => [
@@ -69,8 +80,8 @@ class JumbotronHeader extends Core\ProudWidget {
           'visible' => [
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
-              'glue' => '||'
+              'value' => ['simple', 'slideshow', 'random'],
+              'glue' => '&&'
             ],
           ],
         ],
@@ -98,7 +109,7 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
+              'value' => ['simple', 'slideshow'],
               'glue' => '&&'
             ],
           ],
@@ -122,11 +133,35 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple'],
+              'value' => ['simple', 'slideshow'],
               'glue' => '&&'
             ],
           ],
         ],
+      ],
+      'featured_image' => [
+        '#title' => __( 'Image: Use featured image from post?', 'wp-proud-core' ),
+        '#type' => 'radios',
+        '#default_value'  => 'no',
+        '#options' => [ 
+          'yes' => __( 'Yes', 'wp-proud-core' ), 
+          'no' => __( 'No', 'wp-proud-core' ) 
+        ],
+        '#description' => __('If yes, the image used will be from the "Featured Image" field', 'wp-proud-core' ),
+        '#states' => [
+          'visible' => [
+            'background' => [
+              'operator' => '==',
+              'value' => ['image'],
+              'glue' => '&&'
+            ],
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
+            ],
+          ]
+        ]
       ],
       'image' => [
         '#title' => __( 'Image', 'wp-proud-core' ),
@@ -139,27 +174,143 @@ class JumbotronHeader extends Core\ProudWidget {
               'value' => ['image'],
               'glue' => '&&'
             ],
-          ],
-          'invisible' => [
             'headertype' => [
-              'operator' => '==',
-              'value' => ['simple'],
+              'operator' => '!=',
+              'value' => ['simple', 'slideshow'],
+              'glue' => '&&'
+            ],
+            'featured_image' => [
+              'operator' => '!=',
+              'value' => ['yes'],
               'glue' => '&&'
             ],
           ],
         ],
+      ],
+      'slideshow' => [
+        '#title' => __( 'Slideshow', 'wp-proud-core' ),
+        '#type' => 'group',
+        '#group_title_field' => 'slide_title',
+        '#sub_items_template' => [
+          'slide_title' => [
+            '#title' => 'Slide title',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Title for the slide',
+            '#to_js_settings' => false
+          ],
+          'description' => [
+            '#title' => 'Text description',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Brief text to be displayed below title.  This should not contain any html',
+            '#to_js_settings' => false
+          ],
+          'link_title' => [
+            '#title' => 'Link text',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Text for the link displayed as a button',
+            '#to_js_settings' => false
+          ],
+          'link_url' => [
+            '#title' => 'Link url',
+            '#type' => 'text',
+            '#default_value' => '',
+            '#description' => 'Url for the link',
+            '#to_js_settings' => false
+          ],
+          'slide_image' => [
+            '#title' => __( 'Image', 'wp-proud-core' ),
+            '#type' => 'select_media',
+            '#default_value'  => '',
+          ]
+        ],
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['slideshow'],
+              'glue' => '&&'
+            ],
+          ],
+        ],
+      ],
+      'random' => [
+        '#title' => __( 'Image', 'wp-proud-core' ),
+        '#type' => 'group',
+        '#group_title_field' => 'slide_title',
+        '#sub_items_template' => [
+          'random_image' => [
+            '#title' => __( 'Image', 'wp-proud-core' ),
+            '#type' => 'select_media',
+            '#default_value'  => '',
+          ]
+        ],
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['random'],
+              'glue' => '&&'
+            ],
+          ],
+        ],
+      ],
+      'box_position' => [
+        '#title' => __( 'Text box position', 'wp-proud-core' ),
+        '#type' => 'radios',
+        '#default_value'  => 'middle_left',
+        '#options' => [ 
+          'middle_left' => __( 'Middle Left', 'wp-proud-core' ), 
+          'middle_right' => __( 'Middle Right', 'wp-proud-core' ),
+          'middle_center' => __( 'Middle Center', 'wp-proud-core' ),
+          'top_left' => __( 'Top Left', 'wp-proud-core' ), 
+          'top_right' => __( 'Top Right', 'wp-proud-core' ),
+          'bottom_left' => __( 'Bottom Left', 'wp-proud-core' ), 
+          'bottom_right' => __( 'Bottom Right', 'wp-proud-core' ) 
+        ],
+        '#description' => __( 'Position of the header text', 'wp-proud-core' ),
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['full'],
+              'glue' => '||'
+            ]
+          ]
+        ]
       ],
       'make_inverse' => [
         '#title' => __( 'Style', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'no',
         '#options' => [ 
-          'yes' => __( 'Black text on light background', 'wp-proud-core' ), 
-          'no' => __( 'White text on dark background', 'wp-proud-core' ) 
+          'yes' => __( 'White text on dark background', 'wp-proud-core' ), 
+          'no' => __( 'Black text on light background', 'wp-proud-core' ) 
         ],
       ]
     ];
   }
+
+  /**
+   * OVERRIDE: Back-end widget form.
+   *
+   * @see WP_Widget::form()
+   *
+   * @param array $instance Previously saved values from database.
+   */
+  public function form( $instance ) {
+    // $instance['image'] should be a media['ID'], but due to 
+    // https://github.com/proudcity/wp-proudcity/issues/436
+    // Old values may be [featured-image]
+    // Set new value 'featured_image' if that is the case
+    if( !empty( $instance['image'] ) && $instance['image'] === '[featured-image]' ) {
+      $instance['featured_image'] = 'yes';
+    }
+    parent::form($instance);
+  }
+
 
   /**
    * Return CSS for background-repeat
@@ -188,6 +339,26 @@ class JumbotronHeader extends Core\ProudWidget {
     return $background_repeat;
   }
 
+  // Image should be a media['ID'], but due to 
+  // https://github.com/proudcity/wp-proudcity/issues/436
+  // Some values may be a url
+  function getResponsiveImage( $image ) {
+    $media_id = '';
+    // $image is ID
+    if( is_numeric ( $image ) ) {
+      $media_id = $image;
+    }
+    // $image is a URL
+    else {//if( false !== filter_var( $image, FILTER_VALIDATE_URL ) ) {
+      $url = do_shortcode($image);
+      global $wpdb;
+      $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+    }
+    
+    // Build image attrs 
+    return !empty( $media_id ) ? Core\build_responsive_image_meta( $media_id ) : [];
+  }
+
   /**
    * Generate HTML code from shortcode content.
    *
@@ -202,7 +373,14 @@ class JumbotronHeader extends Core\ProudWidget {
     // init classes
     $classes = [];
 
-    if(!empty( $instance['background']) ) {
+    if(!empty( $instance['background']) && $instance['headertype'] !== 'slideshow' ) {
+       
+      if ( $instance['headertype'] === 'random' ) {
+        $rand = array_rand( $instance['random'] );
+        $instance['image'] = $instance['random'][$rand]['random_image'];
+        $instance['background'] = 'image';
+      }
+
       switch ( $instance['background'] ) {
         case 'solid':
           $solid_color = $instance['solid_color_value'];
@@ -210,9 +388,9 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'pattern':
-          $pattern_img     = $instance['pattern'];
+          $pattern_img = wp_get_attachment_image_url( $instance['pattern'], 'full' );
           $background_style = "background-image:url('$pattern_img');";
-
+          $background_style .= "background-size:initial;";
           $background_repeat = self::background_repeat( $instance['repeat'] );
           if ( ! empty( $background_repeat ) ) {
             $background_style .= "background-repeat:$background_repeat;";
@@ -220,17 +398,12 @@ class JumbotronHeader extends Core\ProudWidget {
           break;
 
         case 'image':
-          // Allow [featured-image]
-          $url = do_shortcode($instance['image']);
-          $back_image = esc_url( $url );
-          $background_style = "background-image:url('$back_image');";
-          
-          // @todo: should we save image, not just url?
-          global $wpdb;
-          $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
-          $media = get_post($media_id);
-          $caption = $media->post_excerpt;
-          array_push($classes, 'media');
+          // Use featured image?
+          if($instance['featured_image'] === 'yes') {
+            global $post;
+            $instance['image'] = get_post_thumbnail_id( $post->ID );
+          }
+          $resp_img = $this->getResponsiveImage($instance['image']);
           break;
       }
 
@@ -238,9 +411,16 @@ class JumbotronHeader extends Core\ProudWidget {
         $arr_styles[] = $background_style;
       }
     }
+    else if ( $instance['headertype'] === 'slideshow' ) {
+      // d($instance);
+      foreach ($instance['slideshow'] as $key => $value) {
+        $instance['slideshow'][$key]['resp_img'] = $this->getResponsiveImage($value['slide_image']);
+      }
+    }
+
 
     // Init a random id for the element
-    $random_id = 'asdkljhaskjd' . rand();
+    $random_id = 'proud-header-' . rand();
     // init file location
     $file = plugin_dir_path( __FILE__ ) . 'templates/';
 
@@ -262,7 +442,7 @@ class JumbotronHeader extends Core\ProudWidget {
     // We're doing a "full" style jumbotron
     else if( $instance['headertype'] == 'full' ) {
       // Classes
-      $classes[] = 'full-image';
+      $classes[] = 'full-image jumbotron-header-container';
       // Box styles
       // Init classes
       $boxclasses = ['jumbotron', 'jumbotron-image', 'full'];
@@ -270,8 +450,22 @@ class JumbotronHeader extends Core\ProudWidget {
       if ( $instance['make_inverse'] == 'yes' ) {
         $boxclasses[] = 'jumbotron-inverse';
       }
+      // Vertical horizontal positions
+      $pos_options = !empty( $instance['box_position'] )
+                   ? explode( '_', $instance['box_position'] )
+                   : ['middle', 'left'];
+      $boxclasses[] = 'full-v-align-' . $pos_options[0];
+      $boxclasses[] = 'full-h-align-' . $pos_options[1];
       $file .= 'jumbotron-full.php';
-    }    
+    }
+    else if( $instance['headertype'] === 'slideshow' ) {
+      $classes[] = 'jumbotron';
+      // Inverse?
+      if ( $instance['make_inverse'] == 'yes' ) {
+        $classes[] = 'jumbotron-inverse';
+      }
+      $file .= 'jumbotron-slideshow.php';
+    }
     else {
       // Classes
       $classes[] = 'jumbotron';

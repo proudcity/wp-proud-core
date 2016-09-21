@@ -40,11 +40,11 @@ class IconSet extends Core\ProudWidget {
    * @return  void
    */
   function initialize() {
-    $this->settings = array(
+    $this->settings += array(
       'iconset' => array(
         '#title' => __( 'Icons', 'wp-proud-core' ),
         '#type' => 'group',
-        '#admin_libraries' => ['fontawesome-iconpicker'],
+        '#group_title_field' => 'link_title',
         '#sub_items_template' => array(
           'link_title' => [
             '#title' => 'Link title',
@@ -77,6 +77,11 @@ class IconSet extends Core\ProudWidget {
    */
   function printWidget( $args, $instance ) {
     extract($instance);
+    $md_col = 4;
+    $col_count = count( $iconset );
+    if( $col_count < 4 || ( $col_count === 6 ) ) {
+      $md_col = 3;
+    }
     $file = plugin_dir_path( __FILE__ ) . 'templates/icon-set.php';
     include( $file );
   }

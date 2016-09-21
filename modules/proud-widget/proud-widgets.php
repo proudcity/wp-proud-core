@@ -18,7 +18,10 @@ require_once plugin_dir_path(__FILE__) . 'widgets/submenu/submenu-widget.class.p
 require_once plugin_dir_path(__FILE__) . 'widgets/page-title/page-title-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-submenu/contact-submenu-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-block/contact-block-widget.class.php';
-require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form-dropdown/gravity-form-dropdown-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form/gravity-form-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/proudscore-widget/proudscore-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class.php';
 
 
 
