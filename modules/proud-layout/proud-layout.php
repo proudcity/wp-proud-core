@@ -12,163 +12,65 @@ if ( !class_exists( 'ProudLayout' ) ) {
         private $title;
         private $afterHead = false;
 
-        /**
-        * PHP 5 Constructor
-        */
         function __construct(){
-          // Set Fields
-          //self::$fields =  [
-          //  'proud_hide_title' => __('Hide the title on singular page views.', 'proud-layout'), 
-          //  'proud_full_width' => __('Make page full width.', 'proud-layout')
-          //];
-          //add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
-          //add_action( 'save_post', array( $this, 'on_save' ) );
-          //add_action( 'delete_post', array( $this, 'on_delete' ) );
-          add_action( 'wp_head', array( $this, 'head_insert' ), 3000 );
-          // add_action( 'the_title', array( $this, 'wrap_title' ) );
-          add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+          // Add option to hide featured image
+          add_filter( 'admin_post_thumbnail_html', array( $this, 'hide_featured_image' ) );
+          // Add save option
+          add_action( 'save_post', array( $this, 'save_featured_image_meta' ), 10, 3 );
+        }
 
-        } // __construct()
-
+        /**
+         * Helper function checks if page is full width
+         */
         public function post_is_full_width(  ){
-
-           /*if( is_singular() ){
-
-            global $post;
-
-            $toggle = get_post_meta( $post->ID, 'proud_full_width', true );
-
-            if( (bool) $toggle ){
-              return true;
-            } else {
-              return false;
-            }
-
-          } else {
-            return false;
-          }*/
-          if ( function_exists('siteorigin_panels_is_panel') && (is_page() || get_post_type() == 'agency') ) {
+          if ( function_exists( 'siteorigin_panels_is_panel' ) && ( is_page() || get_post_type() == 'agency' ) ) {
             $id = get_the_ID();
             // @todo: fix this so we dont need to reference post ids
-            return !empty(get_post_meta(get_the_ID(), 'panels_data', false)) && ($id != 6 && $id != 149 && $id != 147);
+            return !empty( get_post_meta( get_the_ID(), 'panels_data', false ) ) 
+                      && ( $id != 6 && $id != 149 && $id != 147 );
           }
         }
 
+        /**
+         * Helper function checks if page is full width
+         */
         public function title_is_hidden(  ){
-
-          /*f( is_singular() ){
-
-            global $post;
-
-            $toggle = get_post_meta( $post->ID, 'proud_hide_title', true );
-
-            if( (bool) $toggle ){
-              return true;
-            } else {
-              return false;
-            }
-
-          } else {
-            return false;
-          }*/
           return $this->post_is_full_width(  );
-
-        } // title_is_hidden()
-
-
-        public function head_insert(){
-          // indicate that the header has run so we can hopefully prevent adding span tags to the meta attributes, etc.
-          $this->afterHead = true;
-
-        } // head_insert()
-
-        public function add_box(){
-
-          $posttypes = array( 'page', 'agency' );
-
-          foreach ( $posttypes as $posttype ){
-            add_meta_box( 'proud_layout', 'Layout Options', array( $this, 'build_box' ), $posttype, 'side' );
-          }
-
-        } // add_box()
-
-
-        public function build_box( $post ){
-
-          foreach(self::$fields as $field => $label) {
-            $value = get_post_meta( $post->ID, $field, true );
-            $checked = (bool) $value ? ' checked="checked"' : '';
-            wp_nonce_field( $field . '_dononce', $field . '_noncename' );
-
-            ?>
-            <label><input type="checkbox" name="<?php echo $field; ?>" <?php echo $checked; ?> /> <?php echo $label; ?> </label>
-            <?php
-          }
-        } // build_box()
-
-
-        public function wrap_title( $content ){
-
-          if(!$this->afterHead || !$this->title) { return; }
-
-          if( $this->title_is_hidden() && $content == $this->title ){
-            $content = '<span class="' . 'proud_hide_title' . '">' . $content . '</span>';
-          }
-
-          return $content;
-
-        } // wrap_title()
-
-        public function load_scripts(){
-          // Grab the title early in case it's overridden later by extra loops.
-          global $post;
-          if($post) {
-            $this->title = $post->post_title;
-          }
         }
 
-
-        public function on_save( $postID ){
-          foreach(self::$fields as $field => $label) {
-            if ( ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE )
-              || !isset( $_POST[ $field . '_noncename' ] )
-              || !wp_verify_nonce( $_POST[ $field . '_noncename' ], $field . '_dononce' ) ) {
-              continue;
-            }
-
-            $old = get_post_meta( $postID, $field, true );
-            $new = $_POST[ $field ] ;
-
-            if( !is_null( $old ) ){
-              if ( is_null( $new ) ){
-                delete_post_meta( $postID, $field );
-              } else {
-                update_post_meta( $postID, $field, $new, $old );
-              }
-            } elseif ( !is_null( $new ) ){
-              add_post_meta( $postID, $field, $new, true );
-            }
+        /**
+         * Adds hide featured image to post meta
+         */
+        public function hide_featured_image( $content ){
+          global $post;
+          $add_featured_box = $post->post_type === 'post'
+                           || $post->post_type === 'page'
+                           || $post->post_type === 'agency';
+          if($add_featured_box) {
+            $text = __( 'Don\'t display image on individual page.', 'prefix' );
+            $id = 'hide_featured_image';
+            $value = esc_attr( get_post_meta( $post->ID, $id, true ) );
+            $label = '<label for="' . $id . '" class="selectit"><input name="' . $id . '" type="checkbox" id="' . $id . '" value="' . $value . ' "'. checked( $value, 1, false) .'> ' . $text .'</label>';
+            $content .= $label;
           }
-          return $postID;
-        } // on_save()
+          return $content;
+        }
 
-
-        public function on_delete( $postID ){
-          foreach(self::$fields as $field => $label) {
-            delete_post_meta( $postID, $field );
+        /**
+         * Save featured image meta data when saved
+         *
+         * @param int $post_id The ID of the post.
+         * @param post $post the post.
+         */
+        function save_featured_image_meta( $post_id, $post, $update ) {
+          $value = 0;
+          if ( isset( $_REQUEST['hide_featured_image'] ) ) {
+              $value = 1;
           }
-          return $postID;
-        } // on_delete()
-
-
-        // public function set_selector( $selector ){
-
-        //   if( isset( $selector ) && is_string( $selector ) ){
-        //     $this->selector = $selector;
-        //   }
-
-        // } // set_selector()
-
+          // Set meta value to either 1 or 0
+          update_post_meta( $post_id, 'hide_featured_image', $value );
+          
+        }
 
     } // ProudLayout
 
