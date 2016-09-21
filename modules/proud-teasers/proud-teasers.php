@@ -416,6 +416,13 @@ if ( !class_exists( 'TeaserList' ) ) {
             $header_tag = 'h5';
           }
           break;
+
+        // Build default images
+        case 'cards':
+          if( !has_post_thumbnail() ) {
+            $default_image = plugins_url( '/assets/images/teaser-card-default-image.png',  __FILE__  );
+          }
+          break;
       }
 
       include($file);
