@@ -1,5 +1,11 @@
 <?php
 
+// On ajax anchors, this adds a offset for the scroll 
+function gform_confirmation_anchor_alter() {
+   return 0;
+}
+add_filter('gform_confirmation_anchor', 'gform_confirmation_anchor_alter');
+
 function gform_force_footer_scripts() {
    return true;
 }
