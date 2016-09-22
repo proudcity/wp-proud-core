@@ -227,23 +227,43 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
-     * Alters pager paths from /news/page/2 -> /news?paged=2
+     * Alters pager paths from /news/page/2 -> /news?pager=2
      */
     public function alter_pagination_path($result) {
-      $preg_page = "/\/page\/([0-9]*?)\//";
-      if(preg_match($preg_page, $result)) {
-        $result = preg_replace("/\?/", "&", $result);
-        $result = preg_replace($preg_page, "?paged=$1", $result);
+      // We have pagination active
+      if($this->pagination) {
+        $preg_page = "/\/page\/([0-9]*?)\//";
+        if(preg_match($preg_page, $result)) {
+          // If other params exist
+          $result = preg_replace("/\?/", "&", $result);
+          // If place in pager
+          $result = preg_replace($preg_page, "?pager=$1", $result);
+        }
+        // Need to remove our pager, going back to home
+        else {
+          // remove pager if applicable
+          $result = preg_replace("/\?pager\=[0-9]+\&*/", "?", $result);
+          // remove trailing ? if present
+          $result = preg_replace("/\?$/", "", $result);
+        }
       }
       return $result;
     }
 
     /**
      * Processes pagination if enabled
+     * Converts our ?pager=2 into standard WP pager vars
      */
     private function process_pagination(&$args) {
       $this->pagination = true;
-      $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+      // $paged = ( get_query_var( 'pager' ) ) ? get_query_var( 'pager' ) : 1;
+      $pager = !empty($_REQUEST['pager']) ? $_REQUEST['pager'] : 1;
+      // Set the global paged var
+      global $paged;
+      $paged = sanitize_text_field( $pager );
+      // Set the paged vars
+      set_query_var( 'paged', $paged );
+      // Set the paged vars
       $args['paged'] = $paged;
     }
 
