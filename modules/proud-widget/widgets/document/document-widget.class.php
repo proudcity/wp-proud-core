@@ -6,7 +6,7 @@ class DocumentWidget extends Core\ProudWidget {
 
     function __construct() {
         parent::__construct(
-            'submenu', // Base ID
+            'proud_document_embed', // Base ID
             __( 'Embed Document', 'wp-proud-core' ), // Name
             array( 'description' => __( "Select a document and embed a document preview", 'wp-proud-core' ), ) // Args
         );
