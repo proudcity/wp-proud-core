@@ -53,6 +53,7 @@ class ProudMenu {
 
       }
       // Build menu structure
+     
       self::$menu_structure = $this->get_nested_menu( $menu_id );
     }
     // Just utility    

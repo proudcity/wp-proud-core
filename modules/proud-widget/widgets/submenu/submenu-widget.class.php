@@ -25,6 +25,7 @@ class Submenu extends Core\ProudWidget {
 
         // Try to grab primary
         global $proud_menu_util;
+        // d($proud_menu_util::$menus);
         foreach ( $proud_menu_util::$menus as $key => $menu ) {
             if( $key === $primary) {
                 $menus[$key] = $menu->name . __( ' (Primary Menu)', 'wp-proud-core' );
