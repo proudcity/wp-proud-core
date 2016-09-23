@@ -180,7 +180,17 @@ function get_nav_primary_menu() {
  *  Prints the proud navbar
  */
 function print_proud_navbar() {
-  include plugin_dir_path(__FILE__) . 'templates/navbar.php';
+  $navbar = '';
+  $navbar = apply_filters( 'proud_nav_navbar', $navbar );
+
+  // No plugin overtaking, print template
+  if( !$navbar ) {
+    ob_start();
+    include plugin_dir_path(__FILE__) . 'templates/navbar.php';
+    $navbar = ob_get_contents();
+    ob_end_clean();
+  }
+  echo $navbar;
 }
 
 add_action( 'get_header', 'print_proud_navbar' );
