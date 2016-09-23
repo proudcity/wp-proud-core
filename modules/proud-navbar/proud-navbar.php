@@ -20,6 +20,9 @@ add_action( 'init', 'proud_navbar_logo_size' );
  */
 function proud_navbar_body_class( $classes ) {
   $classes[] = 'proud-navbar-active';
+  if( get_option( 'proud_navbar_transparent', '0' ) ) {
+    $classes[] = 'proud-navbar-transparent';
+  }
   return $classes;
 }
 add_filter( 'proud_body_class', 'proud_navbar_body_class' );
