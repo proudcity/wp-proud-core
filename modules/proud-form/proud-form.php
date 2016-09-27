@@ -41,11 +41,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $proudcore::$libraries->addBundleToLoad('dragula', true);
         }
         else if( $value['#type'] === 'fa-icon' ) {
+          // Give a chance for modules / themes to pass additional icons
+          $options = apply_filters( 'proud_form_icon_picker_options', [
+            $key => $key
+          ] );
           $proudcore->addJsSettings([
             'proud_form' => [
-              'iconpicker' => [
-                $key => $key
-              ]
+              'iconpicker' => $options
             ]
           ]);
           $proudcore::$libraries->addBundleToLoad('fontawesome-iconpicker', true);

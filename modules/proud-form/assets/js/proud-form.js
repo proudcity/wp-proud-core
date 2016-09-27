@@ -3,11 +3,23 @@
   var $body = $('body');
 
   Proud.behaviors.iconpicker = { attach: function(context, settings) {
-      $body.on('click', '.iconpicker', function(e) { 
-        $(e.target).once('iconpicker', function() {
-          $(this).iconpicker().data('iconpicker').show();
-        })
-      });
+    var iconSettings = [];
+    // We have custom icons ?
+    if(settings.proud_form.iconpicker.icons && settings.proud_form.iconpicker['icon-prefix']) {
+      iconSettings['icons'] = $.merge(settings.proud_form.iconpicker.icons, $.iconpicker.defaultOptions.icons);
+      iconSettings['fullClassFormatter'] = function(val) {
+        if(val.match(/^fa-/)){
+            return 'fa '+val;
+        }else{
+            return settings.proud_form.iconpicker['icon-prefix'] + ' ' +val;
+        }
+      };
+    }
+    $body.on('click', '.iconpicker', function(e) { 
+      $(e.target).once('iconpicker', function() {
+        $(this).iconpicker(iconSettings).data('iconpicker').show();
+      })
+    });
   }};
 
   Proud.behaviors.groups = { attach: function(context, settings) {
