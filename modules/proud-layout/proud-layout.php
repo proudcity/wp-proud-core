@@ -20,13 +20,55 @@ if ( !class_exists( 'ProudLayout' ) ) {
         }
 
         /**
+         * Helper function loads site origin meta if available
+         */
+        public function get_site_origins_meta() {
+          static $site_origins_meta;
+          if( function_exists( 'siteorigin_panels_is_panel' ) ) {
+            $id = get_the_ID();
+            $site_origins_meta = get_post_meta( get_the_ID(), 'panels_data', false );
+          }
+          return $site_origins_meta;
+        }
+
+        /**
+         * Helper function tests if jumbotron is present on panel data
+         * AS first item, AND is full row
+         */
+        public function post_has_full_jumbotron_header( ) {
+          static $has_jumbotron = null;
+          if( $has_jumbotron === null ) {
+            $site_origins_meta = $this->get_site_origins_meta();
+            if( !empty( $site_origins_meta ) ) {
+              $meta = reset( $site_origins_meta );
+              if( !empty( $meta['widgets'] ) ) {
+                // Check if we're first jumbotron large
+                $widget = $meta['widgets'][0];
+                $has_jumbotron = !empty( $widget['panels_info']['class'] ) 
+                              && $widget['panels_info']['class'] === 'JumbotronHeader'
+                              && !empty( $widget['headertype'] )
+                              && $widget['headertype'] !== 'simple'
+                              && $meta['grids'][0]['cells'] === 1
+                              && !empty( $meta['grids'][0]['style']['row_stretch'] )
+                                && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
+                                  || $meta['grids'][0]['style']['row_stretch'] == 'full-stretched' );
+              }
+            } 
+            if ( !$has_jumbotron ) {
+              $has_jumbotron = false;
+            }
+          }
+          return $has_jumbotron;
+        }
+
+        /**
          * Helper function checks if page is full width
          */
-        public function post_is_full_width(  ){
-          if ( function_exists( 'siteorigin_panels_is_panel' ) && ( is_page() || get_post_type() == 'agency' ) ) {
-            $id = get_the_ID();
+        public function post_is_full_width( ){
+          if ( is_page() || get_post_type() == 'agency' ) {
             // @todo: fix this so we dont need to reference post ids
-            return !empty( get_post_meta( get_the_ID(), 'panels_data', false ) ) 
+            $id = get_the_ID();
+            return !empty( $this->get_site_origins_meta() ) 
                       && ( $id != 6 && $id != 149 && $id != 147 );
           }
         }
