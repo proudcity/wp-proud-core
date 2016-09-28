@@ -6,7 +6,7 @@
 namespace Proud\Core;
 
 // Hacky copied function to produce exerpt
-function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false ) {
+function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false, $words = false ) {
   $raw_excerpt = $text;
   // Try using yoast ?
   if( $use_yoast ) {
@@ -29,7 +29,7 @@ function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false ) {
      *
      * @param int $number The number of words. Default 55.
      */
-    $excerpt_length = apply_filters( 'excerpt_length', 55 );
+    $excerpt_length = !empty( $words ) ? $words : apply_filters( 'excerpt_length', 55 );
     /**
      * Filter the string in the "more" link displayed after a trimmed excerpt.
      *
