@@ -42,6 +42,7 @@ class TeaserListWidget extends Core\ProudWidget {
   function displayModes() {
     return [
       'list' => __('List View', 'proud-teaser'),
+      'media' => __('Media List View', 'proud-teaser'),
       'mini' => __('Mini List', 'proud-teaser'),
       'cards' => __('Card View', 'proud-teaser'),
       'table' => __('Table View', 'proud-teaser'),
@@ -89,6 +90,45 @@ class TeaserListWidget extends Core\ProudWidget {
         '#type' => 'radios',
         '#default_value' => 'list',
         '#options' => $this->displayModes(),
+      ],
+      'featured' => [
+        '#type' => 'checkbox',
+        '#title' => 'Featured',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Display first teaser as featured at top of list',
+        '#default_value' => false,
+        '#states' => [
+          'visible' => [
+            'proud_teaser_content' => [
+              'operator' => '==',
+              'value' => ['post', 'event'],
+              'glue' => '||'
+            ],
+            'proud_teaser_display' => [
+              'operator' => '==',
+              'value' => ['list', 'mini'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+      'columns' => [
+        '#type' => 'checkbox',
+        '#title' => 'Columns',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Break media list into columns',
+        '#default_value' => false,
+        '#states' => [
+          'visible' => [
+            'proud_teaser_display' => [
+              'operator' => '==',
+              'value' => ['media'],
+              'glue' => '||'
+            ],
+          ],
+        ],
       ],
       'post_count' => [
         '#type' => 'text',
@@ -194,7 +234,11 @@ class TeaserListWidget extends Core\ProudWidget {
       !empty ( $instance['show_filters'] ),
       $terms,
       !empty( $instance['pager'] ),
-      !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null
+      array(
+        'featured' => ( !empty( $instance['featured'] ) ? $instance['featured'] : null ),
+        'hide' => ( !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null ),
+        'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null )
+      )
     );
     if( !empty ( $instance['show_filters'] ) ) {
       $teaser_filter_class = new TeaserFilterTracker( $instance['teaser_list'] );
