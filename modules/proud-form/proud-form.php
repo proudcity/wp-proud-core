@@ -415,6 +415,15 @@ if ( ! class_exists( 'FormHelper' ) ) {
                 $value_criteria = '.length';
                 break;
 
+              case 'checkboxes':
+                // @todo: Add support for multiple values
+                $watches[] = $group_id . ' input[value=\\"'. $watch_vals['value'][0] .'\\"]';
+                $selector = $group_id . ' input[value=\\"'. $watch_vals['value'][0] .'\\"]:checked';
+                // Check length
+                $value_criteria = '.length';
+                $watch_vals['value'][0] = 1;
+                break;
+
               default:
                 $watches[] = $group_id . ' input';
                 $selector = $group_id . ' input';
@@ -437,7 +446,6 @@ if ( ! class_exists( 'FormHelper' ) ) {
           'if' => implode( $field_glue,  $field_if )
         ];
       endforeach;
-
       // Include JS
       include $this->template('form-state-js');
     }
