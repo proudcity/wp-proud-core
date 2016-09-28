@@ -415,6 +415,11 @@ if ( ! class_exists( 'FormHelper' ) ) {
                 $value_criteria = '.length';
                 break;
 
+              case 'select':
+                $watches[] = $group_id . ' select';
+                $selector = $group_id . ' select';
+                break;
+
               default:
                 $watches[] = $group_id . ' input';
                 $selector = $group_id . ' input';

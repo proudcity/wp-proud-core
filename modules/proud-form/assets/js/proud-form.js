@@ -5,7 +5,10 @@
   Proud.behaviors.iconpicker = { attach: function(context, settings) {
     var iconSettings = [];
     // We have custom icons ?
-    if(settings.proud_form.iconpicker.icons && settings.proud_form.iconpicker['icon-prefix']) {
+    if(settings.proud_form
+    && settings.proud_form.iconpicker 
+    && settings.proud_form.iconpicker.icons 
+    && settings.proud_form.iconpicker['icon-prefix']) {
       iconSettings['icons'] = $.merge(settings.proud_form.iconpicker.icons, $.iconpicker.defaultOptions.icons);
       iconSettings['fullClassFormatter'] = function(val) {
         if(val.match(/^fa-/)){
