@@ -110,6 +110,24 @@ if ( !class_exists( 'TeaserList' ) ) {
         }
       } */
 
+      // Add logic for Agency custom exclude checkbox
+      if ($this->post_type === 'agency') {
+        $args['meta_query'] = array(
+          array(
+            'relation' => 'OR',
+            array(
+              'key' => 'list_exclude',
+              'compare' => 'NOT EXISTS'
+            ),
+            array(
+              'key' => 'list_exclude',
+              'value' => '0',
+              'compare' => '='
+            ),
+          )
+        );
+      }
+
       $this->query = new \WP_Query( $args );
 
       // Alter pagination links to deal with issues with documents, ext
@@ -639,6 +657,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $this->print_content();
         endwhile;
         // Close wrapper
+
         $this->print_wrapper_close();
         // Print pager?
         if( $this->pagination ) {
