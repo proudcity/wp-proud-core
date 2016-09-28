@@ -157,7 +157,7 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple', 'slideshow'],
+              'value' => ['simple', 'slideshow', 'random'],
               'glue' => '&&'
             ],
           ]
@@ -176,7 +176,7 @@ class JumbotronHeader extends Core\ProudWidget {
             ],
             'headertype' => [
               'operator' => '!=',
-              'value' => ['simple', 'slideshow'],
+              'value' => ['simple', 'slideshow', 'random'],
               'glue' => '&&'
             ],
             'featured_image' => [
@@ -383,6 +383,8 @@ class JumbotronHeader extends Core\ProudWidget {
         $instance['background'] = 'image';
         // Fudge as full
         $instance['headertype'] = 'full';
+        // Remove featured option
+        $instance['featured_image'] = false;
       }
 
       switch ( $instance['background'] ) {
@@ -432,6 +434,8 @@ class JumbotronHeader extends Core\ProudWidget {
   
     // normal header type
     if( $instance['headertype'] == 'header' ) {
+      $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-5 col-md-8 col-sm-8', 'header');
+
       // Classes
       $classes[] = 'jumbotron';
       if ( $instance['background'] == 'pattern' || $instance['background'] == 'image' ) {
@@ -445,6 +449,8 @@ class JumbotronHeader extends Core\ProudWidget {
     }
     // We're doing a "full" style jumbotron
     else if( $instance['headertype'] == 'full' ) {
+      $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-7 col-md-8 col-sm-9', 'full');
+
       // Classes
       $classes[] = 'full-image jumbotron-header-container';
       // Box styles

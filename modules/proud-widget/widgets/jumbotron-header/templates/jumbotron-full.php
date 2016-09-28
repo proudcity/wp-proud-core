@@ -2,7 +2,7 @@
   <?php if( !empty( $resp_img ) ) { Proud\Core\print_responsive_image( $resp_img, ['jumbo-image-container'] ); } ?>
   <div class="container"><div class="full-container">
     <div class="<?php print implode( ' ', $boxclasses ) ?>"><div class="row"><div class="col-lg-7 col-md-8 col-sm-9">
-      <div class="jumbotron-bg"><?php print $content; ?></div>
+      <div class="jumbotron-bg"><div class="jumbotron-bg-mask"></div><?php print $content; ?></div>
     </div></div></div>
   </div></div>
 </div>
