@@ -16,11 +16,26 @@ function proud_navbar_logo_size() {
 add_action( 'init', 'proud_navbar_logo_size' );
 
 /**
+ *  Helper function checks if navbar is transparent
+ */
+function proud_navbar_transparent() {
+  static $transparent = null;
+  if( $transparent === null ) {
+    global $proudcore;
+    $transparent = get_option( 'proud_navbar_transparent', '0' )
+                && $proudcore::$layout->post_is_full_width() 
+                && $proudcore::$layout->post_has_full_jumbotron_header();
+  }
+  return $transparent;
+}
+
+/**
  *  Active navbar, so edit body class
  */
 function proud_navbar_body_class( $classes ) {
   $classes[] = 'proud-navbar-active';
-  if( get_option( 'proud_navbar_transparent', '0' ) ) {
+  // Do we have the navbar transparent?
+  if( proud_navbar_transparent() ) {
     $classes[] = 'proud-navbar-transparent';
   }
   return $classes;
@@ -191,6 +206,13 @@ function print_proud_navbar() {
     ob_start();
     include plugin_dir_path(__FILE__) . 'templates/navbar.php';
     $navbar = ob_get_contents();
+    ob_end_clean();
+  }
+  // Should we add transparent mask?
+  if( proud_navbar_transparent() ) {
+    ob_start();
+    include plugin_dir_path(__FILE__) . 'templates/navbar-transparent.php';
+    $navbar .= ob_get_contents();
     ob_end_clean();
   }
   echo $navbar;
