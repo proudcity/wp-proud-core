@@ -40,13 +40,21 @@ class TeaserListWidget extends Core\ProudWidget {
   }
 
   function displayModes() {
-    return [
+    $modes = [
       'list' => __('List View', 'proud-teaser'),
       'media' => __('Media List View', 'proud-teaser'),
       'mini' => __('Mini List', 'proud-teaser'),
       'cards' => __('Card View', 'proud-teaser'),
       'table' => __('Table View', 'proud-teaser'),
     ];
+    if (is_array($this->display_modes)) {
+      foreach ($modes as $key => $mode) {
+        if (!in_array($key, $this->display_modes)) {
+          unset($modes[$key]);
+        }
+      }
+    }
+    return $modes;
   }
 
   function initialize() {
@@ -331,6 +339,7 @@ function register_teaser_list_widget() {
   register_widget( 'JobTeaserListWidget' );
   register_widget( 'ContactTeaserListWidget' );
   register_widget( 'AgencyTeaserListWidget' );
+  register_widget( 'QuestionTeaserListWidget' );
 }
 add_action( 'widgets_init', 'register_teaser_list_widget', 10 );
 
