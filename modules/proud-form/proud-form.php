@@ -415,10 +415,20 @@ if ( ! class_exists( 'FormHelper' ) ) {
                 $value_criteria = '.length';
                 break;
 
+              case 'checkboxes':
+                // @todo: Add support for multiple values
+                $watches[] = $group_id . ' input[value=\\"'. $watch_vals['value'][0] .'\\"]';
+                $selector = $group_id . ' input[value=\\"'. $watch_vals['value'][0] .'\\"]:checked';
+                // Check length
+                $value_criteria = '.length';
+                $watch_vals['value'][0] = 1;
+                break;
+ 
               case 'select':
                 $watches[] = $group_id . ' select';
                 $selector = $group_id . ' select';
                 break;
+
 
               default:
                 $watches[] = $group_id . ' input';
