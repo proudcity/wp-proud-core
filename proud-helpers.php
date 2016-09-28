@@ -11,7 +11,9 @@ function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false, $wo
   // Try using yoast ?
   if( $use_yoast ) {
     global $post;
-    $text = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true );
+    if( !empty( $post ) ) {
+      $text = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true );
+    }
   }
   if ( empty( $text ) ) {
     $text = get_the_content('');
