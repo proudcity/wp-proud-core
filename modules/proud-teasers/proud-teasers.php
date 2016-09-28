@@ -21,6 +21,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $hide; // Agency switch to hide elements
     private $columns; // Splits media view into columns
     private $default_image; // Default image to use
+    private $templates = []; // Holder for templates to avoid extra checks
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
@@ -435,8 +436,13 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints featured content
      */
     private function print_featured() {
-      static $file = null;
-      if( null === $file ) {
+      // Don't allow non standard featured
+      $allowed = ( $this->post_type === 'post' || $this->post_type === 'event' )
+              && ( $this->display_type === 'list' || $this->display_type === 'mini' );
+      if( !$allowed ) {
+        return;
+      }
+      if( empty( $templates['featured'] ) ) {
         // Try for post type
         $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-featured.php';
         $file = "";
@@ -453,6 +459,7 @@ if ( !class_exists( 'TeaserList' ) ) {
             }
           }
         }
+        $templates['featured'] = $file;
       }
 
       // Init post
@@ -462,15 +469,14 @@ if ( !class_exists( 'TeaserList' ) ) {
       $meta;
       global $post;
 
-      include($file);
+      include( $templates['featured'] );
     }
 
     /**
      * Prints teaser list
      */
     private function print_content() {
-      static $file = null;
-      if( null === $file ) {
+      if( empty( $templates['content'] ) ) {
         // Try for post type
         $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
         $file = "";
@@ -484,6 +490,7 @@ if ( !class_exists( 'TeaserList' ) ) {
             $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
           }
         }
+        $templates['content'] = $file;
       }
 
       // Init post
@@ -536,7 +543,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
       }
 
-      include($file);
+      include( $templates['content'] );
     }
 
 
@@ -560,7 +567,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
         }
       }
-      include($file);     
+      include( $file );     
     }
 
     /**
@@ -579,7 +586,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           $file = plugin_dir_path( __FILE__ ) . 'templates/teasers-empty.php';
         }
       }
-      include($file);
+      include( $file );
     }
 
     /**
