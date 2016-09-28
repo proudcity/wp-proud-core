@@ -17,18 +17,31 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $filters;
     private $pagination;
     private $keyword;
-    private $hide;
+    private $featured; // Including a featured
+    private $hide; // Agency switch to hide elements
+    private $columns; // Splits media view into columns
+    private $default_image; // Default image to use
 
     /** $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
      */
-    public function __construct( $post_type, $display_type, $args, $filters = false, $terms = false, $pagination = false, $hide = [] ) {
+    public function __construct( 
+      $post_type, 
+      $display_type, 
+      $args, 
+      $filters = false, 
+      $terms = false, 
+      $pagination = false, 
+      $options = []
+    ) {
 
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
-      $this->hide = $hide;
+      $this->featured = !empty( $options['featured'] ) ?  $options['featured'] : [];
+      $this->hide = !empty( $options['hide'] ) ?  $options['hide'] : [];
+      $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
 
       // Intercept search lists, set keyword
       if($post_type == 'search') {
@@ -75,10 +88,38 @@ if ( !class_exists( 'TeaserList' ) ) {
         'update_post_meta_cache' => true, // don't retrieve post meta
       ] , $args );
 
+      // Do we need to execute a featured (sticky) query?
+      // @TODO make custom post types work with sticky
+      /*if( $featured ) {
+        $this->featured_query = new \WP_Query( array_merge( $args, [
+          'post__in' => get_option('sticky_posts'),
+          'posts_per_page' => 1
+        ] ) );
+        // No sticky post to display, so reset
+        if( empty( $this->featured_query->posts ) ) {
+          $this->featured_query = false;
+        }
+        else {
+          // Get keys and exclude from main query
+          $keys = []; 
+          foreach ( $this->featured_query->posts as $post ) {
+            $keys[] = $post->ID;
+          }
+          $args['post__not_in'] = $keys;
+        }
+      } */
+
       $this->query = new \WP_Query( $args );
 
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
+
+      // Build default image
+      $this->default_image = apply_filters(
+        'proud_teaser_default_image',
+        plugins_url( '/assets/images/teaser-card-default-image.png',  __FILE__  ),
+        $this->post_type
+      );
     }
 
     /**
@@ -347,10 +388,18 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_wrapper_open() {
       $class = '';
+      $attrs = '';
       switch( $this->display_type ) {
         case 'search':
         case 'list':
           $class = 'teaser-list';
+          break;
+
+        case 'media':
+          $class = 'media-list';
+          if( $this->columns ) {
+            $attrs .= ' data-equalizer';
+          }
           break;
 
         case 'mini':
@@ -368,31 +417,72 @@ if ( !class_exists( 'TeaserList' ) ) {
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
-        // Try for generic
+        // Try for generic theme
         $template = $this->template_path . 'teaser-' . $this->display_type . '-header.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
-          // Just load from here
-          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-header.php';
+          // Try for generic locally
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-header.php';
+          if( !file_exists( $file ) ) {
+            // Just load default
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-header.php';
+          }
         }
       }
       include($file);     
     }
 
     /**
+     * Prints featured content
+     */
+    private function print_featured() {
+      static $file = null;
+      if( null === $file ) {
+        // Try for post type
+        $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-featured.php';
+        $file = "";
+        // Try to load template from theme
+        if( '' === ( $file = locate_template( $template ) ) ) {
+          // Try for generic theme
+          $template = $this->template_path . 'teaser-' . $this->display_type . '-featured.php';
+          if( '' === ( $file = locate_template( $template ) ) ) {
+            // Try for generic locally
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-featured.php';
+            if( !file_exists( $file ) ) {
+              // Just load default
+              $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-featured.php';
+            }
+          }
+        }
+      }
+
+      // Init post
+      $this->query->the_post();
+
+      // Load Meta info?
+      $meta;
+      global $post;
+
+      include($file);
+    }
+
+    /**
      * Prints teaser list
      */
     private function print_content() {
-      // Try for post type
-      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
-      $file = "";
+      static $file = null;
+      if( null === $file ) {
+        // Try for post type
+        $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
+        $file = "";
 
-      // Try to load template from theme
-      if( '' === ( $file = locate_template( $template ) ) ) {
-        // Try for generic
-        $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
+        // Try to load template from theme
         if( '' === ( $file = locate_template( $template ) ) ) {
-          // Just load from here
-          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
+          // Try for generic
+          $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
+          if( '' === ( $file = locate_template( $template ) ) ) {
+            // Just load from here
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
+          }
         }
       }
 
@@ -426,6 +516,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
       }
       $hide = $this->hide;
+      $columns = $this->columns;
       // Display type
       switch( $this->display_type ) {
         case 'mini':
@@ -440,7 +531,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         // Build default images
         case 'cards':
           if( !has_post_thumbnail() ) {
-            $default_image = plugins_url( '/assets/images/teaser-card-default-image.png',  __FILE__  );
+            $default_image = $this->default_image; 
           }
           break;
       }
@@ -458,11 +549,15 @@ if ( !class_exists( 'TeaserList' ) ) {
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
-        // Try for generic
-        $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
-        if( !file_exists( $file ) ) {
-          // Just load from here
-          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-footer.php';
+        // Try for generic theme
+        $template = $this->template_path . 'teaser-' . $this->display_type . '-footer.php';
+        if( '' === ( $file = locate_template( $template ) ) ) {
+          // Try for generic local
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
+          if( !file_exists( $file ) ) {
+            /// Just load default
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-footer.php';
+          }
         }
       }
       include($file);     
@@ -530,11 +625,13 @@ if ( !class_exists( 'TeaserList' ) ) {
     public function print_list() {
       if( $this->query->have_posts() ) {
         $this->print_wrapper_open();
+        if( !empty( $this->featured ) ) {
+          $this->print_featured();
+        }
         while ( $this->query->have_posts() ) :
           $this->print_content();
         endwhile;
         // Close wrapper
-
         $this->print_wrapper_close();
         // Print pager?
         if( $this->pagination ) {

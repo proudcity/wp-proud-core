@@ -1,1 +1,1 @@
-<div class="<?php echo $class; ?>">
+<div class="<?php echo $class; ?>"<?php echo $attrs; ?>>
