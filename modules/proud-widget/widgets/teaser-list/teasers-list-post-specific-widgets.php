@@ -16,6 +16,7 @@ class PostTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'post';
+    $this->display_modes = [ 'list', 'mini', 'card' ];
   }
 }
 
@@ -30,6 +31,7 @@ class EventTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'event';
+    $this->display_modes = [ 'list', 'mini' ];
   }
 }
 
@@ -44,6 +46,7 @@ class DocumentTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'document';
+    $this->display_modes = [ 'list', 'table' ];
   }
 }
 
@@ -58,6 +61,7 @@ class JobTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'job_listing';
+    $this->display_modes = [ 'list', 'mini', 'table' ];
   }
 }
 
@@ -71,6 +75,7 @@ class ContactTeaserListWidget extends TeaserListWidget {
       get_class($this)
     );
     $this->post_type = 'staff-member';
+    $this->display_modes = [ 'list', 'table' ];
   }
 
   function initialize() {
@@ -112,14 +117,7 @@ class AgencyTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'agency';
-  }
-
-  function displayModes() {
-    return [
-      'icons' => __('Icon Buttons', 'proud-teaser'),
-      'cards' => __('Card View (with thumbnails)', 'proud-teaser'),
-      'table' => __('Table View', 'proud-teaser'),
-    ];
+    $this->display_modes = [ 'cards', 'icons', 'table' ];
   }
 
   function initialize() {
@@ -159,9 +157,9 @@ class QuestionTeaserListWidget extends TeaserListWidget {
       array( 'description' => __( 'List of Answers in a category with a display style', 'wp-proud-core' ), ), // Args
       get_class($this)
     );
-
-    $this->display_modes = [ 'list', 'accordion' ];
+    
     $this->post_type = 'question';
+    $this->display_modes = [ 'list', 'accordion' ];
   }
 
   function initialize() {
