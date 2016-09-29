@@ -211,6 +211,8 @@ class TeaserListWidget extends Core\ProudWidget {
         return 'document_taxonomy';
       case 'question':
         return 'faq-topic';
+      case 'event':
+        return 'event-categories';
     }
     return false;
   }
