@@ -49,10 +49,11 @@ class TeaserListWidget extends Core\ProudWidget {
       'table' => __('Table View', 'proud-teaser'),
       'accordion' => __('Accordion View', 'proud-teaser'),
     ];
-    if (is_array($this->display_modes)) {
-      foreach ($modes as $key => $mode) {
-        if (!in_array($key, $this->display_modes)) {
-          unset($modes[$key]);
+    // Allow content specific to alter
+    if (!empty ( $this->display_modes ) ) {
+      foreach ( $modes as $key => $mode ) {
+        if ( !in_array( $key, $this->display_modes ) ) {
+          unset( $modes[$key] );
         }
       }
     }
@@ -67,6 +68,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#options' => $this->postTypes(),
         '#default_value' => 'post',
       ];
+      $this->display_featured = true;
     }
     else {
       // @todo: this should be called from proud-teasers.php
@@ -84,7 +86,9 @@ class TeaserListWidget extends Core\ProudWidget {
         ];
       }
     }
+    // Get display modes
     $display_modes = $this->displayModes();
+    // Init Settings
     $this->settings += [
       'proud_teaser_display' => [
         '#title' => __('Display style', 'proud-teaser'),
@@ -92,28 +96,36 @@ class TeaserListWidget extends Core\ProudWidget {
         '#default_value' => key($display_modes),
         '#options' => $display_modes,
       ],
-      'featured' => [
-        '#type' => 'checkbox',
-        '#title' => 'Featured',
-        '#return_value' => '1',
-        '#label_above' => true,
-        '#replace_title' => 'Display first teaser as featured at top of list',
-        '#default_value' => false,
-        '#states' => [
-          'visible' => [
-            'proud_teaser_content' => [
-              'operator' => '==',
-              'value' => ['post', 'event'],
-              'glue' => '||'
-            ],
-            'proud_teaser_display' => [
-              'operator' => '==',
-              'value' => ['list', 'mini'],
-              'glue' => '||'
+      'post_count' => [
+        '#type' => 'text',
+        '#title' => 'Number of posts to show',
+        '#description' => 'Set to 0 to show all posts',
+        '#default_value' => 3
+      ]
+    ];
+    // Should we display featured checkbox?
+    if( !empty( $this->display_featured ) ) {
+      $this->settings += [  
+        'featured' => [
+          '#type' => 'checkbox',
+          '#title' => 'Featured',
+          '#return_value' => '1',
+          '#label_above' => true,
+          '#replace_title' => 'Display first teaser as featured at top of list',
+          '#default_value' => false,
+          '#states' => [
+            'visible' => [
+              'proud_teaser_display' => [
+                'operator' => '==',
+                'value' => ['list', 'mini'],
+                'glue' => '||'
+              ],
             ],
           ],
-        ],
-      ],
+        ]
+      ];
+    }
+    $this->settings += [  
       'columns' => [
         '#type' => 'checkbox',
         '#title' => 'Columns',
@@ -130,12 +142,6 @@ class TeaserListWidget extends Core\ProudWidget {
             ],
           ],
         ],
-      ],
-      'post_count' => [
-        '#type' => 'text',
-        '#title' => 'Number of posts to show',
-        '#description' => 'Set to 0 to show all posts',
-        '#default_value' => 3
       ],
       'pager' => [
         '#type' => 'checkbox',

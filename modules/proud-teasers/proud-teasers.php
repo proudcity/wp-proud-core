@@ -460,8 +460,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_featured() {
       // Don't allow non standard featured
-      $allowed = ( $this->post_type === 'post' || $this->post_type === 'event' )
-              && ( $this->display_type === 'list' || $this->display_type === 'mini' );
+      $allowed = ( $this->display_type === 'list' || $this->display_type === 'mini' );
       if( !$allowed ) {
         return;
       }

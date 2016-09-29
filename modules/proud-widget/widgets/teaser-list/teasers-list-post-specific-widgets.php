@@ -16,7 +16,8 @@ class PostTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'post';
-    $this->display_modes = [ 'list', 'mini', 'card' ];
+    $this->display_featured = true;
+    $this->display_modes = [ 'list', 'media', 'mini', 'card' ];
   }
 }
 
@@ -31,7 +32,8 @@ class EventTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'event';
-    $this->display_modes = [ 'list', 'mini' ];
+    $this->display_featured = true;
+    $this->display_modes = [ 'list', 'media', 'mini' ];
   }
 }
 
@@ -117,7 +119,7 @@ class AgencyTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'agency';
-    $this->display_modes = [ 'cards', 'icons', 'table' ];
+    $this->display_modes = [ 'cards', 'media', 'icons', 'table' ];
   }
 
   function initialize() {
