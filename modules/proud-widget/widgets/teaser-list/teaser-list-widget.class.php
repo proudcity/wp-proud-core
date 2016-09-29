@@ -42,6 +42,7 @@ class TeaserListWidget extends Core\ProudWidget {
   function displayModes() {
     $modes = [
       'list' => __('List View', 'proud-teaser'),
+      'icons' => __('Icon Buttons', 'proud-teaser'),
       'media' => __('Media List View', 'proud-teaser'),
       'mini' => __('Mini List', 'proud-teaser'),
       'cards' => __('Card View', 'proud-teaser'),
@@ -83,12 +84,13 @@ class TeaserListWidget extends Core\ProudWidget {
         ];
       }
     }
+    $display_modes = $this->displayModes();
     $this->settings += [
       'proud_teaser_display' => [
         '#title' => __('Display style', 'proud-teaser'),
         '#type' => 'radios',
-        '#default_value' => 'list',
-        '#options' => $this->displayModes(),
+        '#default_value' => key($display_modes),
+        '#options' => $display_modes,
       ],
       'featured' => [
         '#type' => 'checkbox',
