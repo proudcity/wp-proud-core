@@ -132,7 +132,7 @@ class TeaserListWidget extends Core\ProudWidget {
       'post_count' => [
         '#type' => 'text',
         '#title' => 'Number of posts to show',
-        //'#description' => 'How many posts to show?',
+        '#description' => 'Set to 0 to show all posts',
         '#default_value' => 3
       ],
       'pager' => [
@@ -343,7 +343,7 @@ class TeaserListWidget extends Core\ProudWidget {
       };
     }
   }
-  
+
 }
 
 // Post-type specific widgets

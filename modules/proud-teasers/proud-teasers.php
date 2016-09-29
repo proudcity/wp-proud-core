@@ -128,6 +128,9 @@ if ( !class_exists( 'TeaserList' ) ) {
         );
       }
 
+      // If posts per page is set to 0, make it show all posts (up to 100)
+      $args[ 'posts_per_page' ] = $args[ 'posts_per_page' ] == 0 ? 100 : $args[ 'posts_per_page' ];
+      
       $this->query = new \WP_Query( $args );
 
       // Alter pagination links to deal with issues with documents, ext
