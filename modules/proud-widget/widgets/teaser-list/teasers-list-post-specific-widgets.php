@@ -148,3 +148,25 @@ class AgencyTeaserListWidget extends TeaserListWidget {
   }
 
 }
+
+
+// Questions
+class QuestionTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_question_teaser_list', // Base ID
+      __( 'Answers list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of Answers in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
+    );
+
+    $this->display_modes = [ 'list', 'accordion' ];
+    $this->post_type = 'question';
+  }
+
+  function initialize() {
+    parent::initialize();
+    $this->settings['proud_teaser_terms']['#description'] = __( 'Checking a parent category will display all items belonging to the children categories as well', 'wp-proud-core' );
+  }
+
+}

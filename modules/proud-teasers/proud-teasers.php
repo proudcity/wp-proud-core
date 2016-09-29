@@ -157,6 +157,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           return 'job_listing_type';
         case 'document':
           return 'document_taxonomy';
+        case 'question':
+          return 'faq-topic';
       }
       return false;
     }

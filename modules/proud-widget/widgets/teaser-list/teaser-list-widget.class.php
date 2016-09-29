@@ -46,6 +46,7 @@ class TeaserListWidget extends Core\ProudWidget {
       'mini' => __('Mini List', 'proud-teaser'),
       'cards' => __('Card View', 'proud-teaser'),
       'table' => __('Table View', 'proud-teaser'),
+      'accordion' => __('Accordion View', 'proud-teaser'),
     ];
     if (is_array($this->display_modes)) {
       foreach ($modes as $key => $mode) {
@@ -70,24 +71,14 @@ class TeaserListWidget extends Core\ProudWidget {
       // @todo: this should be called from proud-teasers.php
       $taxonomy = $this->get_taxonomy($this->post_type);
       if( $taxonomy ) {
-        $categories = get_categories( [
-          'type' => $this->post_type, 
-          'taxonomy' => $taxonomy, 
-          'hide_empty' => 0,
-          //'orderby' => 'weight',
-          //'order' => 'ASC',
-        ]);
         $options = [];
-        if( !empty( $categories ) && empty( $categories['errors'] ) ) {
-          foreach ($categories as $cat) {
-            $options[$cat->term_id] = $cat->name;
-          };
-        }
+        $this->taxonomy_heirarchy_options($taxonomy, $options);
+        $default = count($options) > 20 ? array() : array_keys($options);
         $this->settings['proud_teaser_terms'] = [
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',
           '#options' => $options,
-          '#default_value' => array_keys($options),
+          '#default_value' => $default,
           '#description' => ''
         ];
       }
@@ -218,6 +209,8 @@ class TeaserListWidget extends Core\ProudWidget {
         return 'job_listing_type';
       case 'document':
         return 'document_taxonomy';
+      case 'question':
+        return 'faq-topic';
     }
     return false;
   }
@@ -323,6 +316,34 @@ class TeaserListWidget extends Core\ProudWidget {
     // Include the template file
     include( $file );
   }
+
+  /**
+   * Create a heirarchical list of taxonomy options for a select/checkboxes
+   *
+   * @see self::widget()
+   *
+   * @param array $taxonomy Taxonomy category key.
+   * @param array $options Array of options (passed by reference).
+   * @param array $parent Parent term id (not usually required).
+   * @param array $prefix Usually for &nbsp;s (not usually required).
+   */
+  function taxonomy_heirarchy_options($taxonomy, &$options, $parent = 0, $prefix = '') {
+    $categories = get_categories( [
+      'type' => $this->post_type, 
+      'taxonomy' => $taxonomy, 
+      'hide_empty' => 0,
+      'parent' => $parent,
+      'depth' => 0,
+    ]);
+
+    if( !empty( $categories ) && empty( $categories['errors'] ) ) {
+      foreach ($categories as $cat) {
+        $options[$cat->term_id] = $prefix .' '. $cat->name;
+        $this->taxonomy_heirarchy_options($taxonomy, $options, $cat->term_id, $prefix . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+      };
+    }
+  }
+  
 }
 
 // Post-type specific widgets
