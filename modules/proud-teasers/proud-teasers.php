@@ -407,6 +407,23 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
     }
 
+    /** 
+     * Process columns if applicable
+     */
+    private function column_row( &$row_open, &$row_close, &$column_classes, $post_count, $current ) {
+      if( $this->columns ) {
+        $column_classes = ' col-md-6';
+        // Open row?
+        if( $current%2 === 1 ) {
+          $row_open = '<div class="row">';
+        }
+        // Close row?
+        if( ( $post_count === $current ) || $current%2 === 0 ) {
+          $row_close = '</div>';
+        }
+      }
+    }
+
     /**
      * Wraps teaser list: open
      */
@@ -421,9 +438,6 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         case 'media':
           $class = 'media-list';
-          if( $this->columns ) {
-            $attrs .= ' data-equalizer';
-          }
           break;
 
         case 'mini':
@@ -497,7 +511,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
      * Prints teaser list
      */
-    private function print_content() {
+    private function print_content( $post_count, $current ) {
       if( empty( $templates['content'] ) ) {
         // Try for post type
         $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
@@ -545,7 +559,10 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
       }
       $hide = $this->hide;
-      $columns = $this->columns;
+      // Init column vars
+      $row_open = '';
+      $row_close = '';
+      $column_classes = '';
       // Display type
       switch( $this->display_type ) {
         case 'mini':
@@ -555,6 +572,17 @@ if ( !class_exists( 'TeaserList' ) ) {
           else {
             $header_tag = 'h5';
           }
+          break;
+
+        case 'media':
+          // Add columns if applicable
+          $this->column_row(
+            $row_open,
+            $row_close,
+            $column_classes,
+            $post_count,
+            $current
+          );
           break;
 
         // Build default images
@@ -657,8 +685,12 @@ if ( !class_exists( 'TeaserList' ) ) {
         if( !empty( $this->featured ) ) {
           $this->print_featured();
         }
+        // Get some stats 
+        $post_count = count($this->query->posts);
+        $current = 1;
         while ( $this->query->have_posts() ) :
-          $this->print_content();
+          $this->print_content($post_count, $current);
+          $current++;
         endwhile;
         // Close wrapper
 

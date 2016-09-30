@@ -1,4 +1,5 @@
-<div <?php post_class( "teaser media" ); ?><?php if($columns) { echo ' data-equalize-height="true"'; } ?>>
+<?php echo $row_open; ?>
+<div <?php post_class( "teaser media" . $column_classes  ); ?>>
   <div class="media-left">
   <?php if( has_post_thumbnail() ): ?>
     <a href="<?php echo esc_url( get_permalink() ); ?>">
@@ -13,3 +14,4 @@
     <?php endif; ?>
   </div>
 </div>
+<?php echo $row_close; ?>
