@@ -104,9 +104,10 @@ class Proudcore extends \ProudPlugin {
       ),
       'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
       'mapbox' => array(
-        'token' => get_option( 'mapbox_token', 'pk.eyJ1IjoiYWxiYXRyb3NzZGlnaXRhbCIsImEiOiI1cVUxbUxVIn0.SqKOVeohLfY0vfShalVDUw' ),
-        'map' => get_option( 'mapbox_map', 'albatrossdigital.lpkdpcjb' )
-      )
+        'token' => get_option( 'mapbox_token', '' ),
+        'map' => get_option( 'mapbox_map', '' ),
+      ),
+      'google_key' => get_option( 'google_api_key', '' ),
     )));
     self::$libraries = new ProudLibaries;
     self::$layout = new \ProudLayout;
