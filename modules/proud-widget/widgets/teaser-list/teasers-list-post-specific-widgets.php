@@ -17,7 +17,7 @@ class PostTeaserListWidget extends TeaserListWidget {
 
     $this->post_type = 'post';
     $this->display_featured = true;
-    $this->display_modes = [ 'list', 'media', 'mini', 'card' ];
+    $this->display_modes = [ 'list', 'media', 'mini', 'cards' ];
   }
 }
 
@@ -48,7 +48,33 @@ class DocumentTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'document';
-    $this->display_modes = [ 'list', 'card', 'table' ];
+    $this->display_modes = [ 'list', 'cards', 'table' ];
+  }
+
+  function initialize() {
+    parent::initialize();
+    $this->settings += [
+      'proud_teaser_hide' => [
+        '#title' => __('Hide Columns', 'proud-teaser'),
+        '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => [],
+        '#options' => [
+          'category' => __( 'Category', 'proud-teaser' ),
+          'date' => __( 'Date', 'proud-teaser' ),
+          'download' => __( 'Document type and size download link', 'proud-teaser' ),
+        ],
+        '#states' => [
+          'hidden' => [
+            'proud_teaser_display' => [
+              'operator' => '!=',
+              'value' => ['table'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+    ];
   }
 }
 
