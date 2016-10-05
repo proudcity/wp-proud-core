@@ -48,7 +48,7 @@ class DocumentTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'document';
-    $this->display_modes = [ 'list', 'cards', 'table' ];
+    $this->display_modes = [ 'list', 'cards', 'table', 'mini' ];
   }
 
   function initialize() {
