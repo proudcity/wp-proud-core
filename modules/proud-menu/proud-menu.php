@@ -50,6 +50,7 @@ class ProudMenu {
         self::$wrapper_template = plugin_dir_path( __FILE__ ) . 'templates/menu-wrapper.php';
         self::$back_template = plugin_dir_path( __FILE__ ) . 'templates/back-link.php';      
         self::$show_level = true;
+
       }
       // Build menu structure
       self::$menu_structure = $this->get_nested_menu( $menu_id );
@@ -194,7 +195,7 @@ class ProudMenu {
    */
   static function print_menu( ) {
     if( !empty( self::$menu_structure ) ) {
-      $active = 0;
+      $active = 1;
       $menus = array();
       self::build_recursive( self::$menu_structure, $menus, $active );
       include(self::$wrapper_template);
