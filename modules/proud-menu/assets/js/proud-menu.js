@@ -15,6 +15,8 @@
         // @TODO evaluate if the navigation forward is important
         $('[data-active-click]', $slider).on('click', self.sliderClick);
         $('[data-back-click]', $slider).on('click', self.sliderClick);
+        // Set watch on resize
+        self.setWatch();
       }
 
       self.sliderClick = function(event) {
@@ -44,6 +46,30 @@
         $slider.removeClass(function (index, css) {
             return (css.match (/level-[0-9]-active/g) || []).join(' ');
         }).addClass('level-' + level + '-active');
+      }
+
+      // Description:
+      //  Executes a function a max of once every n milliseconds
+      self.throttle = function (func, delay) {
+          var timer = null;
+
+          return function () {
+              var context = this, args = arguments;
+
+              if (timer == null) {
+                timer = setTimeout(function () {
+                  func.apply(context, args);
+                  timer = null;
+                }, delay);
+              }
+          };
+      }
+
+      self.setWatch = function() {
+          // Set watch
+          $(window).on('resize.proudMenu', self.throttle(function () {
+              self.alterHeight(active, false);
+          }, 50));
       }
 
     return self.init();
