@@ -22,9 +22,9 @@ if ( !class_exists( 'ProudLayout' ) ) {
         /**
          * Helper function loads site origin meta if available
          */
-        public function get_site_origins_meta() {
-          static $site_origins_meta;
-          if( function_exists( 'siteorigin_panels_is_panel' ) ) {
+        public function get_site_origins_meta( ) {
+          static $site_origins_meta = null;
+          if( $site_origins_meta === null && function_exists( 'siteorigin_panels_is_panel' ) ) {
             $id = get_the_ID();
             $site_origins_meta = get_post_meta( get_the_ID(), 'panels_data', false );
           }
@@ -34,28 +34,34 @@ if ( !class_exists( 'ProudLayout' ) ) {
         /**
          * Helper function tests if jumbotron is present on panel data
          * AS first item, AND is full row
+         *
+         * @returns name of jumbotron style
          */
         public function post_has_full_jumbotron_header( ) {
           static $has_jumbotron = null;
           if( $has_jumbotron === null ) {
-            $site_origins_meta = $this->get_site_origins_meta();
+            // Set false to avoid another round
+            $has_jumbotron = false;
+            $site_origins_meta = $this->get_site_origins_meta( );
             if( !empty( $site_origins_meta ) ) {
               $meta = reset( $site_origins_meta );
               if( !empty( $meta['widgets'] ) ) {
                 // Check if we're first jumbotron large
                 $widget = $meta['widgets'][0];
-                $has_jumbotron = !empty( $widget['panels_info']['class'] ) 
-                              && $widget['panels_info']['class'] === 'JumbotronHeader'
-                              && !empty( $widget['headertype'] )
-                              && $widget['headertype'] !== 'simple'
-                              && $meta['grids'][0]['cells'] === 1
-                              && !empty( $meta['grids'][0]['style']['row_stretch'] )
-                                && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
-                                  || $meta['grids'][0]['style']['row_stretch'] == 'full-stretched' );
+                // widget active, is jumbotron, is full width
+                if(  !empty( $widget['panels_info']['class'] ) 
+                  && $widget['panels_info']['class'] === 'JumbotronHeader'
+                  && !empty( $widget['headertype'] )
+                  && $meta['grids'][0]['cells'] === 1
+                  && !empty( $meta['grids'][0]['style']['row_stretch'] )
+                  && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
+                    || $meta['grids'][0]['style']['row_stretch'] == 'full-stretched' )
+                ) {
+                  // Set to header type.  Transparent
+                  // navbar needs to know
+                  $has_jumbotron = $widget['headertype'];
+                }
               }
-            } 
-            if ( !$has_jumbotron ) {
-              $has_jumbotron = false;
             }
           }
           return $has_jumbotron;
@@ -78,6 +84,55 @@ if ( !class_exists( 'ProudLayout' ) ) {
          */
         public function title_is_hidden(  ){
           return $this->post_is_full_width(  );
+        }
+
+        /**
+         * Determine information about Agencies, subpages to displ
+         * parent menu item title, sidebar
+         */
+        function page_parent_info( $req = false ) {
+
+          $display = false;
+          
+          if ( is_page() ) {
+            // $pageInfo is set in wp-proud-core on init
+            global $pageInfo;
+            if ( !empty( $pageInfo ) ) {
+              if ( $req === false ) {
+                $display = (bool) ( !empty( $pageInfo['parent_post'] ) 
+                               ||   !empty( $pageInfo['parent_link'] ) )
+                               && !$this->post_has_full_jumbotron_header();
+              }
+              // Parent header specific call
+              // There must be a parent item
+              elseif ( $req === 'title' ) {
+                $display = (bool) !empty( $pageInfo['parent_post'] )
+                               && !$this->post_has_full_jumbotron_header();
+              }
+              // Sidebar specific call
+              // parent should MUST be agecy
+              elseif ( $req === 'agency' ) {
+                $display = (bool) !empty( $pageInfo['parent_post'] ) 
+                               && !$this->post_has_full_jumbotron_header()
+                               && !empty( $pageInfo['parent_post_type'] ) 
+                               && $pageInfo['parent_post_type'] === 'agency';
+              }
+              // Sidebar specific call
+              // parent should NOT be agency
+              elseif ( $req === 'noagency' ) {
+                $display = (bool) isset( $pageInfo['parent_link'] ) 
+                               && !empty( $pageInfo['parent_link'] )
+                               && !$this->post_has_full_jumbotron_header()
+                               && (  empty( $pageInfo['parent_post_type'] ) 
+                                  || $pageInfo['parent_post_type'] !== 'agency'
+                                  );
+              }
+            }
+          }
+          
+          if( $display ) {
+            return apply_filters( 'proud/display_sidebar', $display, $req );
+          }
         }
 
         /**

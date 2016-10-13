@@ -194,16 +194,17 @@ class Proudcore extends \ProudPlugin {
           SELECT post_id, slug FROM wp_postmeta pm
           LEFT JOIN wp_term_relationships r ON pm.post_id = r.object_id
           LEFT JOIN wp_terms t ON r.term_taxonomy_id = t.term_id
-          WHERE pm.meta_key = %s
+          WHERE slug IS NOT NULL
+          AND pm.meta_key = %s
           AND pm.meta_value = %d;', 
         '_menu_item_object_id', get_the_ID() ) );
-      
+
         if( !empty($row) ) {
           $pageInfo['menu'] = $row->slug;
 
-          if ( 'primary-links' === $row->slug || 'city-site-links' === $row->slug ) {
+          if ( 'primary-links' === $row->slug ) {
             $pageInfo['parent_link'] = get_post_meta ( $row->post_id, '_menu_item_menu_item_parent', true );
-            if ( isset( $pageInfo['parent_link'] ) &&  apply_filters( 'proud_submenu_min_depth', $pageInfo['parent_link'] ) ) {
+            if ( isset( $pageInfo['parent_link'] ) &&  $pageInfo['parent_link'] ) {
               $pageInfo['parent_post'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object_id', true );
               $pageInfo['parent_post_type'] = get_post_meta ( $pageInfo['parent_link'], '_menu_item_object', true );
             }
@@ -220,7 +221,6 @@ class Proudcore extends \ProudPlugin {
       }
     }
   }
-
 
   // Add shortcodees
   // [sitename]

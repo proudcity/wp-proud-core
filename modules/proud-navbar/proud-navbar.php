@@ -22,9 +22,14 @@ function proud_navbar_transparent() {
   static $transparent = null;
   if( $transparent === null ) {
     global $proudcore;
-    $transparent = get_option( 'proud_navbar_transparent', '0' )
+    // Grab type of jumbotron, if applicable
+    $jumbostyle = $proudcore::$layout->post_has_full_jumbotron_header();
+    // Should we go transparent (jumbotron image only)
+    $transparent = get_option( 'proud_navbar_transparent' )
+                && !$proudcore::$layout->page_parent_info()
                 && $proudcore::$layout->post_is_full_width() 
-                && $proudcore::$layout->post_has_full_jumbotron_header();
+                && $jumbostyle
+                && $jumbostyle !== 'simple';
   }
   return $transparent;
 }
@@ -190,6 +195,8 @@ function get_nav_primary_menu() {
     $menu = ob_get_contents();
     ob_end_clean();
   }
+  // Allow altering
+  $menu = apply_filters( 'proud_nav_primary_menu_alter', $menu );
 
   return $menu;  
 }
