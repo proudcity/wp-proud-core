@@ -344,6 +344,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
 
         case 'staff-member':
+        case 'question':
+        case 'issue':
           $args['orderby'] = 'menu_order';
           $args['order']   = 'ASC';
           break;
