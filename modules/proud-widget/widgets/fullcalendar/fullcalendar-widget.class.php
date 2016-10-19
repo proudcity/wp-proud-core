@@ -6,7 +6,7 @@ class FullcalendarWidget extends Core\ProudWidget {
 
     function __construct() {
         parent::__construct(
-            'submenu', // Base ID
+            'fullcalendar', // Base ID
             __( 'Calendar', 'wp-agency' ), // Name
             array( 'description' => __( "Display events on an interactive calendar", 'wp-agency' ), ) // Args
         );
