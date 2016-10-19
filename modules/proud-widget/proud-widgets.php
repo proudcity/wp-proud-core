@@ -22,6 +22,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form/gravity-form-widg
 require_once plugin_dir_path(__FILE__) . 'widgets/proudscore-widget/proudscore-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/fullcalendar/fullcalendar-widget.class.php';
 
 
 
