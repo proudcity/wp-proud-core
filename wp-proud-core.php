@@ -161,11 +161,12 @@ class Proudcore extends \ProudPlugin {
 
   // Add the draggable post order to REST API endpoints
   public function restPostOrder( $wp_query ) {
-    $q = !empty( $_REQUEST['q'] ) ? $_REQUEST['q'] : '';
+    global $wp;
+    $q = add_query_arg(array(),$wp->request);
     if ( 
-      $q === '/wp-json/wp/v2/issues' ||
-      $q === '/wp-json/wp/v2/questions' ||
-      $q === '/wp-json/wp/v2/payments'
+      $q === 'wp-json/wp/v2/issues' ||
+      $q === 'wp-json/wp/v2/questions' ||
+      $q === 'wp-json/wp/v2/payments'
     ) {
       $wp_query->set( 'orderby', 'menu_order' );
       $wp_query->set( 'order', 'ASC' );
