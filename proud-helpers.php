@@ -232,6 +232,12 @@ function socialAccountUrl($service, $account) {
     case 'twitter':
       return sprintf( 'https://%s.com/%s', $service, $account);
       break;
+
+    // @TODO figure out youtube user / channel
+    case 'youtube':
+      return sprintf( 'https://%s.com/channel/%s', $service, $account);
+      break;
+
   }
 }
 
