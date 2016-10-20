@@ -88,6 +88,9 @@ class Proudcore extends \ProudPlugin {
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
+
+    // reorder post types
+    add_action( 'pre_get_posts', array( $this, 'restPostOrder' ) );
   }
 
   public function init() {
@@ -153,6 +156,19 @@ class Proudcore extends \ProudPlugin {
           $wp_post_types[$post_type_name]->rest_base = $post_type_name.'s';
           $wp_post_types[$post_type_name]->rest_controller_class = 'WP_REST_Posts_Controller';
       }
+    }
+  }
+
+  // Add the draggable post order to REST API endpoints
+  public function restPostOrder( $wp_query ) {
+    $q = $_REQUEST['q'];
+    if ( 
+      $q === '/wp-json/wp/v2/issues' ||
+      $q === '/wp-json/wp/v2/questions' ||
+      $q === '/wp-json/wp/v2/payments'
+    ) {
+      $wp_query->set( 'orderby', 'menu_order' );
+      $wp_query->set( 'order', 'ASC' );
     }
   }
 
