@@ -137,6 +137,11 @@ class Proudcore extends \ProudPlugin {
     self::$jsSettings = array_merge_deep_array([self::$jsSettings, $settings]);
   }
 
+  // Get js settings from Proud js var
+  public function getJsSettings() {
+    return self::$jsSettings;
+  }
+
   // Prints out Proud js settings
   public function printJsSettings() {
     ?>
