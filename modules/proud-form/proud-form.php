@@ -54,6 +54,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         }
         // Media upload
         else if( $value['#type'] === 'select_media' ) {
+          wp_enqueue_media();
           $proudcore::$libraries->addBundleToLoad('upload-media', true);
         }
       }
