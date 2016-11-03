@@ -346,6 +346,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'staff-member':
         case 'question':
         case 'issue':
+        case 'document':
+        case 'agency':
           $args['orderby'] = 'menu_order';
           $args['order']   = 'ASC';
           break;
@@ -395,11 +397,6 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         // Don't order for search
         case 'search':
-          break;
-
-        case 'document':
-          $args['orderby'] = 'date';
-          $args['order']   = 'DESC';
           break;
 
         default:
