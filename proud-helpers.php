@@ -131,7 +131,7 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
 /** 
  * Build responsive image meta
  */
-function build_responsive_image_meta( $media_id, $size_max = 'full', $size_small = 'medium' ) {
+function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $size_small = 'medium' ) {
   // Get meta
   $media_meta = wp_get_attachment_metadata($media_id);
 
