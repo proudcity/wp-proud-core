@@ -78,6 +78,10 @@ class Proudcore extends \ProudPlugin {
     $this->hook( 'after_setup_theme', 'addImageSizes' );
     // Add powered by content
     $this->hook( 'proud_footer_after', 'poweredby' );
+    // Modify max size for responsive images
+    add_filter( 'max_srcset_image_width', array( $this, 'max_srcset_width' ), 10, 2 );
+    // Add our responsive options if applicable
+    add_filter( 'wp_calculate_image_srcset', array( $this, 'calculate_image_srcset' ), 10, 4 );
 
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
@@ -191,18 +195,70 @@ class Proudcore extends \ProudPlugin {
     }
   }
 
-  function addImageSizes() {
+  public function addImageSizes() {
     add_image_size( 'card-thumb', 300, 170, true );
     add_image_size( 'featured-teaser', 445, 300, true );
-    add_image_size( 'full-screen', 2000, 1300, true );
+    add_image_size( 'full-screen', 2000, 1333, true );
   }
 
-  function poweredby() {
+  public function poweredby() {
     ?>
       <div class="powered-by-footer">
         <?php the_widget( 'PoweredByWidget', [], [] ) ?>
       </div>
     <?php
+  }
+
+  // If we're rendering with full-screen, add our values
+  public function max_srcset_width( $max_width, $size_array ) {
+    // We're using full-screen
+    if( $size_array[0] === 2000 ) {
+      return 2001;
+    }
+    // Otherwise respect the wordpress max
+    return $max_width;
+  }
+
+  // Add our other responsive stlyes if needed
+  public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta ) {
+
+    // We have only 1 source @ our full-screen size add medium, large
+    // See:
+    // https://developer.wordpress.org/reference/functions/wp_calculate_image_srcset/
+    // https://www.developersq.com/add-custom-srcset-values-for-responsive-images-wordpress/
+    if(!empty( $sources ) && count( $sources ) === 1 && isset( $sources[2000] ) ) { 
+      // image base name  
+      $image_basename = wp_basename( $image_meta['file'] );
+      // upload directory info array
+      $upload_dir_info_arr = wp_get_upload_dir();
+      // base url of upload directory
+      $baseurl = $upload_dir_info_arr['baseurl'];
+      
+      // Uploads are (or have been) in year/month sub-directories.
+      if ( $image_basename !== $image_meta['file'] ) {
+        $dirname = dirname( $image_meta['file'] );
+        
+        if ( $dirname !== '.' ) {
+          $image_baseurl = trailingslashit( $baseurl ) . $dirname; 
+        }
+      }
+
+      $image_baseurl = trailingslashit( $image_baseurl );
+      foreach( ['large', 'medium'] as $size ) { 
+        // check whether our custom image size exists in image meta 
+        if( array_key_exists( $size, $image_meta['sizes'] ) ){
+
+          // add source value to create srcset
+          $sources[ $image_meta['sizes'][$size]['width'] ] = array(
+            'url'        => $image_baseurl .  $image_meta['sizes'][$size]['file'],
+            'descriptor' => 'w',
+            'value'      => $image_meta['sizes'][$size]['width'],
+          );
+        }
+      }
+    }
+    //return sources with new srcset value
+    return $sources;
   }
 
   // If this post is a page, get the menu information
@@ -247,19 +303,19 @@ class Proudcore extends \ProudPlugin {
 
   // Add shortcodees
   // [sitename]
-  function shortcode_sitename( ){
+  public function shortcode_sitename( ){
     return get_bloginfo('title');
   }
   // [slogan]
-  function shortcode_slogan( ){
+  public function shortcode_slogan( ){
     return get_bloginfo('description');
   }
   // [title] (page title)
-  function shortcode_title( ){
+  public function shortcode_title( ){
     return get_the_title();
   }
   // [featured-image] (page title)
-  function shortcode_featured_image( ){
+  public function shortcode_featured_image( ){
     return get_the_post_thumbnail_url(get_the_ID());
   }
 

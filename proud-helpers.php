@@ -141,7 +141,7 @@ function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $siz
     'src' => wp_get_attachment_image_src($media_id, $size_small),
     'meta' => $media_meta
   ];
-  //$return['meta']['caption'] = get_the_excerpt( $media_id );
+  // $return['meta']['caption'] = get_the_excerpt( $media_id );
   //print_r($return);die();
   return $return;
 }
