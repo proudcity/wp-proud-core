@@ -145,16 +145,19 @@ function build_responsive_image_metadata( $media_id ) {
 /** 
  * Build responsive image meta
  */
-function build_responsive_image_meta( $media_id, $size_max = 'full', $size_small = 'medium' ) {
+function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $size_small = 'medium' ) {
   // Get meta
+  $media_meta = wp_get_attachment_metadata($media_id);
+
   $return = [
-    'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, $media_meta),
+    'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, wp_get_attachment_metadata($media_id)),
     'size' => wp_get_attachment_image_sizes($media_id, $size_max),
     'src' => wp_get_attachment_image_src($media_id, $size_small),
     'meta' => build_responsive_image_metadata($media_id),
   ];
   return $return;
 }
+
 
 /** 
  * Print responsive image html
