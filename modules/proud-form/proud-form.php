@@ -29,6 +29,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
      */
     public function registerAdminLibraries() {
       global $proudcore;
+      if( empty( $this->fields ) ) {
+        return;
+      }
       foreach ( $this->fields as $key => $value ) {
         if( $value['#type'] === 'group' ){
           $proudcore->addJsSettings([
