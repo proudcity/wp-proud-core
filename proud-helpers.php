@@ -127,6 +127,20 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
   print_retina_image( $image_meta, false, true );
 }
 
+/** 
+ * Build responsive image meta data from the post information.
+ * This is a replacement for wp_get_attachment_metadata(), which was returning no data.
+ */
+function build_responsive_image_metadata( $media_id ) {
+  $media_post = get_post($media_id);
+  return [
+    'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
+    //'class' => @todo
+    'title' => !empty($media_post->post_title) ? $media_post->post_title : null,
+    'alt' => !empty($media_post->post_content) ? $media_post->post_content : null,
+  ];
+}
+
 
 /** 
  * Build responsive image meta
@@ -136,13 +150,11 @@ function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $siz
   $media_meta = wp_get_attachment_metadata($media_id);
 
   $return = [
-    'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, $media_meta),
+    'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, null),
     'size' => wp_get_attachment_image_sizes($media_id, $size_max),
     'src' => wp_get_attachment_image_src($media_id, $size_small),
-    'meta' => $media_meta
+    'meta' => build_responsive_image_metadata($media_id),
   ];
-  // $return['meta']['caption'] = get_the_excerpt( $media_id );
-  //print_r($return);die();
   return $return;
 }
 
@@ -152,7 +164,7 @@ function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $siz
  */
 function print_responsive_image( $resp_img, $classes = [], $skip_media = false ) {
   $classes[] = 'media';
-  $image_meta = !empty( $resp_img['meta']['image_meta'] ) ? $resp_img['meta']['image_meta'] : [];
+  $image_meta = !empty( $resp_img['meta'] ) ? $resp_img['meta'] : [];
   ?> 
   <?php if( !empty( $resp_img['src'] ) ): ?> 
     <?php if( !$skip_media && !empty( $classes ) ): ?> 
@@ -165,7 +177,7 @@ function print_responsive_image( $resp_img, $classes = [], $skip_media = false )
          <?php if ( !empty( $image_meta['title'] ) ): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
          <?php if ( !empty( $image_meta['alt'] ) ): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
     <?php if ( !$skip_media && !empty( $image_meta['caption'] ) ): ?>
-      <div class="media-byline text-left"><span><?php echo $image_meta['caption'] ?></span></div>
+      <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
     <?php endif; ?>
     <?php if( !$skip_media && !empty( $classes ) ): ?>
     </div>
@@ -179,6 +191,7 @@ function print_responsive_image( $resp_img, $classes = [], $skip_media = false )
  */
 function build_retina_image_meta( $media_id, $normal = 'medium', $retina = 'medium_large' ) {
   // Get meta
+  // @todo: replace this with build_responsive_image_metadata( $media_id )?
   $media_meta = wp_get_attachment_metadata($media_id);
   $src = wp_get_attachment_image_url($media_id, $normal);
   return [
@@ -212,7 +225,7 @@ function print_retina_image( $resp_img, $classes = [], $skip_media = false ) {
          <?php if ( !empty( $image_meta['title'] ) ): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
          <?php if ( !empty( $image_meta['alt'] ) ): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
     <?php if ( !$skip_media && !empty( $image_meta['caption'] ) ): ?>
-      <div class="media-byline text-left"><span><?php echo $image_meta['caption'] ?></span></div>
+      <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
     <?php endif; ?>
     <?php if( !$skip_media && !empty( $classes ) ): ?>
     </div>
