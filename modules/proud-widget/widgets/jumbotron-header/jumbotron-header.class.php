@@ -271,7 +271,7 @@ class JumbotronHeader extends Core\ProudWidget {
           'visible' => [
             'headertype' => [
               'operator' => '==',
-              'value' => ['full', 'header', 'random'],
+              'value' => ['full', 'header'],
               'glue' => '||'
             ]
           ]
