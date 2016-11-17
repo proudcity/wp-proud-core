@@ -405,6 +405,8 @@ class JumbotronHeader extends Core\ProudWidget {
         $instance['headertype'] = 'full';
         // Remove featured option
         $instance['featured_image'] = false;
+        // Force middle vertical
+        $instance['image_vertical'] = 'middle';
       }
 
       switch ( $instance['background'] ) {
