@@ -244,7 +244,7 @@ function print_proud_navbar_footer() {
     <div class="container">
       <?php 
         // Print 311 in overlay? 
-        do_action('proud_navbar_overlay_311'); 
+        do_action( 'proud_navbar_overlay_311', true );
       ?>
     </div>
     <a id="overlay-311-close" href="#" class="proud-overlay-close close-311"><i class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
@@ -253,7 +253,7 @@ function print_proud_navbar_footer() {
     <div class="container">
       <?php 
         // Print search in overlay?
-        do_action('proud_navbar_overlay_search');
+        do_action( 'proud_navbar_overlay_search' );
       ?>
     </div>
     <a id="overlay-search-close" href="#" class="proud-overlay-close close-search"><i class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
