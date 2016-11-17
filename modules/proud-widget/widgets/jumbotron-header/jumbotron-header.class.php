@@ -257,6 +257,26 @@ class JumbotronHeader extends Core\ProudWidget {
           ],
         ],
       ],
+      'image_vertical' => [
+        '#title' => __( 'Image Vertical Alignment', 'wp-proud-core' ),
+        '#type' => 'radios',
+        '#default_value'  => 'middle',
+        '#options' => [ 
+          'top' => __( 'Align top of image with top of header', 'wp-proud-core' ), 
+          'middle' => __( 'Center image vertically', 'wp-proud-core' ),
+          'bottom' => __( 'Align bottom of image with bottom of header', 'wp-proud-core' ),
+        ],
+        '#description' => __( 'Position of image within header', 'wp-proud-core' ),
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '==',
+              'value' => ['full', 'header', 'random'],
+              'glue' => '||'
+            ]
+          ]
+        ]
+      ],
       'box_position' => [
         '#title' => __( 'Text box position', 'wp-proud-core' ),
         '#type' => 'radios',
@@ -445,6 +465,11 @@ class JumbotronHeader extends Core\ProudWidget {
       if ( $instance['make_inverse'] == 'yes' ) {
         $classes[] = 'jumbotron-inverse';
       }
+      // Resp image classes
+      $resp_img_classes = ['jumbo-image-container'];
+      if( !empty( $instance['image_vertical'] ) && 'middle' !== $instance['image_vertical'] ) {
+        $resp_img_classes[] = 'image-vertical-' . $instance['image_vertical'];
+      }
       $file .= 'jumbotron-header.php';
     }
     // We're doing a "full" style jumbotron
@@ -459,6 +484,11 @@ class JumbotronHeader extends Core\ProudWidget {
       // Inverse?
       if ( $instance['make_inverse'] == 'yes' ) {
         $boxclasses[] = 'jumbotron-inverse';
+      }
+      // Resp image classes
+      $resp_img_classes = ['jumbo-image-container'];
+      if( !empty( $instance['image_vertical'] ) && 'middle' !== $instance['image_vertical'] ) {
+        $resp_img_classes[] = 'image-vertical-' . $instance['image_vertical'];
       }
       // Vertical horizontal positions
       $pos_options = !empty( $instance['box_position'] )
