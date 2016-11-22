@@ -98,10 +98,12 @@ class Proudcore extends \ProudPlugin {
   }
 
   public function init() {
+    $url = get_site_url();
     $this->addJsSettings(array('global' => array(
       'proudcity_api' => PROUDCITY_API,
       'proudcity_dashboard' => MY_PROUDCITY,
-      'proudcity_site_id' => str_replace( array('http://', 'https://'), '', get_site_url() ),
+      'proudcity_site_id' => str_replace( array('http://', 'https://'), '', $url ),
+      'url' => $url,
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
         'state' => get_option( 'state', 'Alabama' ),
