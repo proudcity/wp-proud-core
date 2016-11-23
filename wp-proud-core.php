@@ -82,6 +82,9 @@ class Proudcore extends \ProudPlugin {
     add_filter( 'max_srcset_image_width', array( $this, 'max_srcset_width' ), 10, 2 );
     // Add our responsive options if applicable
     add_filter( 'wp_calculate_image_srcset', array( $this, 'calculate_image_srcset' ), 10, 4 );
+    // Add to allowed mimetypes
+    add_filter('upload_mimes', array( $this, 'allowed_mimetypes'), 1, 1);
+
 
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
@@ -301,6 +304,13 @@ class Proudcore extends \ProudPlugin {
         }
       }
     }
+  }
+
+  // Add the to the allowed mimetypes for user file uploads
+  function allowed_mimetypes($mime_types){
+    $mime_types['json'] = 'application/json';
+    $mime_types['geojson'] = 'application/json';
+    return $mime_types;
   }
 
   // Add shortcodees
