@@ -55,6 +55,10 @@ class ProudBar extends \ProudPlugin {
   // Add blue "demo" bar to footer @todo: make this work
   function proud_bar() {
     $stage = get_option('proud_stage', '');
+    global $is_iframe;
+    if (!empty($is_iframe) && $is_iframe) {
+      return;
+    }
     if ('beta' === $stage || 'demo' === $stage || 'example' === $stage || 'test' === $stage || 'testing' === $stage || 'new' === $stage) {
       require_once plugin_dir_path(__FILE__) . 'templates/proud-bar.php';
     }
