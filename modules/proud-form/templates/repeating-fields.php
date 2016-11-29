@@ -1,4 +1,13 @@
-<div id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="repeating-group">
+<fieldset id="<?php echo $this->form_id . '-' . $field['#id'] ?>" class="repeating-group">
+  <?php if( empty( $field['#hide_title'] ) ): ?>
+  <legend class="form-label">
+    <?php if( !empty( $translate ) ) : ?>
+      <?php echo __( $field['#title'], $translate); ?>
+    <?php else: ?>
+      <?php echo $field['#title']; ?>
+    <?php endif; ?>
+  </legend>
+  <?php endif; ?>
   <div id="<?php echo $field['#id']; ?>-draggable" data-draggable-group="true" class="panel-group" id="<?php echo $field['#id']; ?>-accordion" role="tablist" aria-multiselectable="true">
   <?php 
     // Print children
@@ -19,4 +28,5 @@
     ?>
   </div>
   <a href="#" id="<?php echo $field['#id']; ?>-add" class="btn btn-primary group-add-row">Add Another</a>
-</div>
+  <p><br></p>
+</fieldset>
