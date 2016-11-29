@@ -111,13 +111,16 @@ var cache = {}, uuid = 0;
  * @param settings
  *   An object containing settings for the current context. If none given, the
  *   global Proud.settings object is used.
+ * @param reRunAjax
+ *   Bool for if we're in ajax-load mode or not
  */
-Proud.attachBehaviors = function (context, settings) {
+Proud.attachBehaviors = function (context, settings, reRunAjax) {
   context = context || document;
   settings = settings || Proud.settings;
   // Execute all of them.
   $.each(Proud.behaviors, function () {
-    if ($.isFunction(this.attach)) {
+    // We're a function AND ( we're on normal load OR behavior is flagged )
+    if ($.isFunction(this.attach) && (!reRunAjax || this.reRunAjax) ) {
       this.attach(context, settings);
     }
   });
@@ -178,6 +181,10 @@ Proud.detachBehaviors = function (context, settings, trigger) {
 //Attach all behaviors.
 $(function () {
   Proud.attachBehaviors(document, Proud.settings);
+  // Run on ajax for PageBuilder
+  $(document).ajaxComplete(function () {
+     Proud.attachBehaviors(document, Proud.settings, true);
+  });
 });
 
 })(jQuery);
