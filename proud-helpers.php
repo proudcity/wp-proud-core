@@ -328,3 +328,84 @@ function wpGetTimestamp($datetime_string = "now") {
   // get the unix timestamp (adjusted for the site's timezone already)
   return $datetime->format( 'U' );
 }
+
+// Returns whether current office hours (formatted as just a plaintext string) are open
+function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true) {
+  /*
+  $string = "Mon- Fri:2:00am -5:00pm
+  Saturday: 9:00am - 12:00pm
+  Sunday: Closed";
+  */
+  $open = false;
+
+  $days = array( 'Mon', 'Monday', 'Tue', 'Tuesday', 'Wed', 'Wednesday', 'Thu', 'Thursday', 'Fri', 'Friday', 'Sat', 'Saturday', 'Sun', 'Sunday' );
+  $nums = array( 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 );
+
+  // Get the current site time
+  $blogtime = current_time( 'mysql' ); 
+  list( $today_year, $today_month, $today_day, $hour, $minute, $second ) = split( '([^0-9])', $blogtime );
+  $timestamp = current_time( 'timestamp' );
+  $week_day = date('N', $timestamp);
+  $daystamp = strtotime($hour .':'. $minute .':'. $second);
+  $datestamp = strtotime($today_year .'-'. $today_month .'-'. $today_day);
+
+  // Check today with the holidays
+  $holidays .= $federal_holidays ? federalHolidays() ."\n" : "\n";
+  $pattern = '/(.+?)\:\s?(.+?)\n/';
+  $matches = array();
+  $result = preg_match_all($pattern, $holidays, $matches);
+  for ( $i = 0; $i < $result; $i++ ) {
+    if ( strtotime($matches[2][$i]) == $datestamp) {
+      $alert = _x( 'Today is a holiday:', 'post name', 'wp-proud-core' ) .' '. $matches[1][$i];
+      return false;
+    }
+  }
+
+  
+  $pattern = '/([a-zA-Z\s\-\.]+?)\:\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))/';
+  $matches = array();
+  $result = preg_match_all($pattern, $string, $matches);
+
+  // Cycles though all of the valid days
+  for ($i = 0; $i < $result; $i++) {
+    // Do lots of clean up on the day of the week to support ranges
+    $day = trim($matches[1][$i]);
+    $day = str_replace($days, $nums, $day);
+    $day = preg_replace("/[^0-9,.]/", "", $day);
+    if (strlen($day) == 1) {
+      $low = $high = (int)$day;
+    }
+    else {
+      $low = substr($day, 0, 1);
+      $high = substr($day, 1, 1);
+    }
+
+    // Check if Day of the week matches
+    if ($week_day >= $low && $week_day <= $high) {
+      // $matches[1] is 9:00am; $matches[6] is 5:00pm
+      if ( $daystamp >= strtotime($matches[2][$i]) && $daystamp <= strtotime($matches[6][$i]) ) {
+        // Time range matches = OPEN
+        $open = true;
+        //print_r('OPEN '.$matches[0][$i]);
+        return $matches[0][$i];
+      }
+    }
+  }
+
+  return false;
+}
+
+// Returns a text string of Federal Holidays.
+// Form: https://www.redcort.com/us-federal-bank-holidays/ 
+function federalHolidays() {
+  return 'New Year\'s Day: Monday, January 2 2017
+Martin Luther King, Jr. Day: Monday, January 16 2017
+George Washington’s Birthday: Monday, February 20 2017
+Memorial Day: Monday, May 29 2017
+Independence Day: Tuesday, July 4 2017
+Labor Day: Monday, September 4 2017
+Columbus Day: Monday, October 9 2017
+Veterans Day: Friday, November 10 2017
+Thanksgiving Day: Thursday, November 23 2017
+Christmas Day: Monday, December 26 2016';
+}
