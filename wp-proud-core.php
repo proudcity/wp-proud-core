@@ -129,7 +129,7 @@ class Proudcore extends \ProudPlugin {
   }
  
   // Load common libraries
-  public function loadAdminLibraries($hi) {
+  public function loadAdminLibraries( $hook ) {
     $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
