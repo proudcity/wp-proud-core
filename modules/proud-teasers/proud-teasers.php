@@ -15,6 +15,8 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $display_type;
     private $query;
     private $filters;
+    private $form = []; // FormHelper
+    private $form_instance = []; // FormHelper values
     private $pagination;
     private $keyword;
     private $featured; // Including a featured
@@ -45,8 +47,8 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
 
       // Intercept search lists, set keyword
+      global $proudsearch;
       if($post_type == 'search') {
-        global $proudsearch;
         // Collect get parameter
         $this->search_key = $proudsearch::_SEARCH_PARAM;
         // Add key for search
@@ -83,7 +85,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->add_sort($args);
       // Final build on args
       $args = array_merge( [
-        'post_type' => $this->post_type == 'search' ? 'any' : $this->post_type, 
+        'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist() : $this->post_type, 
         'post_status' => 'publish',
         'update_post_term_cache' => true, // don't retrieve post terms
         'update_post_meta_cache' => true, // don't retrieve post meta
@@ -130,8 +132,8 @@ if ( !class_exists( 'TeaserList' ) ) {
 
       // If posts per page is set to 0, make it show all posts (up to 100)
       $args[ 'posts_per_page' ] = $args[ 'posts_per_page' ] == 0 ? 100 : $args[ 'posts_per_page' ];
-      
-      $this->query = new \WP_Query( $args );
+      // Build query
+      $this->query = new \WP_Query( apply_filters( 'proud_teaser_query_args', $args, $this->post_type ) );
 
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
@@ -186,10 +188,8 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function build_filters( $terms ) {
       $this->filters = [
         $this->search_key => [
-          '#id' => $this->search_key,
           '#type' => 'text',
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
-          '#name' => $this->search_key,
           '#args' => array(
             'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
             'after' => '<i class="fa fa-search form-control-search-icon"></i>',
@@ -210,10 +210,8 @@ if ( !class_exists( 'TeaserList' ) ) {
             }
           };
           $this->filters['filter_categories'] = [
-            '#id' => 'filter_categories',
             '#title' => __( 'Category', 'proud-teaser' ),
             '#type' => 'checkboxes',
-            '#name' => 'filter_categories',
             '#options' => $options,
             '#description' => ''
           ];
@@ -224,10 +222,8 @@ if ( !class_exists( 'TeaserList' ) ) {
       switch( $this->post_type ) {
         case 'job_listing': 
           $this->filters['filter_show_filled'] = [
-            '#id' => 'filter_show_filled',
             '#title' => __( 'Show filled positions?', 'proud-teaser' ),
             '#type' => 'checkbox',
-            '#name' => 'filter_show_filled',
             '#return_value' => '1',
             '#label_above' => true,
             '#replace_title' => __( 'Yes', 'proud-teaser' ),
@@ -235,12 +231,16 @@ if ( !class_exists( 'TeaserList' ) ) {
           ];
           break;
       }
+
+      // Init form
+      $this->form = new \Proud\Core\FormHelper( 'proud-teaser-filter', $this->filters );
     }
 
     /**
      * Processes the incoming filters, build arguments
      */
-    private function process_post(&$args) {
+    private function process_post( &$args ) {
+      // Grab values
       foreach( $this->filters as $key => $filter ) {
         if(!empty( $_REQUEST[$key] ) ) {
           switch( $key ) {
@@ -248,15 +248,15 @@ if ( !class_exists( 'TeaserList' ) ) {
             case 'filter_categories':
               $taxonomy = $this->get_taxonomy();
               if($taxonomy) {
-                $values = [];
+                $terms = [];
                 foreach( $_REQUEST[$key] as $cat_key ) {
-                  $values[] = (int) sanitize_text_field( $cat_key );
+                  $terms[] = (int) sanitize_text_field( $cat_key );
                 }
                 $args['tax_query'] = [
                   [
                     'taxonomy' => $taxonomy,
                     'field'    => 'term_id',
-                    'terms'    => $values,
+                    'terms'    => $terms,
                     'operator' => 'IN',
                   ]
                 ];
@@ -283,10 +283,10 @@ if ( !class_exists( 'TeaserList' ) ) {
               );
 
           }
-          $this->filters[$key]['#value'] = $_REQUEST[$key];
+          $this->form_instance[$key] = $_REQUEST[$key];
         }
         else {
-          $this->filters[$key]['#value'] = ($key == 'filter_categories') ? 0 : '';
+          $this->form_instance[$key] = ($key == 'filter_categories') ? 0 : '';
         }
       }
     }
@@ -531,7 +531,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Init post
       $this->query->the_post();
       // Load Meta info?
-      $meta;
+      $meta = [];
       global $post;
       // Post type
       switch( $this->post_type ) {
@@ -591,7 +591,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           break;
       }
-
+      // Filter post
+      $post = apply_filters( 'proud_teaser_teaser_post', $post, $this->post_type, $meta );
+      // Print 
       include( $templates['content'] );
     }
 
@@ -722,8 +724,11 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // Grab form helper
-      $form = new \Proud\Core\FormHelper( 'proud-teaser-filter', $this->filters );
-      $form->printForm( ['button_text' => __( $button_text, 'proud-teaser' )] );
+      $this->form->printForm( [
+        'button_text' => __( $button_text, 'proud-teaser' ),
+        'instance' => $this->form_instance,
+        'fields' => $this->filters
+      ] );
     }
   }
 }
@@ -737,7 +742,12 @@ function process_filter_submit() {
     // See if its our filter submission
     if( wp_verify_nonce( $_POST['_wpnonce'], 'proud-teaser-filter' ) ) {
       $params = [];
-      foreach ( $_POST as $key => $value ) {
+      // Call static version
+      $values = \Proud\Core\FormHelper::formValues( $_POST, 'proud-teaser-filter' );
+      if( empty( $values ) ) {
+        return;
+      }
+      foreach ( $values as $key => $value ) {
         // Sanitize
         $key = sanitize_key( $key );
         if( strpos( $key, 'filter_' ) === 0 && !empty( $value ) ) {
