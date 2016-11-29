@@ -36,7 +36,7 @@ abstract class ProudWidget extends \WP_Widget {
     // Init proud library on plugins loaded
     add_action( 'init', [$this,'registerLibraries'] );
     // Add proud admin scripts
-    add_action( 'init', [$this,'attachAdminForm']);
+    add_action( 'init', [$this,'attachAdminForm'], 101 );
   }
 
   /**
@@ -68,7 +68,7 @@ abstract class ProudWidget extends \WP_Widget {
     // Are we admin?
     if( is_admin( ) ) {
       // Attach form
-      $this->form = new FormHelper($this->id_base, $this->settings);
+      $this->form = new FormHelper( $this->id_base, $this->settings );
     }
   }
 
@@ -135,98 +135,6 @@ abstract class ProudWidget extends \WP_Widget {
     }
   }
 
-  public function buildGroupSubFieldConfig( &$field, $id, $i, $instance = [] ) {
-    $sub_fields = [];
-    foreach( $field['#sub_items_template'] as $sub_id => $sub_item ) {
-      // build sub children id
-      $local_id = $id . '[' . $i . '][' . $sub_id . ']';
-      // get field settings
-      $sub_item['#id'] = $this->get_field_id( $local_id );
-      $sub_item['#name'] = $this->get_field_name( $local_id );
-      $sub_item['#description'] = !empty( $sub_item['#description'] ) ? $sub_item['#description'] : false;
-      // Set default value
-      $sub_item['#value'] = isset( $instance[$id][$i][$sub_id] ) 
-        ? $instance[$id][$i][$sub_id]
-        : $sub_item['#default_value'];
-      
-      if($field['#group_title_field'] === $sub_id) {
-        $field['#group_titles'][] = $sub_item['#value'];
-      }
-
-      // Attach to return
-      $sub_fields[$local_id] = $sub_item;
-    }
-    return $sub_fields;
-  }
-
-  public function printWidgetConfig( $instance ) {
-    $fields = [];
-    foreach ( $this->settings as $id => $field ) {
-      // Set id
-      $field['#id'] = $this->get_field_id($id);
-      $field['#name'] = $this->get_field_name($id);
-      $field['#description'] = !empty( $field['#description'] ) ? $field['#description'] : false;
-
-      // Repeating Group fields
-      if( $field['#type'] == 'group') {
-        // How many of these do we have saved ?
-        // TODO, fix this
-        $count = !empty( $instance[$id] ) ? count( $instance[$id] ) : 1; 
-        // Init field collection
-        $field['#items'] = [];
-        // Init group titles
-        $field['#group_titles'] = []; 
-        // Run through any saved field items
-        for( $i = 0; $i < $count; $i++ ) {
-          $field['#items'][$i] = $this->buildGroupSubFieldConfig( $field, $id, $i, $instance );
-          // Now attach a json template default
-          if( ( $i + 1 ) === $count ) {
-            $field['#json_field_template'] = $this->buildGroupSubFieldConfig( $field, $id, 'GROUP_REPLACE_KEY', $instance );
-          }
-        }
-      }
-      // Normal field, so get value
-      else {
-        // Set default value
-        $field['#value'] = isset( $instance[$id] ) 
-           ? $instance[$id] 
-           : $field['#default_value'];
-      }
-      $fields[$id] = $field;
-    }
-
-    $this->form->printFields( $fields );
-  }
-
-  function contains_array( $array ){
-    foreach( $array as $value ) {
-        if( is_array( $value ) ) {
-          return true;
-        }
-    }
-    return false;
-  }
-
-  public function updateWidgetConfig( $new_instance, $old_instance ) {
-    $instance = [];
-    foreach ( $new_instance as $key => $value ) {
-      // Repeating (0-indexed array) field, with wieght
-      if( is_array( $value ) && $this->contains_array( $value ) && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
-        usort($value, function($a, $b) {
-            if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
-              return 0;
-            }
-            return intval( $a['weight'] ) - intval( $b['weight'] );
-        });
-        $instance[$key] = $value;
-      }
-      else {
-        $instance[$key] = $value;
-      }
-    }
-    return $instance;
-  }
-
   /**
    * Back-end widget form.
    *
@@ -235,8 +143,7 @@ abstract class ProudWidget extends \WP_Widget {
    * @param array $instance Previously saved values from database.
    */
   public function form( $instance ) {
-
-    $this->printWidgetConfig($instance);
+    $this->form->printFields( $instance, $this->settings, $this->number, 'widget' );
   }
 
   /**
@@ -250,7 +157,7 @@ abstract class ProudWidget extends \WP_Widget {
    * @return array Updated safe values to be saved.
    */
   public function update( $new_instance, $old_instance ) {
-    return $this->updateWidgetConfig($new_instance, $old_instance);
+    return $this->form->updateGroupsWeight($new_instance, $old_instance);
   }
 
   /**
