@@ -13,27 +13,155 @@ if ( ! class_exists( 'FormHelper' ) ) {
   class FormHelper {
 
     private $form_id;
+    private $form_id_base;
+    private $number;
     private $template_path;
+    private $fields;
 
-    function __construct($form_id, $fields) {
-      $this->form_id = $form_id;
+    /**
+     * Set up
+     *
+     * @param string $form_id_base
+     * @param array $fields
+     * @param string $number is form number : can be left out
+     * @param string $field_base is form base : can be left out
+     * 
+     * For site origin panels, we don't know $number yet, so it can be null
+     */
+    function __construct($form_id_base, $fields, $number = null, $field_base = null) {
+      $this->form_id_base = strtolower($form_id_base);
       $this->fields = $fields;
       $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
       // Add proud admin scripts
       $this->registerAdminLibraries();
-      // 
+      // If included, register
+      if( $number && $field_base ) {
+        $this->registerIds( $number, $field_base );
+      }
+    }
+
+    /**
+     * Before printing any fields, first we must construct the basis for 
+     * field ids, names
+     */
+    public function registerIds( $number = 1, $field_base = 'form' ) {
+      $this->number = $number;
+      $this->field_base = $field_base;
+      $this->form_id = $this->form_id_base . '-' . $this->number;
+    }
+
+    /**
+     * Constructs name attributes for use in form() fields
+     *
+     * This function should be used in form() methods to create name attributes for fields
+     * to be saved by update()
+     *
+     * @since 2.8.0
+     * @since 4.4.0 Array format field names are now accepted.
+     * @access public
+     *
+     * @param string $field_name Field name
+     * @return string Name attribute for $field_name
+     */
+    public function get_field_name($field_name) {
+      if ( false === $pos = strpos( $field_name, '[' ) ) {
+        return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . $field_name . ']';
+      } else {
+        return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . substr_replace( $field_name, '][', $pos, strlen( '[' ) );
+      }
+    }
+
+    /**
+     * Constructs id attributes for use in WP_Widget::form() fields.
+     *
+     * This function should be used in form() methods to create id attributes
+     * for fields to be saved by WP_Widget::update().
+     *
+     * @since 2.8.0
+     * @since 4.4.0 Array format field IDs are now accepted.
+     * @access public
+     *
+     * @param string $field_name Field name.
+     * @return string ID attribute for `$field_name`.
+     */
+    public function get_field_id( $field_name ) {
+      return $this->field_base . '-' . $this->form_id_base . '-' . $this->number . '-' . trim( str_replace( array( '[]', '[', ']' ), array( '', '-', '' ), $field_name ), '-' );
+    }
+
+    /**
+     * Helper functions checks an array for arrays
+     */
+    public static function contains_array( $array ){
+      foreach( $array as $value ) {
+          if( is_array( $value ) ) {
+            return true;
+          }
+      }
+      return false;
+    }
+
+    /**
+     * Takes instance setting on submit and deals with draggable weights
+     */
+    public static function updateGroupsWeight( $new_instance, $old_instance = [] ) {
+      $instance = [];
+      foreach ( $new_instance as $key => $value ) {
+        // Repeating (0-indexed array) field, with weight
+        if( is_array( $value ) 
+         && self::contains_array( $value ) 
+         && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 
+        ) {
+          usort($value, function($a, $b) {
+              if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
+                return 0;
+              }
+              return intval( $a['weight'] ) - intval( $b['weight'] );
+          });
+          $instance[$key] = $value;
+        }
+        else {
+          $instance[$key] = $value;
+        }
+      }
+      return $instance;
+    }
+
+    /**
+     * Extracts values from submit array using static FormHelper::formValues
+     * @param array $values
+     * @param string $form_id_base, if null, uses class values
+     * @param string $field_base, if null, uses default: 'form'
+     * @param string $number, if null uses default: 1
+     */
+    public static function formValues( $values, $form_id_base = null, $field_base = 'form', $number = 1 ) {
+      return ( ! empty( $values[$field_base . '-' . $form_id_base][$number] ) ) 
+           ? self::updateGroupsWeight( $values[$field_base . '-' . $form_id_base][$number] )
+           : [];
+    }
+
+    /**
+     * Extracts values from submit array using $myform->getFormValues
+     * @param array $values
+     */
+    public function getFormValues( $values ) {
+      return self::formValues( $values, $this->form_id_base, $this->field_base, $this->number );
     }
 
     /**
      * Register admin libraries from Proud\Core\Libraries
      */
-    public function registerAdminLibraries() {
+    public function registerAdminLibraries( $fields = [] ) {
       global $proudcore;
+      // form has no fields, exit
       if( empty( $this->fields ) ) {
         return;
       }
-      foreach ( $this->fields as $key => $value ) {
-        if( $value['#type'] === 'group' ){
+      // If nothing passed (as in NOT recursing), load fields from global
+      else if( empty( $fields ) ) {
+        $fields = $this->fields;
+      }
+      foreach ( $fields as $key => $field ) {
+        if( $field['#type'] === 'group' || !empty( $field['#draggable'] ) ) {
           $proudcore->addJsSettings([
             'proud_form' => [
               'draggable' => [
@@ -42,8 +170,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
             ]
           ]);
           $proudcore::$libraries->addBundleToLoad('dragula', true);
+
+          // Recurse with template children
+          if( !empty( $field['#sub_items_template'] ) ) {
+            $this->registerAdminLibraries( $field['#sub_items_template'] );
+          }
         }
-        else if( $value['#type'] === 'fa-icon' ) {
+        else if( $field['#type'] === 'fa-icon' ) {
           // Give a chance for modules / themes to pass additional icons
           $options = apply_filters( 'proud_form_icon_picker_options', [
             $key => $key
@@ -56,7 +189,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $proudcore::$libraries->addBundleToLoad('fontawesome-iconpicker', true);
         }
         // Media upload
-        else if( $value['#type'] === 'select_media' ) {
+        else if( $field['#type'] === 'select_media' ) {
           // Make sure WP media is present
           add_action( 'admin_enqueue_scripts', 'wp_enqueue_media' );
           $proudcore::$libraries->addBundleToLoad('upload-media', true);
@@ -108,7 +241,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
     public function printFormItem($field) {
       // @todo: Should we set #name to #id if it isn't set?
       // Extra class for field group
-      $extra_group_class = '';
+      $extra_group_class = !empty( $field['#extra_group_class'] ) 
+                         ? ' ' . $field['#extra_group_class']
+                         : '';
       ob_start();
       switch ($field['#type']) {
         case 'html':
@@ -137,7 +272,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
         case 'select_media':
           // add extra class
-          $extra_group_class = ' clearfix';
+          $extra_group_class .= ' clearfix';
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
           // Image should be a media['ID'], but due to 
           // https://github.com/proudcity/wp-proudcity/issues/436
@@ -187,7 +322,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           break;
 
         case 'select':
-          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printFormTextLabel( $field['#id'], $field['#title'], $this->form_id );
           $this->printSelectList(
             $field['#id'], 
             $field['#name'], 
@@ -200,20 +335,20 @@ if ( ! class_exists( 'FormHelper' ) ) {
           break;
 
         case 'textarea':
-          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printFormTextLabel( $field['#id'], $field['#title'], $this->form_id );
           $this->printTextArea(
             $field['#id'], 
             $field['#name'], 
             $field['#value'], 
-            !empty($field['#rows']) ? $field['#rows'] : 3, 
+            !empty( $field['#rows'] ) ? $field['#rows'] : 3, 
             $this->form_id
           );
           if( !empty( $field['#description'] ) ) 
-            $this->printDescription($field['#description']);
+            $this->printDescription( $field['#description'] );
           break;
 
         case 'editor':
-          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
+          $this->printFormTextLabel( $field['#id'], $field['#title'], $this->form_id );
           $this->printEditor(
             $field['#id'],
             $field['#name'],
@@ -228,16 +363,24 @@ if ( ! class_exists( 'FormHelper' ) ) {
         case 'checkboxes':
         case 'radios':
           // Print label, add class
-          $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, array('class' => 'option-box-label') ); 
-          foreach ($field['#options'] as $value => $title) {
+          $this->printFormTextLabel( 
+            $field['#id'], 
+            $field['#title'], 
+            $this->form_id, 
+            array( 'class' => 'option-box-label' ) 
+          ); 
+          if( !empty( $field['#draggable'] ) ) {
+            echo '<div data-draggable-checkboxes="true">';
+          }
+          foreach ( $field['#options'] as $value => $title ) {
             $name = $field['#name'];
-            if($field['#type'] == 'checkboxes') {
+            if( $field['#type'] == 'checkboxes' ) {
               $type = 'checkbox';
               // Make name array
               $name .= '[' .  $value . ']';
               // Chekc in active
-              $field['#value'] = empty($field['#value']) ? [] : $field['#value'];
-              $active = in_array($value, $field['#value']);
+              $field['#value'] = empty( $field['#value'] ) ? [] : $field['#value'];
+              $active = in_array( $value, $field['#value'] );
             }
             else {
               $type = 'radio';
@@ -245,6 +388,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
             }
             ?>
             <div class="<?php echo $type ?>">
+              <?php if( !empty( $field['#draggable'] ) ): ?>
+                <div class="pull-left" style="cursor: move;cursor: grab;cursor: -moz-grab;cursor: -webkit-grab;"><i class="fa fa-arrows handle"></i></div>
+              <?php endif; ?>
               <?php $this->printOptionBox(
                 $type, 
                 $field['#id'] . '-' . $value, 
@@ -257,13 +403,21 @@ if ( ! class_exists( 'FormHelper' ) ) {
             </div>
             <?php 
           }
+          if( !empty( $field['#draggable'] ) ) {
+            echo '</div>';
+          }
           if( !empty( $field['#description'] ) ) 
             $this->printDescription($field['#description']);
           break;
 
         case 'checkbox':
           if( !empty( $field['#label_above'] ) )
-            $this->printFormTextLabel('', $field['#title'], $this->form_id, array('class' => 'option-box-label'));
+            $this->printFormTextLabel(
+              ' ', 
+              $field['#title'], 
+              $this->form_id, 
+              array( 'class' => 'option-box-label' ) 
+            );
           ?>
           <div class="<?php echo $field['#type'] ?>">
           <?php
@@ -297,11 +451,98 @@ if ( ! class_exists( 'FormHelper' ) ) {
       </div>
       <?php
     }
+    
+    /**
+     * Attaches group sub fields from template values
+     */
+    public function buildGroupSubFieldConfig( &$field, $id, $i, $instance = [] ) {
+      $sub_fields = [];
+      foreach( $field['#sub_items_template'] as $sub_id => $sub_item ) {
+        // build sub children id
+        $local_id = $id . '[' . $i . '][' . $sub_id . ']';
+        // get field settings
+        $sub_item['#id'] = $this->get_field_id( $local_id );
+        $sub_item['#name'] = $this->get_field_name( $local_id );
+        $sub_item['#description'] = !empty( $sub_item['#description'] ) ? $sub_item['#description'] : false;
+        // Set default value
+        $sub_item['#value'] = isset( $instance[$id][$i][$sub_id] ) 
+          ? $instance[$id][$i][$sub_id]
+          : $sub_item['#default_value'];
+        
+        if($field['#group_title_field'] === $sub_id) {
+          $field['#group_titles'][] = $sub_item['#value'];
+        }
 
+        // Attach to return
+        $sub_fields[$sub_id] = $sub_item;
+      }
+      return $sub_fields;
+    }
+
+    /**
+     * Attaches field values / defaults before printing
+     */
+    public function buildFieldConfig( $instance, $fields ) {
+      $filled_fields = [];
+      foreach (  $fields as $id => $field ) {
+        // Set id
+        $field['#id'] = $this->get_field_id($id);
+        $field['#name'] = $this->get_field_name($id);
+        $field['#description'] = !empty( $field['#description'] ) ? $field['#description'] : false;
+
+        // Repeating Group fields
+        if( $field['#type'] == 'group') {
+          // How many of these do we have saved ?
+          // TODO, fix this
+          $count = !empty( $instance[$id] ) ? count( $instance[$id] ) : 1; 
+          // Init field collection
+          $field['#items'] = [];
+          // Init group titles
+          $field['#group_titles'] = []; 
+          // Run through any saved field items
+          for( $i = 0; $i < $count; $i++ ) {
+            $field['#items'][$i] = $this->buildGroupSubFieldConfig( $field, $id, $i, $instance );
+            // Now attach a json template default
+            if( ( $i + 1 ) === $count ) {
+              $field['#json_field_template'] = $this->buildGroupSubFieldConfig( $field, $id, 'GROUP_REPLACE_KEY', $instance );
+            }
+          }
+        }
+        // Normal field, so get value
+        else {
+          // Set default value
+          if( isset( $instance[$id] ) ) {
+            $field['#value'] = $instance[$id];
+          } 
+          else if( isset( $field['#default_value'] ) ) {
+            $field['#value'] = $field['#default_value'];
+          }
+          else {
+            $field['#value'] = '';
+          }
+          // Draggable checkboxes
+          if( !empty( $field['#draggable'] ) && is_array( $field['#value'] ) ) {
+            $options = [];
+            foreach ( $field['#value'] as $key => $value ) {
+              // Set options in order of draggable
+              $options[$key] = $field['#options'][$key];
+              unset( $field['#options'][$key] );
+            }
+            $field['#options'] = array_merge( $options, $field['#options'] );
+          }
+        }
+        $filled_fields[$id] = $field;
+      }
+      return $filled_fields;
+    }
+
+    /**
+     * Prints out group fields
+     */
     public function printGroupFields( $id, $field ) {
       // Build json template
       $key = 'GROUP_REPLACE_KEY';
-      $group_title = __($field['#title'], $this->form_id) . ' GROUP_REPLACE_TITLE';
+      $group_title = __( $field['#title'], $this->form_id ) . ' GROUP_REPLACE_TITLE';
       $group = $field['#json_field_template'];
       ob_start(); // turn on output buffering
       include($this->template( 'repeating-fields-template' ));
@@ -312,16 +553,24 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template( 'repeating-fields' );
     }
 
-    public function printFields ( $fields = null ) {
-      // Field override?
-      if( $fields ) {
-        $this->fields = $fields;
+    /**
+     * Prints out form fields
+     */
+    public function printFields ( $instance, $fields = null, $number, $field_base ) {
+      if( ! isset( $this->field_id ) || ! isset( $this->number ) ) {
+        $this->registerIds( $number, $field_base );
       }
+      // Field override?
+      if( empty($fields) ) {
+         $fields = $this->fields;
+      }
+      // Attach values
+      $filled_fields = $this->buildFieldConfig( $instance, $fields );
       // Javascript states for hiding / showing fields
       $states = [];
-      foreach ( $this->fields as $id => $field ) {
-        $field['#id'] = empty($field['#id']) ? $id : $field['#id'];
-        $this->fields[$id]['#id'] = $field['#id'];
+      foreach ( $filled_fields as $id => &$field ) {
+        $field['#id'] = empty( $field['#id'] ) ? $id : $field['#id'];
+        // $this->fields[$id]['#id'] = $field['#id'];
         if($field['#type'] == 'group') {
           $this->printGroupFields( $id, $field );
         }
@@ -332,25 +581,36 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $states[$field['#id']] = $field['#states'];
         }
       }
+      // Set global to filled
+      $this->fields = $filled_fields;
 
       if( !empty( $states ) ) {
-        $this->attachConfigStateJs($states);
+        $this->attachConfigStateJs( $states );
       }
     }
 
-    public function printForm ($args = []) {
+    public function printForm ( $args = [] ) {
       // Merge with defaults
       $args = array_merge( [
         'button_text' => __( 'Submit', 'proud-form' ),
         'method' => 'post',
-        'action' => '',
-        'name' => $this->form_id,
-        'id' => $this->form_id
+        'action' => ''
       ], $args);
+
+      // Build fields
+      ob_start(); // turn on output buffering
+      $this->printFields( 
+        !empty( $args['instance'] ) ? $args['instance'] : [],
+        !empty( $args['fields'] ) ? $args['fields'] : [],
+        !empty( $args['number'] ) ? $args['number'] : 1,
+        !empty( $args['field_base'] ) ? $args['field_base'] : 'form'
+      );
+      $field_output = ob_get_contents(); // get the contents of the output buffer
+      ob_end_clean(); 
       ?>
-      <form class="proud-settings" id="<?php echo $args['id']; ?>" name="<?php echo $args['name']; ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
-        <?php wp_nonce_field( $args['id'] ); ?>
-        <?php $this->printFields(); ?>
+      <form class="proud-settings" id="<?php echo $this->form_id ?>" name="<?php echo $this->form_id ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
+        <?php wp_nonce_field( $this->form_id_base ); ?>
+        <?php echo $field_output ?>
         <button type="submit" class="btn btn-primary"><?php print $args['button_text']; ?></button>
       </form>
       <?php
@@ -377,17 +637,20 @@ if ( ! class_exists( 'FormHelper' ) ) {
       *  ],
       *]
      */
-    public function attachConfigStateJs( $states ) {
+    public function attachConfigStateJs( $states, $fields_override = [], $print = true ) {
       $fields = [];
+      if( empty( $fields_override ) ) {
+        $fields_override = $this->fields;
+      }
       // Build field rules
-      foreach ( $states as $field_id => $rules ):
+      foreach ( $states as $field_id => $rules ) {
         // Field level if statement
         $field_if = [];
         // connect the field options
         $field_glue = !empty($rules['glue']) ? $rules['glue'] : '&&';
         // Fields to watch for changes
         $watches = [];
-        foreach( $rules as $type => $values ):
+        foreach( $rules as $type => $values ) {
           // Just the statement glue
           if($type == 'glue') {
             continue;
@@ -397,17 +660,17 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // Rule level if statement
           $rule_if = [];
           // Run through fields that make it visible or invisible
-          foreach( $values as $watch_field => $watch_vals ):
+          foreach( $values as $watch_field => $watch_vals ) {
             $watch_field = str_replace($this->form_id . '-', '', $watch_field);
             // Just the statement glue
             if($watch_field == 'glue') {
               continue;
             }
             // Needs different selectors per type
-            $group_id = '#' . $this->form_id . '-' . $this->fields[$watch_field]['#id'];
+            $group_id = '#' . $this->form_id . '-' . $fields_override[$watch_field]['#id'];
             // Init value criteria
             $value_criteria = '.val()';
-            switch( $this->fields[$watch_field]['#type'] ) {
+            switch( $fields_override[$watch_field]['#type'] ) {
               case 'radios':
                 $watches[] = $group_id . ' input';
                 $selector = $group_id . ' input:checked';
@@ -447,19 +710,25 @@ if ( ! class_exists( 'FormHelper' ) ) {
             $rule_if[] = $type == 'visible' 
                        ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
                        : '!(' . implode( $watch_vals['glue'], $criteria ) . ')';
-          endforeach;
+          }
           // connect visible + invisible
           $field_if[] = '('  . implode( $rules_glue,  $rule_if ) . ')';
-        endforeach;
+        }
         // connect entire field
         $fields[$this->form_id . '-' . $field_id] = [
           'watches' => implode( ',', $watches ),
           'if' => implode( $field_glue,  $field_if )
         ];
-      endforeach;
+      }
 
-      // Include JS
-      include $this->template('form-state-js');
+      // Include ?
+      if( $print ) {
+        include $this->template('form-state-js');
+      }
+      // Just return fields
+      else {
+        return $fields;
+      }
     }
   }
 }

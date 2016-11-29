@@ -9,9 +9,21 @@
   </div>
   <div id="<?php echo $field['#id']; ?>-<?php echo $key; ?>" class="panel-collapse collapse<?php if( $key == 0 ) echo ' in'; ?> " role="tabpanel" aria-labelledby="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
     <div class="panel-body">
-      <?php foreach($group as $sub_field): ?>
-        <?php $this->printFormItem( $sub_field ); ?>
-      <?php endforeach; ?>
+      <?php 
+        // Try to build states, print fields
+        $states = [];
+        foreach( $group as $sub_field ) {
+          if( $sub_field ) {
+            if( !empty( $sub_field['#states'] ) ) {
+              $states[$sub_field['#id']] = $sub_field['#states'];
+            }
+          }
+          $this->printFormItem( $sub_field ); 
+        }
+        if( !empty( $states ) ) {
+          $this->attachConfigStateJs( $states, $group );
+        }
+      ?>
       <input type="hidden" class="group-weight" name="<?php echo $field['#name']; ?>[<?php echo $key; ?>][weight]" value="<?php echo $key; ?>">
       <a href="#" class="pull-right label label-warning group-delete-row">Remove</a>
     </div>
