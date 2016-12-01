@@ -112,6 +112,7 @@ class Proudcore extends \ProudPlugin {
         'state' => get_option( 'state', 'Alabama' ),
         'lat' => (float) get_option( 'lat', 34.7303688 ),
         'lng' => (float) get_option( 'lng', -86.5861037 ),
+        'bounds' => get_option( 'bounds', null ),
         'code' => str_replace(' ', '_', get_option( 'city', 'Huntsville' ) . ', ' . str_replace(' ', '_', get_option( 'state', 'Alabama' )) ),
       ),
       'external_link_window' => get_option( 'external_link_window', 1 ) == 1,
