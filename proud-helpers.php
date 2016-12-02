@@ -343,7 +343,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true) 
 
   // Get the current site time
   $blogtime = current_time( 'mysql' ); 
-  list( $today_year, $today_month, $today_day, $hour, $minute, $second ) = split( '([^0-9])', $blogtime );
+  list( $today_year, $today_month, $today_day, $hour, $minute, $second ) = preg_split( '([^0-9])', $blogtime );
   $timestamp = current_time( 'timestamp' );
   $week_day = date('N', $timestamp);
   $daystamp = strtotime($hour .':'. $minute .':'. $second);
