@@ -145,6 +145,11 @@ function get_nav_action_toolbar() {
   // No plugin overtaking, print template
   if( !$toolbar ) {
     ob_start();
+    $toolbar_buttons = get_option('active_toolbar_buttons', [ 
+      'answers' => 'answers', 
+      'payments' => 'payments', 
+      'report' => 'report' 
+    ] );
     include plugin_dir_path(__FILE__) . 'templates/nav-toolbar.php';
     $toolbar = ob_get_contents();
     ob_end_clean();
