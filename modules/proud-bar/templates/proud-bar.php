@@ -4,7 +4,7 @@
   </div><?php endif; ?>
   
   <?php if ( 'example' === $stage || 'demo' === $stage ): ?> 
-    <a href="//proudcity.com/start" class="proudbar-btn">Get your free BETA</a>  
+    <a href="//proudcity.com/start" class="proudbar-btn">Find your city!</a> 
   <?php else: ?>
     <span class="hidden-xs">Welcome to our <?php if ('new' === $stage): ?>new<?php else: ?>future<?php endif; ?> website!</span>
     <a href="/feedback" class="proudbar-btn ga-event" data-ga-event="feedbackClick" data-mode="2">Feedback</a>
