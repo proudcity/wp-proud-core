@@ -80,7 +80,7 @@ class Proudcore extends \ProudPlugin {
     // Modify max size for responsive images
     add_filter( 'max_srcset_image_width', array( $this, 'max_srcset_width' ), 10, 2 );
     // Add our responsive options if applicable
-    add_filter( 'wp_calculate_image_srcset', array( $this, 'calculate_image_srcset' ), 10, 4 );
+    add_filter( 'wp_calculate_image_srcset', array( $this, 'calculate_image_srcset' ), 10, 5 );
     // Add to allowed mimetypes
     add_filter('upload_mimes', array( $this, 'allowed_mimetypes'), 1, 1);
 
@@ -225,7 +225,7 @@ class Proudcore extends \ProudPlugin {
   }
 
   // Add our other responsive stlyes if needed
-  public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta ) {
+  public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
 
     // We have only 1 source @ our full-screen size add medium, medium_large, large
     // See:
@@ -244,6 +244,11 @@ class Proudcore extends \ProudPlugin {
       if( empty( $sizes ) ) {
         return;
       }
+      // Try to grab stateless meta options
+      if( preg_match('/\/\/storage\.googleapis\.com/i', $image_src ) && isset( $sources[$source_size]['url'] ) ) {
+        $sources[$source_size]['url'] = $image_src;
+        $media_meta_full = wp_get_attachment_metadata( $attachment_id );
+      }
       // image base name  
       $image_basename = wp_basename( $image_meta['file'] );
       // upload directory info array
@@ -259,14 +264,21 @@ class Proudcore extends \ProudPlugin {
           $image_baseurl = trailingslashit( $baseurl ) . $dirname; 
         }
       }
-
       $image_baseurl = trailingslashit( $image_baseurl );
+      // Full meta information
       foreach( $sizes as $size ) { 
         // check whether our custom image size exists in image meta 
-        if( array_key_exists( $size, $image_meta['sizes'] ) ){
+        if( !empty( $image_meta['sizes'][$size] ) ){
+          // We have WP stateless option
+          if( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
+            $url = $media_meta_full['sizes'][$size]['gs_link'];
+          }
+          else {
+            $url = $image_baseurl .  $image_meta['sizes'][$size]['file'];
+          }
           // add source value to create srcset
           $sources[ $image_meta['sizes'][$size]['width'] ] = array(
-            'url'        => $image_baseurl .  $image_meta['sizes'][$size]['file'],
+            'url'        => $url,
             'descriptor' => 'w',
             'value'      => $image_meta['sizes'][$size]['width'],
           );
