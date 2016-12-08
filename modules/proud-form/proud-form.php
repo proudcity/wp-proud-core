@@ -103,21 +103,35 @@ if ( ! class_exists( 'FormHelper' ) ) {
     /**
      * Takes instance setting on submit and deals with draggable weights
      */
-    public static function updateGroupsWeight( $new_instance, $old_instance = [] ) {
+    public static function updateGroupsWeight( $new_instance, $fields = [] ) {
       $instance = [];
       foreach ( $new_instance as $key => $value ) {
-        // Repeating (0-indexed array) field, with weight
-        if( is_array( $value ) 
-         && self::contains_array( $value ) 
-         && count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 
-        ) {
-          usort($value, function($a, $b) {
-              if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
-                return 0;
+        // Array based value
+        if( is_array( $value ) && self::contains_array( $value ) ) {
+          // Try to substitute values #key'd array new values from numeric to key
+          if( !empty( $fields[$key]['#keyed'] ) ) {
+            $keyed_value = [];
+            foreach ( $value as $inner_key => $inner_value ) {
+              // we have a keyed value
+              if( !empty( $inner_value[$fields[$key]['#keyed']] ) ) {
+                $keyed_value[$inner_value[$fields[$key]['#keyed']]] = $inner_value;
               }
-              return intval( $a['weight'] ) - intval( $b['weight'] );
-          });
-          $instance[$key] = $value;
+              else {
+                $keyed_value[$inner_key] = $inner_value;
+              }
+            }
+            $instance[$key] = $keyed_value;
+          }
+          // Repeating (0-indexed array)
+          else if( count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
+            usort($value, function($a, $b) {
+                if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
+                  return 0;
+                }
+                return intval( $a['weight'] ) - intval( $b['weight'] );
+            });
+            $instance[$key] = $value;
+          }
         }
         else {
           $instance[$key] = $value;
@@ -133,9 +147,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
      * @param string $field_base, if null, uses default: 'form'
      * @param string $number, if null uses default: 1
      */
-    public static function formValues( $values, $form_id_base = null, $field_base = 'form', $number = 1 ) {
+    public static function formValues( $values, $form_id_base = null, $field_base = 'form', $number = 1, $fields = [] ) {
       return ( ! empty( $values[$field_base . '-' . $form_id_base][$number] ) ) 
-           ? self::updateGroupsWeight( $values[$field_base . '-' . $form_id_base][$number] )
+           ? self::updateGroupsWeight( $values[$field_base . '-' . $form_id_base][$number], $fields )
            : [];
     }
 
@@ -144,7 +158,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
      * @param array $values
      */
     public function getFormValues( $values ) {
-      return self::formValues( $values, $this->form_id_base, $this->field_base, $this->number );
+      return self::formValues( $values, $this->form_id_base, $this->field_base, $this->number, $this->fields );
     }
 
     /**
@@ -470,7 +484,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           : $sub_item['#default_value'];
         
         if($field['#group_title_field'] === $sub_id) {
-          $field['#group_titles'][] = $sub_item['#value'];
+          $field['#group_titles'][$i] = $sub_item['#value'];
         }
 
         // Attach to return
@@ -492,20 +506,24 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
         // Repeating Group fields
         if( $field['#type'] == 'group') {
-          // How many of these do we have saved ?
-          // TODO, fix this
-          $count = !empty( $instance[$id] ) ? count( $instance[$id] ) : 1; 
           // Init field collection
           $field['#items'] = [];
           // Init group titles
           $field['#group_titles'] = []; 
+          // How many of these do we have saved ?
+          if( empty( $instance[$id] ) ) {
+            $instance[$id][] = [];
+          } 
+          $count =  count( $instance[$id] ); 
           // Run through any saved field items
-          for( $i = 0; $i < $count; $i++ ) {
-            $field['#items'][$i] = $this->buildGroupSubFieldConfig( $field, $id, $i, $instance );
+          $i = 1;
+          foreach( $instance[$id] as $key => $value ) {
+            $field['#items'][$key] = $this->buildGroupSubFieldConfig( $field, $id, $key, $instance );
             // Now attach a json template default
-            if( ( $i + 1 ) === $count ) {
+            if( ( $i ) === $count ) {
               $field['#json_field_template'] = $this->buildGroupSubFieldConfig( $field, $id, 'GROUP_REPLACE_KEY', $instance );
             }
+            $i++;
           }
         }
         // Normal field, so get value

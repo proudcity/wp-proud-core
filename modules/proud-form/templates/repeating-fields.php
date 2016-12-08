@@ -11,11 +11,12 @@
   <div id="<?php echo $field['#id']; ?>-draggable" data-draggable-group="true" class="panel-group" id="<?php echo $field['#id']; ?>-accordion" role="tablist" aria-multiselectable="true">
   <?php 
     // Print children
-    foreach($field['#items'] as $key => $group) {
+    $i = 1; 
+    foreach( $field['#items'] as $key => $group ) {
       // Try to get group title
       $group_title = !empty( $field['#group_titles'][$key] )
                    ? $field['#group_titles'][$key]
-                   : __($field['#title'], $this->form_id) . ' ' . ( $key + 1 );
+                   : __( $field['#title'], $this->form_id ) . ' ' . ( $i );
       include($field['#template']);
     }
   ?>
@@ -25,7 +26,6 @@
       // Save json template
       jQuery('#<?php echo $field['#id']; ?>-draggable').data('json_template', <?php echo $json ?>);
     </script>
-    ?>
   </div>
   <a href="#" id="<?php echo $field['#id']; ?>-add" class="btn btn-primary group-add-row">Add Another</a>
   <p><br></p>

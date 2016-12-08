@@ -77,14 +77,14 @@ abstract class ProudWidget extends \WP_Widget {
    */
   public function addSettingDefaults($instance) {
     $return = [];
-    foreach ($this->settings as $key => $value) {
-      if(isset($instance[$key])) {
+    foreach ( $this->settings as $key => $value ) {
+      if( isset( $instance[$key] ) ) {
         $return[$key] = $instance[$key];
       }
-      else if (isset($value['#default_value'])) {
+      else if ( isset( $value['#default_value'] ) ) {
         // Invert default values array for checkboxes
         if($value['#type'] == 'checkboxes') {
-          $value['#default_value'] = array_combine($value['#default_value'], $value['#default_value']);
+          $value['#default_value'] = array_combine( $value['#default_value'], $value['#default_value'] );
         }
         $return[$key] = $value['#default_value'];
       }
@@ -157,7 +157,7 @@ abstract class ProudWidget extends \WP_Widget {
    * @return array Updated safe values to be saved.
    */
   public function update( $new_instance, $old_instance ) {
-    return $this->form->updateGroupsWeight($new_instance, $old_instance);
+    return $this->form->updateGroupsWeight( $new_instance, $this->settings );
   }
 
   /**
