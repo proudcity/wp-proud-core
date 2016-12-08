@@ -198,8 +198,11 @@ abstract class ProudWidget extends \WP_Widget {
    */
   public function widget( $args, $instance ) {
     // Add JS Settings
-    $this->addJsSettings($instance);
-    $this->enqueueFrontend();
+    $this->addJsSettings( $instance );
+    if( !is_admin() ) {
+      $this->enqueueFrontend();
+    }
+
     $instance = $this->addSettingDefaults($instance);
     // Widget placed in theme, so replace default values
     if( empty( $args['name'] ) ) {
