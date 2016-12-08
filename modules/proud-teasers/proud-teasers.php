@@ -48,7 +48,7 @@ if ( !class_exists( 'TeaserList' ) ) {
 
       // Intercept search lists, set keyword
       global $proudsearch;
-      if($post_type == 'search') {
+      if( $post_type == 'search' ) {
         // Collect get parameter
         $this->search_key = $proudsearch::_SEARCH_PARAM;
         // Add key for search
