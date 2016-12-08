@@ -200,7 +200,7 @@ class Proudcore extends \ProudPlugin {
     }
   }
 
-  public function addImageSizes() {
+  public function addImageSizes( $sizes ) {
     add_image_size( 'card-thumb', 300, 170, true );
     add_image_size( 'featured-teaser', 500, 250, true );
     add_image_size( 'full-screen', 2000, 1333, true );
@@ -227,11 +227,23 @@ class Proudcore extends \ProudPlugin {
   // Add our other responsive stlyes if needed
   public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta ) {
 
-    // We have only 1 source @ our full-screen size add medium, large
+    // We have only 1 source @ our full-screen size add medium, medium_large, large
     // See:
     // https://developer.wordpress.org/reference/functions/wp_calculate_image_srcset/
     // https://www.developersq.com/add-custom-srcset-values-for-responsive-images-wordpress/
-    if(!empty( $sources ) && count( $sources ) === 1 && isset( $sources[2000] ) ) { 
+    if( !empty( $sources ) && count( $sources ) === 1 ) {
+      $sizes = [];
+      $source_size = key( $sources );
+      if( $source_size >= 1024 ) {
+        $sizes = ['large', 'medium_large', 'medium'];
+      }
+      else if ( $source_size >= 768 ) {
+        $sizes = ['medium_large', 'medium'];
+      }
+      // No need to process
+      if( empty( $sizes ) ) {
+        return;
+      }
       // image base name  
       $image_basename = wp_basename( $image_meta['file'] );
       // upload directory info array
@@ -249,10 +261,9 @@ class Proudcore extends \ProudPlugin {
       }
 
       $image_baseurl = trailingslashit( $image_baseurl );
-      foreach( ['large', 'medium'] as $size ) { 
+      foreach( $sizes as $size ) { 
         // check whether our custom image size exists in image meta 
         if( array_key_exists( $size, $image_meta['sizes'] ) ){
-
           // add source value to create srcset
           $sources[ $image_meta['sizes'][$size]['width'] ] = array(
             'url'        => $image_baseurl .  $image_meta['sizes'][$size]['file'],
