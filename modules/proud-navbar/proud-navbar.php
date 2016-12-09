@@ -136,6 +136,73 @@ function get_navbar_logo() {
 }
 
 /**
+ * Get default button options
+ * @param $display to differenciate where the options are being displayed
+ */
+function get_nav_button_options( $display ) {
+  // Grab active from settings
+  $active_buttons = get_option('active_toolbar_buttons', [ 
+    'answers' => 'answers', 
+    'payments' => 'payments', 
+    'report' => 'report' 
+  ] );
+
+  $action_buttons = [];
+
+  if( !empty( $active_buttons['answers'] ) ) {
+    $action_buttons['answers'] = apply_filters( 'proud_nav_button_options', [
+      'title' => 'Answers',
+      'data_key' => 'answers',
+      'href' => '#',
+      'classes' => 'btn navbar-btn answers-button',
+      'data_attrs' => '',
+      'icon' => 'fa-question-circle',
+    ], 'answers', $display );
+  }
+
+  if( !empty( $active_buttons['payments'] ) ) {
+    $action_buttons['payments'] = apply_filters( 'proud_nav_button_options', [
+      'title' => 'Payments',
+      'data_key' => 'payments',
+      'href' => '#',
+      'classes' => 'btn navbar-btn payments-button',
+      'data_attrs' => '',
+      'icon' => 'fa-credit-card',
+    ], 'payments', $display );
+  }
+
+  if( !empty( $active_buttons['report'] ) ) {
+    $report_service = get_option('311_service', 'link');
+    $report_link = get_option('311_link_create');
+    $action_buttons['report'] =  apply_filters( 'proud_nav_button_options', [
+      'title' => 'Report Issues',
+      'data_key' => 'report',
+      'href' => $report_service === 'link' ? $report_link : '#',
+      'classes' =>  'btn navbar-btn issue-button',
+      'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
+      'icon' => 'fa-wrench',
+    ], 'report', $display );
+  }
+  return $action_buttons;
+}
+
+/**
+ * Get default button options
+ * @param $display to differenciate where the options are being displayed
+ */
+function get_nav_search_options( $display ) {
+  $search_button = apply_filters( 'proud_nav_button_options', [
+    'title' => 'Search',
+    'data_key' => 'search',
+    'href' => '#',
+    'classes' => 'btn navbar-btn search-button',
+    'data_attrs' => '',
+    'icon' => 'fa-search"',
+  ], 'search', $display );
+  return $search_button;
+}
+
+/**
  * Prints primary menu
  */
 function get_nav_action_toolbar() {
@@ -145,11 +212,8 @@ function get_nav_action_toolbar() {
   // No plugin overtaking, print template
   if( !$toolbar ) {
     ob_start();
-    $toolbar_buttons = get_option('active_toolbar_buttons', [ 
-      'answers' => 'answers', 
-      'payments' => 'payments', 
-      'report' => 'report' 
-    ] );
+    $action_buttons = get_nav_button_options( 'toolbar' );
+    $search_button = get_nav_search_options( 'toolbar' );
     include plugin_dir_path(__FILE__) . 'templates/nav-toolbar.php';
     $toolbar = ob_get_contents();
     ob_end_clean();
