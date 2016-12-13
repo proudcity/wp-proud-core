@@ -327,13 +327,14 @@ function wpGetTimestamp($datetime_string = "now") {
 }
 
 // Returns whether current office hours (formatted as just a plaintext string) are open
-function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true) {
+function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, $values = array('Closed', 'Open', 'Opening soon', 'Closing soon')) {
   /*
   $string = "Mon- Fri:2:00am -5:00pm
   Saturday: 9:00am - 12:00pm
   Sunday: Closed";
   */
-  $open = false;
+  $string = str_replace( array('<br/>','<br>', '<br />'), "\n", $string);
+  $classes = array('text-danger', 'text-success', 'text-warning', 'text-warning'); // Same key as $values
 
   $days = array( 'Mon', 'Monday', 'Tue', 'Tuesday', 'Wed', 'Wednesday', 'Thu', 'Thursday', 'Fri', 'Friday', 'Sat', 'Saturday', 'Sun', 'Sunday' );
   $nums = array( 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 );
@@ -352,21 +353,47 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true) 
   $matches = array();
   $result = preg_match_all($pattern, $holidays, $matches);
   for ( $i = 0; $i < $result; $i++ ) {
-    if ( strtotime($matches[2][$i]) == $datestamp) {
+    if ( strtotime($matches[2][$i]) == $datestamp ) {
       $alert = _x( 'Today is a holiday:', 'post name', 'wp-proud-core' ) .' '. $matches[1][$i];
       return false;
     }
   }
 
+  // Deal with multiple office hours
+  $pattern = "/(^|\n)([a-zA-Z\ \-\.]+)\n/";
+  $type_matches = array();
+  if (preg_match_all($pattern, $string, $type_matches, PREG_OFFSET_CAPTURE)) {
+    $labels = array();
+    foreach ($type_matches[0] as $item) {
+      array_push($labels, array(
+        'label' => trim($item[0]),
+        'value' => false,
+        'class' => '',
+        'index' => $item[1],
+      ));
+    }
+  }
+  else {
+    $labels = array(array(
+      'label' => 'Currently',
+      'value' => false,
+      'class' => '',
+      'index' => 0,
+    ));
+  }
   
-  $pattern = '/([a-zA-Z\s\-\.]+?)\:\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))/';
+  $pattern = "/(^|\n)([a-zA-Z\ \-\.]+?)\:\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))/";
   $matches = array();
-  $result = preg_match_all($pattern, $string, $matches);
+  $result = preg_match_all($pattern, $string, $matches, PREG_OFFSET_CAPTURE);
+
+  //print_r($result);
+  //print_r($matches);
 
   // Cycles though all of the valid days
   for ($i = 0; $i < $result; $i++) {
+    
     // Do lots of clean up on the day of the week to support ranges
-    $day = trim($matches[1][$i]);
+    $day = trim($matches[2][$i][0]);
     $day = str_replace($days, $nums, $day);
     $day = preg_replace("/[^0-9,.]/", "", $day);
     if (strlen($day) == 1) {
@@ -379,18 +406,55 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true) 
 
     // Check if Day of the week matches
     if ($week_day >= $low && $week_day <= $high) {
-      // $matches[1] is 9:00am; $matches[6] is 5:00pm
-      if ( $daystamp >= strtotime($matches[2][$i]) && $daystamp <= strtotime($matches[6][$i]) ) {
-        // Time range matches = OPEN
-        $open = true;
-        //print_r('OPEN '.$matches[0][$i]);
-        return $matches[0][$i];
+
+      // Figure out the status:
+      // 0: closed
+      // 1: open
+      // 2: opening soon (<1 hr)
+      // 3: closing soon (<1 hr)
+      // $matches[2] is 9:00am; $matches[7] is 5:00pm
+      $opens = strtotime($matches[3][$i][0]);
+      $closes = strtotime($matches[7][$i][0]);
+      //print_r($opens - $daystamp.'opens ');
+      //print_r($closes - $daystamp.'closes ');
+      if ( $opens - $daystamp <= 0 && $closes - $daystamp >= 0 ) {
+        if ($closes - $daystamp <= 3600) {
+          $status = 3;
+        }
+        else {
+          $status = 1;
+        }
+      }
+      elseif ( $closes - $daystamp >= 0 && $opens - $daystamp > -3600 ) {
+        $status = 2;
+      }
+      else {
+        $status = 0;
+      }
+
+      // Update the appropriate $labels value
+      $found = false;
+      for ($j = count($labels)-1; $j >= 0; $j--) {
+        if ( $labels[$j]['index'] <= $matches[0][$i][1] && !$found) {
+          $labels[$j]['value'] = $status;
+          $found = true;
+        }
       }
     }
+
+  } // for
+  
+  // Clean up the return
+  foreach ($labels as $key => $label) {
+    $labels[$key]['class'] = $classes[ $label['value'] ];
+    $labels[$key]['value'] = $values[ $label['value'] ];
+    unset($labels[$key]['index']);
   }
 
-  return false;
+  return $labels;
 }
+
+
 
 // Returns a text string of Federal Holidays.
 // Form: https://www.redcort.com/us-federal-bank-holidays/ 
