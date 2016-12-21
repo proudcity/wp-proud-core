@@ -381,8 +381,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-          $time = current_time('timestamp');
-          $day_start = strtotime(date('Y-m-d', $time));
+          $time = current_time( 'timestamp' );
+          $day_start = strtotime( date( 'Y-m-d', $time ) );
           $args['orderby']    = 'meta_value_num';
           $args['meta_key']   = $query_key;
           $args['order']      = 'ASC';

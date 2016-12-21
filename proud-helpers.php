@@ -318,14 +318,6 @@ function wpGetTimezoneString() {
     return 'UTC';
 }
 
-function wpGetTimestamp($datetime_string = "now") {
-  // get datetime object from site timezone
-  $datetime = new \DateTime( $datetime_string, new \DateTimeZone( wpGetTimezoneString() ) );
-
-  // get the unix timestamp (adjusted for the site's timezone already)
-  return $datetime->format( 'U' );
-}
-
 // Returns whether current office hours (formatted as just a plaintext string) are open
 function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, $values = array('Closed', 'Open', 'Opening soon', 'Closing soon')) {
   /*
