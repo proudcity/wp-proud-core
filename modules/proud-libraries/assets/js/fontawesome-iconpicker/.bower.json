@@ -7,7 +7,7 @@
     "dist/js/fontawesome-iconpicker.min.js"
   ],
   "dependencies": {
-    "jquery": "^1.10",
+    "jquery": ">=1.10",
     "bootstrap": "^3"
   },
   "ignore": [
@@ -19,13 +19,13 @@
     "/Gruntfile.js"
   ],
   "homepage": "https://github.com/aschmoe/fontawesome-iconpicker",
-  "_release": "62882415c0",
+  "_release": "3b31f3653f",
   "_resolution": {
     "type": "branch",
-    "branch": "updating-fontawesome-version",
-    "commit": "62882415c0be52d3360995ff49a25d688dd128a2"
+    "branch": "fontawesome-4.7",
+    "commit": "3b31f3653f726292bcc889a05fbe6fcaec4bccff"
   },
   "_source": "git@github.com:aschmoe/fontawesome-iconpicker.git",
-  "_target": "updating-fontawesome-version",
+  "_target": "fontawesome-4.7",
   "_originalSource": "git@github.com:aschmoe/fontawesome-iconpicker"
 }
