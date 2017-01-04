@@ -427,7 +427,7 @@ class JumbotronHeader extends Core\ProudWidget {
 
         case 'image':
           // Use featured image?
-          if($instance['featured_image'] === 'yes') {
+          if( $instance['featured_image'] === 'yes' || $instance['image'] === '[featured-image]' ) {
             global $post;
             $instance['image'] = get_post_thumbnail_id( $post->ID );
           }
