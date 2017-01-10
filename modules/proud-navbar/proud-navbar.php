@@ -7,6 +7,7 @@ use Proud\Core;
 
 // Resgister logo sizes
 function proud_navbar_logo_size() {
+  // Logo sizes
   add_image_size( 'proud-logo', 140, 64 );
   add_image_size( 'proud-logo-retina', 380, 128 );
   add_image_size( 'proud-logo-wide', 300, 64 );
@@ -82,6 +83,7 @@ function get_site_name_link_url() {
  */
 function get_navbar_logo() {
   static $logo_markup  = null;
+  $custom_logo_id = get_theme_mod( 'custom_logo' );
   if( null === $logo_markup ) {
     // Grab logo
     $logo =  Core\get_proud_logo();
@@ -89,8 +91,14 @@ function get_navbar_logo() {
     $custom_width = false;
     if($logo) {
       global $wpdb;
-      // Try to grab ID
-      $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+      // Media ID based image
+      if( is_numeric( $logo ) ) {
+        $media_id = $logo;
+      }
+      // Legacy URL based image
+      else {
+        $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+      }
       // Build responsive image, get width
       if( $media_id ) {
         // Build responsive meta

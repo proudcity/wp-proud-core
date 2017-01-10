@@ -203,6 +203,7 @@ class Proudcore extends \ProudPlugin {
   }
 
   public function addImageSizes( $sizes ) {
+    // Post sizes
     add_image_size( 'card-thumb', 300, 170, true );
     add_image_size( 'featured-teaser', 500, 250, true );
     add_image_size( 'full-screen', 2000, 1333, true );

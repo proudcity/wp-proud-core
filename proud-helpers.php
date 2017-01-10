@@ -93,11 +93,17 @@ function array_merge_deep_array($arrays) {
 
 
 /**
- *  Gets  logo
+ * Gets  logo
+ * As of 
  */
 function get_proud_logo($use_theme = true, $logo_file = 'icon-white-1x.png') {
   if($use_theme) {
-    $logo = get_theme_mod( 'proud_logo' );
+    // New media ID based logo
+    $logo = get_theme_mod( 'proud_logo_id' );
+    // Old url based logo
+    if( !$logo ) {
+      $logo = get_theme_mod( 'proud_logo' );
+    }
   }
   else if($logo_file) {
     $logo = plugins_url( '/assets/images/' . $logo_file,  __FILE__  );
