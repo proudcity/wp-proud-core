@@ -55,7 +55,7 @@ if ( !class_exists( 'ProudLayout' ) ) {
                   && $meta['grids'][0]['cells'] === 1
                   && !empty( $meta['grids'][0]['style']['row_stretch'] )
                   && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
-                    || $meta['grids'][0]['style']['row_stretch'] == 'full-stretched' )
+                    || $meta['grids'][0]['style']['row_stretch'] === 'full-stretched' )
                 ) {
                   // Set to header type.  Transparent
                   // navbar needs to know

@@ -6,7 +6,7 @@
     </div>
     <?php elseif( !empty($default_image) ): ?>
     <div class="card-img-top text-center">
-      <a href="<?php echo esc_url( get_permalink() ); ?>"><img title="<?php the_title() ?>" src="<?php echo $default_image ?>"/></a>
+      <a href="<?php echo esc_url( get_permalink() ); ?>"><img title="<?php echo $post->post_title ?>" src="<?php echo $default_image ?>"/></a>
     </div>
     <?php endif; ?>
     <div class="card-block">

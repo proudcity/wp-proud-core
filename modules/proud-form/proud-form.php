@@ -582,8 +582,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
       if( empty($fields) ) {
          $fields = $this->fields;
       }
-      // Attach values
-      $filled_fields = $this->buildFieldConfig( $instance, $fields );
+      // Attach values, filter field values id
+      $filled_fields = apply_filters( 
+        'proud-form-filled-fields',
+        $this->buildFieldConfig( $instance, $fields ),
+        $instance,
+        $this->form_id_base
+      );
       // Javascript states for hiding / showing fields
       $states = [];
       foreach ( $filled_fields as $id => &$field ) {
@@ -607,6 +612,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
       }
     }
 
+    /**
+     * Prints out form
+     */
     public function printForm ( $args = [] ) {
       // Merge with defaults
       $args = array_merge( [

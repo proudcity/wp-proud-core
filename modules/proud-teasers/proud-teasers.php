@@ -10,7 +10,8 @@ if ( !class_exists( 'TeaserList' ) ) {
   // Prints out a teaser list from the args on creation
   class TeaserList {
     
-    private $template_path = 'templates/teaser-items/';
+    const _FORM_ID = 'proud-teaser-filter';
+    const _TEMPLATE_PATH = 'templates/teaser-items/';
     private $post_type;
     private $display_type;
     private $query;
@@ -22,10 +23,12 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $featured; // Including a featured
     private $hide; // Agency switch to hide elements
     private $columns; // Splits media view into columns
+    private $options; // Extra options
     private $default_image; // Default image to use
     private $templates = []; // Holder for templates to avoid extra checks
 
-    /** $post_type: post, event, ect
+    /** 
+     * $post_type: post, event, ect
      * $display_type: list, mini, cards, ect 
      * $args format: 
      * 'posts_per_page' => 5,
@@ -46,10 +49,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // @todo remove hide option in favor of specific
       $this->hide = !empty( $options['hide'] ) ?  $options['hide'] : [];
       $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
-      // Use specific post ids?
-      $this->specific_ids = !empty( $options['use_specific'] ) && !empty( $options['specific_ids'] ) 
-                          ? $options['specific_ids'] 
-                          : [];
+      $this->options = apply_filters( 'proud-teaser-options', $options );
 
       // Intercept search lists, set keyword
       global $proudsearch;
@@ -61,6 +61,8 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
       else {
         $this->search_key = 'filter_keyword';
+        // Add flag
+        $args['proud_teaser_query'] = true;
       }
 
       // Limit to $terms
@@ -101,17 +103,16 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // Attach filters
-      if ( $filters ) {
+      if( $filters ) {
         $this->build_filters( $terms );
         $this->process_post( $args );
       }
       // Pager?
-      if ( $pagination ) {
+      if( $pagination ) {
         $this->process_pagination( $args );
       }
-
       // Sort posts
-      $this->add_sort($args);
+      $this->add_sort( $args );
 
       // Final build on args
       $args = array_merge( [
@@ -148,8 +149,13 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->query = new \WP_Query( apply_filters( 
         'proud_teaser_query_args', 
         $args,
-        !empty( $args['s'] ) ? $args['s'] : null,
-        $this->post_type 
+        [
+          'type' => $this->post_type,
+          'taxonomy' => $this->get_taxonomy(),
+          'options' => $this->options,
+          'form_id_base' => !empty( $this->form ) ? self::_FORM_ID : null,
+          'form_instance' => $this->form_instance,
+        ]
       ) );
 
       // Alter pagination links to deal with issues with documents, ext
@@ -218,11 +224,24 @@ if ( !class_exists( 'TeaserList' ) ) {
       $taxonomy = $this->get_taxonomy();
       // Grab categories
       if( $taxonomy ) {
-        $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $taxonomy] );
-        if(!empty($categories)) {
+        // Get categories from alternate source
+        $categories = apply_filters( 
+          'proud-teaser-filter-categories', 
+          [],
+          [
+            'type' => $this->post_type, 
+            'taxonomy' => $taxonomy, 
+            'options' => $this->options 
+          ] 
+        );
+        // Get local categories
+        if( empty( $categories ) ) {
+          $categories = get_categories( ['type' => $this->post_type, 'taxonomy' => $taxonomy] );
+        }
+        if( !empty( $categories ) ) {
           $options = [];
           foreach ($categories as $cat) {
-            if (!$terms || in_array($cat->term_id, $terms)) {
+            if ( !$terms || in_array( $cat->term_id, $terms ) ) {
               $options[$cat->term_id] = $cat->name;
             }
           };
@@ -230,13 +249,31 @@ if ( !class_exists( 'TeaserList' ) ) {
             '#title' => __( 'Category', 'proud-teaser' ),
             '#type' => 'checkboxes',
             '#options' => $options,
-            '#description' => ''
+            '#description' => '',
+            '#default_value' => 0
           ];
         }
       }
 
       // Post specific options
       switch( $this->post_type ) {
+        
+        case 'search': 
+          // @TODO should this be hidden globally?  Or need a filter for search page only?
+          // Hide search form in favor of search page
+          $this->filters[$this->search_key]['#args']['class'] = 'hide';
+          unset( $this->filters[$this->search_key]['#args']['after'] );
+          // Add post type filter
+          global $proudsearch;
+          $options = $proudsearch->search_whitelist( true );
+          $this->filters['post_type'] = [
+            '#title' => __( 'Type', 'proud-teaser' ),
+            '#type' => 'radios',
+            '#options' => $options,
+            '#description' => '',
+          ];
+          break;
+
         case 'job_listing': 
           $this->filters['filter_show_filled'] = [
             '#title' => __( 'Show filled positions?', 'proud-teaser' ),
@@ -248,6 +285,15 @@ if ( !class_exists( 'TeaserList' ) ) {
           ];
           break;
       }
+      // Filter filters
+      $this->filters = apply_filters( 
+        'proud-teaser-filters', 
+        $this->filters, 
+        [
+          'type' => $this->post_type, 
+          'options' => $this->options, 
+        ]
+      );
 
       // Init form
       $this->form = new \Proud\Core\FormHelper( 'proud-teaser-filter', $this->filters );
@@ -260,13 +306,14 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Grab values
       foreach( $this->filters as $key => $filter ) {
         if(!empty( $_REQUEST[$key] ) ) {
+          $req_val = wp_unslash( $_REQUEST[$key] );
           switch( $key ) {
             // taxonomies
             case 'filter_categories':
               $taxonomy = $this->get_taxonomy();
               if($taxonomy) {
                 $terms = [];
-                foreach( $_REQUEST[$key] as $cat_key ) {
+                foreach( $req_val as $cat_key ) {
                   $terms[] = (int) sanitize_text_field( $cat_key );
                 }
                 $args['tax_query'] = [
@@ -282,7 +329,7 @@ if ( !class_exists( 'TeaserList' ) ) {
 
             // keyword search
             case $this->search_key:
-              $args['s'] = sanitize_text_field( $_REQUEST[$key] );
+              $args['s'] = sanitize_text_field( $req_val );
               break;
 
             // Jobs show filtered positions
@@ -300,10 +347,12 @@ if ( !class_exists( 'TeaserList' ) ) {
               );
 
           }
-          $this->form_instance[$key] = $_REQUEST[$key];
+          $this->form_instance[$key] = $req_val;
         }
         else {
-          $this->form_instance[$key] = ($key == 'filter_categories') ? 0 : '';
+          $this->form_instance[$key] = isset( $filter['#default_value'] ) 
+                                     ? $filter['#default_value']  
+                                     : '';
         }
       }
     }
@@ -470,12 +519,12 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // Try for post type
-      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-header.php';
+      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-header.php';
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic theme
-        $template = $this->template_path . 'teaser-' . $this->display_type . '-header.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-header.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic locally
           $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-header.php';
@@ -499,12 +548,12 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
       if( empty( $templates['featured'] ) ) {
         // Try for post type
-        $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-featured.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-featured.php';
         $file = "";
         // Try to load template from theme
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic theme
-          $template = $this->template_path . 'teaser-' . $this->display_type . '-featured.php';
+          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-featured.php';
           if( '' === ( $file = locate_template( $template ) ) ) {
             // Try for generic locally
             $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-featured.php';
@@ -533,13 +582,13 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function print_content( $post_count, $current ) {
       if( empty( $templates['content'] ) ) {
         // Try for post type
-        $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
         $file = "";
 
         // Try to load template from theme
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic
-          $template = $this->template_path . 'teaser-' . $this->display_type . '.php';
+          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '.php';
           if( '' === ( $file = locate_template( $template ) ) ) {
             // Just load from here
             $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
@@ -623,12 +672,12 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_wrapper_close() {
       // Try for post type
-      $template = $this->template_path . 'teaser-' . $this->post_type . '-' . $this->display_type . '-footer.php';
+      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-footer.php';
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic theme
-        $template = $this->template_path . 'teaser-' . $this->display_type . '-footer.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-footer.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic local
           $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
@@ -646,12 +695,12 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_empty() {
       // Try for post type + display
-      $template = $this->template_path . 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
+      $template = self::_TEMPLATE_PATH . 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
       $file = "";
       // Try to load template from theme
       if( !( $file = locate_template( $template ) ) ) {
         // Try for generic post type
-        $template = $this->template_path .  'teasers-empty-' . $this->post_type . '.php';
+        $template = self::_TEMPLATE_PATH .  'teasers-empty-' . $this->post_type . '.php';
         if( !( $file = locate_template( $template ) ) ) {
           // Just load from here
           $file = plugin_dir_path( __FILE__ ) . 'templates/teasers-empty.php';
@@ -664,7 +713,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      * Prints content pager
      */
     private function print_pagination() {
-      $template = $this->template_path . 'pagination-default.php';
+      $template = self::_TEMPLATE_PATH . 'pagination-default.php';
       $file = "";
       // Try to load template from theme
       if( !( $file = locate_template( $template ) ) ) {
@@ -770,7 +819,10 @@ function process_filter_submit() {
       foreach ( $values as $key => $value ) {
         // Sanitize
         $key = sanitize_key( $key );
-        if( strpos( $key, 'filter_' ) === 0 && !empty( $value ) ) {
+        global $proudsearch;
+        $retain_filter = ( $key === $proudsearch::_SEARCH_PARAM || strpos( $key, 'filter_' ) === 0 ) 
+                      && !empty( $value );
+        if( $retain_filter ) {
           if( is_array( $value ) ) {
             foreach ($value as $val) {
               $params[] = $key . '[]=' . urlencode( sanitize_text_field( $val ) );
