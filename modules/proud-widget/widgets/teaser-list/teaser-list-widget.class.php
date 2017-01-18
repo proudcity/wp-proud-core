@@ -248,7 +248,9 @@ class TeaserListWidget extends Core\ProudWidget {
       array(
         'featured' => ( !empty( $instance['featured'] ) ? $instance['featured'] : null ),
         'hide' => ( !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null ),
-        'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null )
+        'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null ),
+        'use_specific' => ( !empty( $instance['use_specific'] ) ? $instance['use_specific'] : null ),
+        'specific_ids' => ( !empty( $instance['specific_ids'] ) ? $instance['specific_ids'] : null )
       )
     );
     if( !empty ( $instance['show_filters'] ) ) {

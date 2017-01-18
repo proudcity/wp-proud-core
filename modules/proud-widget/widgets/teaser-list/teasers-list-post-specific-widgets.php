@@ -150,7 +150,63 @@ class AgencyTeaserListWidget extends TeaserListWidget {
 
   function initialize() {
     parent::initialize();
+
+    // Add some hiding options
+    $hide_if_specific = ['pager', 'post_count'];
+    foreach ($hide_if_specific as $value) {
+      $rule = [
+        'use_specific' => [
+          'operator' => '==',
+          'value' => ['1'],
+          'glue' => '||'
+        ],
+      ];
+      if( empty( $this->settings[$value]['#states'] ) ) {
+        $this->settings[$value]['#states'] = ['hidden' => []];
+      }
+      if( empty( $this->settings[$value]['#states']['hidden']) ) {
+        $this->settings[$value]['#states']['hidden'] = $rule;
+      }
+      else {
+        $this->settings[$value]['#states']['hidden'] = array_merge( $this->settings[$value]['#states']['hidden'], $rule );
+      }
+    }
+
+    // Build list of agencies
+    $query = new \WP_Query( [
+      'post_type' => 'agency',
+      'post_status' => 'publish'
+    ] );
+    $agency_list = [];
+    foreach ($query->posts as $key => $agency) {
+      $agency_list[$agency->ID] = $agency->post_title; 
+    }
+
     $this->settings += [
+      'use_specific' => [
+        '#type' => 'checkbox',
+        '#title' => 'Specific Agencies',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Display specific agencies instead of listing them?',
+        '#default_value' => false
+      ],
+      'specific_ids' => [
+        '#title' => __('To display', 'proud-teaser'),
+        '#description' => __('Select the agencies to display', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => array_combine( array_keys( $agency_list ), array_keys( $agency_list ) ),
+        '#options' => $agency_list,
+        '#states' => [
+          'visible' => [
+            'use_specific' => [
+              'operator' => '==',
+              'value' => ['1'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
       'proud_teaser_hide' => [
         '#title' => __('Hide Columns', 'proud-teaser'),
         '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),

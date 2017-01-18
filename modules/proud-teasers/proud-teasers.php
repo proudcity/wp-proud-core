@@ -43,8 +43,13 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->post_type    = !empty( $post_type ) ? $post_type : 'post';
       $this->display_type = !empty( $display_type ) ? $display_type : 'list';
       $this->featured = !empty( $options['featured'] ) ?  $options['featured'] : [];
+      // @todo remove hide option in favor of specific
       $this->hide = !empty( $options['hide'] ) ?  $options['hide'] : [];
       $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
+      // Use specific post ids?
+      $this->specific_ids = !empty( $options['use_specific'] ) && !empty( $options['specific_ids'] ) 
+                          ? $options['specific_ids'] 
+                          : [];
 
       // Intercept search lists, set keyword
       global $proudsearch;
@@ -59,7 +64,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // Limit to $terms
-      if ($terms) {
+      if ( $terms ) {
         $args['tax_query'] = [
           [
             'taxonomy' => $this->get_taxonomy(),
@@ -72,17 +77,25 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->terms = $terms;
       }
 
+      // Use specific post ids?
+      if ( !empty( $this->specific_ids ) ) {
+        $args['post__in'] = $this->specific_ids;
+        $args[ 'posts_per_page' ] = 100;
+      }
+
       // Attach filters
-      if($filters) {
+      if ( $filters ) {
         $this->build_filters( $terms );
         $this->process_post( $args );
       }
       // Pager?
-      if($pagination) {
+      if ( $pagination ) {
         $this->process_pagination( $args );
       }
+
       // Sort posts
       $this->add_sort($args);
+
       // Final build on args
       $args = array_merge( [
         'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist() : $this->post_type, 
@@ -131,7 +144,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // If posts per page is set to 0, make it show all posts (up to 100)
-      $args[ 'posts_per_page' ] = $args[ 'posts_per_page' ] == 0 ? 100 : $args[ 'posts_per_page' ];
+      $args[ 'posts_per_page' ] = $args[ 'posts_per_page' ] === 0 ? 100 : $args[ 'posts_per_page' ];
       // Build query
       $this->query = new \WP_Query( apply_filters( 
         'proud_teaser_query_args', 
