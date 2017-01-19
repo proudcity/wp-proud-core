@@ -38,6 +38,13 @@ jQuery(document).ready(function($) {
       eventAction: window.location.href,
       eventValue: 1
     });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Submission',
+      eventAction: window.location.href,
+      eventValue: 5
+    });
   }
   $('.gform_wrapper form').bind('submit', function(e){
     anaylticsSubmission($(this).attr('id'));
@@ -47,6 +54,34 @@ jQuery(document).ready(function($) {
   $(document).bind('gform_confirmation_loaded', function(event, formId){
     anaylticsSubmission('gform_' + formId);
   });
+
+
+  // Track events: AddToCalendar click
+  var anaylticsCalendarShare = function(title, slug) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'AddEvent',
+      eventLabel: title,
+      eventAction: slug,
+      eventValue: 1
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'AddEvent',
+      eventAction: slug,
+      eventValue: 5
+    });
+  }
+  if ($('.addtocalendar').length) {
+    setTimeout(function(){
+      $('.atcb-item-link').bind('click', function(e){
+        var $parent = $(this).parents('.addtocalendar');
+        anaylticsCalendarShare($parent.attr('data-title'), $parent.attr('data-slug'));
+      });
+    }, 1000);
+  }
+  
 
 
 }); //ready
