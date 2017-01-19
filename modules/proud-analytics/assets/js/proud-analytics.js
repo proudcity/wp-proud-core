@@ -1,5 +1,33 @@
 jQuery(document).ready(function($) {
 
+  // Email (mailto:) link click
+  var anaylticsMailto = function(email) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Email',
+      eventAction: email,
+      eventValue: 5
+    });
+  }
+  $('a[href^="mailto:"]').bind('click', function(e){
+    anaylticsMailto($(this).attr('href').replace('mailto:', ''));
+  });
+
+  // Phone number (tel:) link click
+  var anaylticsPhone = function(phone) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Phone',
+      eventAction: phone,
+      eventValue: 10
+    });
+  }
+  $('a[href^="tel:"]').bind('click', function(e){
+    anaylticsPhone($(this).attr('href').replace('tel:', ''));
+  });
+
   // Widget click
   var anaylticsWidgetClick = function(e) {
     var activeClass = 'btn-primary';
@@ -56,7 +84,7 @@ jQuery(document).ready(function($) {
   });
 
 
-  // Track events: AddToCalendar click
+  // AddToCalendar click
   var anaylticsCalendarShare = function(title, slug) {
     ga('send', {
       hitType: 'event',
