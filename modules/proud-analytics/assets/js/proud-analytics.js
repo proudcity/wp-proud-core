@@ -1,5 +1,33 @@
 jQuery(document).ready(function($) {
 
+  // Email (mailto:) link click
+  var anaylticsMailto = function(email) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Email',
+      eventAction: email,
+      eventValue: 5
+    });
+  }
+  $('a[href^="mailto:"]').bind('click', function(e){
+    anaylticsMailto($(this).attr('href').replace('mailto:', ''));
+  });
+
+  // Phone number (tel:) link click
+  var anaylticsPhone = function(phone) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Phone',
+      eventAction: phone,
+      eventValue: 10
+    });
+  }
+  $('a[href^="tel:"]').bind('click', function(e){
+    anaylticsPhone($(this).attr('href').replace('tel:', ''));
+  });
+
   // Widget click
   var anaylticsWidgetClick = function(e) {
     var activeClass = 'btn-primary';
@@ -8,7 +36,7 @@ jQuery(document).ready(function($) {
     ga('send', {
       hitType: 'event',
       eventCategory: 'Score',
-      eventLabel: title,
+      eventLabel: 'Heart',
       eventAction: window.location.href,
       eventValue: jQuery(this).hasClass(activeClass) ? -5 : +5
     });
@@ -30,17 +58,24 @@ jQuery(document).ready(function($) {
 
 
   // Gravity form submission
-  var anaylticsSubmission = function(title) {
+  var anaylticsSubmission = function(title, action) {
     ga('send', {
       hitType: 'event',
       eventCategory: 'Submission',
       eventLabel: title,
-      eventAction: window.location.href,
+      eventAction: action,
       eventValue: 1
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Submission',
+      eventAction: action,
+      eventValue: 5
     });
   }
   $('.gform_wrapper form').bind('submit', function(e){
-    anaylticsSubmission($(this).attr('id'));
+    anaylticsSubmission($(this).attr('id'), $(this).attr('action'));
   });
   // Emitted by Gravity Forms
   // Documentation: https://www.gravityhelp.com/documentation/article/gform_confirmation_loaded/#source-code
@@ -73,6 +108,34 @@ jQuery(document).ready(function($) {
       }
     })
   });
+
+
+  // AddToCalendar click
+  var anaylticsCalendarShare = function(title, slug) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'AddEvent',
+      eventLabel: title,
+      eventAction: slug,
+      eventValue: 1
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'AddEvent',
+      eventAction: slug,
+      eventValue: 5
+    });
+  }
+  if ($('.addtocalendar').length) {
+    setTimeout(function(){
+      $('.atcb-item-link').bind('click', function(e){
+        var $parent = $(this).parents('.addtocalendar');
+        anaylticsCalendarShare($parent.attr('data-title'), $parent.attr('data-slug'));
+      });
+    }, 1000);
+  }
+  
 
 
 }); //ready
