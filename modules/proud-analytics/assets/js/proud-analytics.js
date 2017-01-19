@@ -48,6 +48,32 @@ jQuery(document).ready(function($) {
     anaylticsSubmission('gform_' + formId);
   });
 
+  // Social clicks
+  $('.share-dropdown ~ ul.dropdown-menu a').once('social-ga', function() {
+    $(this).click(function(e) {
+      if(e.target.href) {
+        var label;
+        if(e.target.href.match(/facebook\.com/i)) {
+          label = 'Facebook';
+        }
+        else if(e.target.href.match(/twitter\.com/i)) {
+          label = 'Twitter';
+        }
+        else if(e.target.href.match(/mailto\:/i)) {
+          label = 'Email';
+        }
+        if(label) {
+          ga('send', {
+            hitType: 'event',
+            eventCategory: 'Share',
+            eventLabel: label,
+            eventAction: window.location.protocol + '//' + window.location.hostname + window.location.pathname,
+          });
+        }
+      }
+    })
+  });
+
 
 }); //ready
       
