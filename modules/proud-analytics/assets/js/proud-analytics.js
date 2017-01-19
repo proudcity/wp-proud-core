@@ -53,7 +53,6 @@ jQuery(document).ready(function($) {
 
     $(this).toggleClass(activeClass);
   }
-
   $('.proudscore-widget').bind('click', anaylticsWidgetClick);
 
 
@@ -105,6 +104,12 @@ jQuery(document).ready(function($) {
           eventAction: window.location.protocol + '//' + window.location.hostname + window.location.pathname,
         });
       }
+      ga('send', {
+        hitType: 'event',
+        eventCategory: 'Score',
+        eventLabel: 'Share',
+        eventAction: window.location.protocol + '//' + window.location.hostname + window.location.pathname,
+      });
     }
   }
   $('.share-dropdown ~ ul.dropdown-menu a').once('social-ga', function() {
