@@ -109,6 +109,7 @@ jQuery(document).ready(function($) {
         eventCategory: 'Score',
         eventLabel: 'Share',
         eventAction: window.location.protocol + '//' + window.location.hostname + window.location.pathname,
+        eventValue: 5
       });
     }
   }
