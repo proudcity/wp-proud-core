@@ -36,7 +36,7 @@ jQuery(document).ready(function($) {
     ga('send', {
       hitType: 'event',
       eventCategory: 'Score',
-      eventLabel: title,
+      eventLabel: 'Heart',
       eventAction: window.location.href,
       eventValue: jQuery(this).hasClass(activeClass) ? -5 : +5
     });
@@ -58,24 +58,24 @@ jQuery(document).ready(function($) {
 
 
   // Gravity form submission
-  var anaylticsSubmission = function(title) {
+  var anaylticsSubmission = function(title, action) {
     ga('send', {
       hitType: 'event',
       eventCategory: 'Submission',
       eventLabel: title,
-      eventAction: window.location.href,
+      eventAction: action,
       eventValue: 1
     });
     ga('send', {
       hitType: 'event',
       eventCategory: 'Score',
       eventLabel: 'Submission',
-      eventAction: window.location.href,
+      eventAction: action,
       eventValue: 5
     });
   }
   $('.gform_wrapper form').bind('submit', function(e){
-    anaylticsSubmission($(this).attr('id'));
+    anaylticsSubmission($(this).attr('id'), $(this).attr('action'));
   });
   // Emitted by Gravity Forms
   // Documentation: https://www.gravityhelp.com/documentation/article/gform_confirmation_loaded/#source-code
