@@ -168,14 +168,17 @@ class AgencyTeaserListWidget extends TeaserListWidget {
         $this->settings[$value]['#states']['hidden'] = $rule;
       }
       else {
-        $this->settings[$value]['#states']['hidden'] = array_merge( $this->settings[$value]['#states']['hidden'], $rule );
+        $this->settings[$value]['#states']['hidden'] = array_merge( 
+          $this->settings[$value]['#states']['hidden'], $rule 
+        );
       }
     }
 
     // Build list of agencies
     $query = new \WP_Query( [
       'post_type' => 'agency',
-      'post_status' => 'publish'
+      'post_status' => 'publish',
+      'posts_per_page' => 100,
     ] );
     $agency_list = [];
     foreach ($query->posts as $key => $agency) {

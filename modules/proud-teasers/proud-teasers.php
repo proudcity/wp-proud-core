@@ -82,6 +82,23 @@ if ( !class_exists( 'TeaserList' ) ) {
         $args['post__in'] = $this->specific_ids;
         $args[ 'posts_per_page' ] = 100;
       }
+      // Add logic for Agency custom exclude checkbox ?
+      else if ($this->post_type === 'agency') {
+        $args['meta_query'] = array(
+          array(
+            'relation' => 'OR',
+            array(
+              'key' => 'list_exclude',
+              'compare' => 'NOT EXISTS'
+            ),
+            array(
+              'key' => 'list_exclude',
+              'value' => '0',
+              'compare' => '='
+            ),
+          )
+        );
+      }
 
       // Attach filters
       if ( $filters ) {
@@ -124,24 +141,6 @@ if ( !class_exists( 'TeaserList' ) ) {
           $args['post__not_in'] = $keys;
         }
       } */
-
-      // Add logic for Agency custom exclude checkbox
-      if ($this->post_type === 'agency') {
-        $args['meta_query'] = array(
-          array(
-            'relation' => 'OR',
-            array(
-              'key' => 'list_exclude',
-              'compare' => 'NOT EXISTS'
-            ),
-            array(
-              'key' => 'list_exclude',
-              'value' => '0',
-              'compare' => '='
-            ),
-          )
-        );
-      }
 
       // If posts per page is set to 0, make it show all posts (up to 100)
       $args[ 'posts_per_page' ] = $args[ 'posts_per_page' ] === 0 ? 100 : $args[ 'posts_per_page' ];
