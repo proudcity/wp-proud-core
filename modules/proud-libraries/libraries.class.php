@@ -77,6 +77,25 @@ class ProudLibaries {
       'deps' => ['jquery-core','proud']
     ];
 
+    self::$libraries['iframe-resizer'] = [
+      'title' => 'Iframe Resizer',
+      'js' => [
+        'iframe-resizer' => $path . 'iframe-resizer/js/iframeResizer.min.js',
+      ],
+      'js_footer' => true,
+      'deps' => ['jquery-core','proud']
+    ];
+
+    self::$libraries['iframe-resizer-child'] = [
+      'title' => 'Iframe Resizer',
+      'js' => [
+        'iframe-resizer-child' => $path . 'iframe-resizer/js/iframeResizer.contentWindow.min.js',
+      ],
+      'js_footer' => true,
+      'deps' => [],
+      'dequeue' => ['iframe-resizer']
+    ];
+
     self::$libraries['maps'] = [
       'title' => 'Maps',
       'js' => [

@@ -18,6 +18,7 @@
     "leaflet.locatecontrol": "~0.45.1",
     "fontawesome-iconpicker": "git@github.com:aschmoe/fontawesome-iconpicker#fontawesome-4.7",
     "dragula.js": "dragula#~3.6.7",
-    "picturefill": "~3.0.2"
+    "picturefill": "~3.0.2",
+    "iframe-resizer": "^3.5.8"
   }
 }
