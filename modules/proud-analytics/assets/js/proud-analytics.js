@@ -57,24 +57,40 @@ jQuery(document).ready(function($) {
 
 
   // Gravity form submission
+  var submittedBy;
   var anaylticsSubmission = function(title, action) {
-    ga('send', {
-      hitType: 'event',
-      eventCategory: 'Submission',
-      eventLabel: title,
-      eventAction: action,
-      eventValue: 1
-    });
-    ga('send', {
-      hitType: 'event',
-      eventCategory: 'Score',
-      eventLabel: 'Submission',
-      eventAction: action,
-      eventValue: 5
-    });
+
+      ga('send', {
+        hitType: 'event',
+        eventCategory: 'Submission',
+        eventLabel: title,
+        eventAction: action,
+        eventValue: 1
+      });
+      ga('send', {
+        hitType: 'event',
+        eventCategory: 'Score',
+        eventLabel: 'Submission',
+        eventAction: action,
+        eventValue: 5
+      });
   }
-  $('.gform_wrapper form').bind('submit', function(e){
-    anaylticsSubmission($(this).attr('id'), $(this).attr('action'));
+  $('.gform_wrapper form').once('proud-analytics', function() {
+    var $self = $(this);
+    // Process buttons to deal with multistep forms
+    $.each($self.find('input[type="button"]'), function(key, button) {
+      $(button).bind('click', function(e) {
+        submittedBy = this.value;
+      });
+    });
+    $self.bind('submit', function(e){
+      // Allow bound click to complete
+      setTimeout(function() {
+        if(submittedBy !== 'Next' && submittedBy !== 'Previous') {
+          anaylticsSubmission($(this).attr('id'), $(this).attr('action'));
+        }
+      }, 0);
+    });
   });
   // Emitted by Gravity Forms
   // Documentation: https://www.gravityhelp.com/documentation/article/gform_confirmation_loaded/#source-code
