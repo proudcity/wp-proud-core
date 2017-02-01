@@ -206,11 +206,18 @@ abstract class ProudWidget extends \WP_Widget {
     $instance = $this->addSettingDefaults($instance);
     // Widget placed in theme, so replace default values
     if( empty( $args['name'] ) ) {
-      $args['before_widget'] = sprintf( '<section class="widget %s clearfix">', str_replace( '_', '-', $this->option_name ) );
-      $args['after_widget']  = '</section>';
+      // SO widget
+      if(preg_match('/class=\".*?so-panel\ .*?\"/', $args['before_widget'])) {
+        $args['before_widget'] = str_replace( 'so-panel ', str_replace( '_', '-', $this->option_name ) . ' so-panel ', $args['before_widget'] );
+      }
+      else {
+        $args['before_widget'] = sprintf( '<section class="widget %s clearfix">', str_replace( '_', '-', $this->option_name ) );
+        $args['after_widget']  = '</section>';
+      }
       $args['before_title']  = '<h2>';
       $args['after_title']   = '</h2>';
     }
+
     // do we print??
     $has_content = $this->hasContent( $args, $instance );
     ?>
