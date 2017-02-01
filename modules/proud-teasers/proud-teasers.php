@@ -461,8 +461,11 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
 
         case 'cards':
-        case 'icons':
           $class = 'card-columns card-columns-xs-1 card-columns-sm-2 card-columns-md-3 card-columns-equalize';
+          break;
+
+        case 'icons':
+          $class = 'card-columns card-columns-xs-2 card-columns-md-3 card-columns-equalize';
           break;
       }
 
