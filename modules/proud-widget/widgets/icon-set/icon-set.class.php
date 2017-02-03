@@ -15,9 +15,9 @@ use Proud\Core;
 if ( ! class_exists( 'IconSet' ) ) :
 
 /**
- * Create Sample Helloworld 2 element
+ * Proud Icon Widget
  *
- * @package  WR PageBuilder Shortcodes
+ * @package  ProudCore
  * @since    1.0.0
  */
 class IconSet extends Core\ProudWidget {

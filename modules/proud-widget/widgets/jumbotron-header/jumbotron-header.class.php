@@ -17,7 +17,7 @@ if ( ! class_exists( 'JumbotronHeader' ) ) :
 /**
  * Create Jumbotron element
  *
- * @package  WR PageBuilder Shortcodes
+ * @package  ProudCore
  * @since    1.0.0
  */
 class JumbotronHeader extends Core\ProudWidget {
