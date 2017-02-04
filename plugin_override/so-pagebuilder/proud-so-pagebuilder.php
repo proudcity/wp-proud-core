@@ -85,6 +85,7 @@ class ProudSOPagebuilder {
     $widgets['AgencyContact']['icon'] = 'fa fa-envelope';
     $widgets['JumbotronHeader']['icon'] = 'fa fa-picture-o';
     $widgets['IconSet']['icon'] = 'fa fa-th-large';
+    $widgets['ImageSet']['icon'] = 'fa fa-th-large';
     $widgets['IconLink']['icon'] = 'fa fa-university';
     $widgets['PageTitle']['icon'] = 'fa fa-header';
 
