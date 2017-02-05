@@ -34,6 +34,12 @@ class GravityForm extends Core\ProudWidget {
         '#to_js_settings' => false,
         '#options' => $options
       ],
+      'advanced' => [
+        '#title' => 'Show advanced options',
+        '#type' => 'checkbox',
+        '#return_value' => '1',
+        '#default_value' => false
+      ],
       'dropdown' => [
         '#title' => 'Display as dropdown?',
         '#type' => 'checkbox',
@@ -41,7 +47,16 @@ class GravityForm extends Core\ProudWidget {
         '#return_value' => '1',
         '#label_above' => true,
         '#replace_title' => 'Yes',
-        '#default_value' => false
+        '#default_value' => false,
+        '#states' => [
+          'visible' => [
+            'advanced' => [
+              'operator' => '!=',
+              'value' => [false],
+              'glue' => '||'
+            ],
+          ],
+        ]
       ]
     ];
   }
