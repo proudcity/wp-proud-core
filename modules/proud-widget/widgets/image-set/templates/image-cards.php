@@ -1,4 +1,7 @@
 <?php 
+  use Proud\Core;
+
+  if( !empty($imageset) ):
   $class = ((int) $across === 3) ? 'card-columns-md-3' : 'card-columns-md-2';
 ?>
 <div class="card-columns card-columns-xs-2 card-columns-sm-2 <?php echo $class ?> card-columns-equalize">
@@ -9,8 +12,8 @@
         <div class="card-img-top text-center">
           <a href="<?php print $image['link_url'] ?>">
             <?php 
-              $meta = \Proud\Core\build_responsive_image_meta( $image['image'], 'card-thumb', 'card-thumb' ); 
-              \Proud\Core\print_responsive_image( $meta, [], true );
+              $meta = Core\build_responsive_image_meta( $image['image'], 'card-thumb', 'card-thumb' ); 
+              Core\print_responsive_image( $meta, [], true );
             ?>
           </a>
         </div>
@@ -29,3 +32,4 @@
     <?php endif; ?>
   <?php endforeach; ?>
 </div>
+<?php endif; ?>

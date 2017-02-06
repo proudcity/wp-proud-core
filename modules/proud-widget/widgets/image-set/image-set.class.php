@@ -97,6 +97,24 @@ class ImageSet extends Core\ProudWidget {
   }
 
   /**
+   * Opens list
+   */
+  public static function row_open( $current, $columns  ){
+     return $current%$columns === 0
+          ? '<div class="row">' 
+          : '';
+  }
+
+  /**
+   * Closes list
+   */
+  public static function row_close( $current, $post_count, $columns ) {
+    return ( ( $post_count - 1 ) === $current ) || ( $current%$columns === ( $columns - 1 ) )
+         ? '</div>'
+         : '';
+  }
+
+  /**
    * Generate HTML code from shortcode content.
    */
   function printWidget( $args, $instance ) {
