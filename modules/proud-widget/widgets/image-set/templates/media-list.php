@@ -5,13 +5,13 @@
   $columns = (int) $across;
   $class = $columns === 3 ? 'col-sm-4' : 'col-sm-6';
 
-  function row_open( $current, $columns  ){
+  function media_list_row_open( $current, $columns  ){
      return $current%$columns === 0
           ? '<div class="row">' 
           : '';
   }
 
-  function row_close( $current, $post_count, $columns ) {
+  function media_list_row_close( $current, $post_count, $columns ) {
     return ( ( $post_count - 1 ) === $current ) || ( $current%$columns === ( $columns - 1 ) )
          ? '</div>'
          : '';
@@ -20,7 +20,7 @@
 
 <div class="media-list">
   <?php for ( $i = 0; $i < $post_count; $i++ ) : ?>
-  <?php echo row_open( $i, $columns ); $image = $imageset[$i]; ?>
+  <?php echo media_list_row_open( $i, $columns ); $image = $imageset[$i]; ?>
     <div class="media <?php echo $class ?>">
     <?php if( !empty( $image['link_title'] ) && !empty( $image['link_url'] ) && !empty( $image['image'] ) ): ?>
       <div class="media-left">
@@ -43,6 +43,6 @@
       </div>
     <?php endif; ?>
     </div>
-  <?php echo row_close( $i, $post_count, $columns ); ?>
+  <?php echo media_list_row_close( $i, $post_count, $columns ); ?>
   <?php endfor; ?>
 </div>
