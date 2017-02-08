@@ -334,8 +334,9 @@ class Proudcore extends \ProudPlugin {
 
   // Add the to the allowed mimetypes for user file uploads
   function allowed_mimetypes($mime_types){
+    // We're still unsure what the mimetype is for json files, so we use both
     $mime_types['json'] = 'application/json';
-    $mime_types['geojson'] = 'application/json';
+    $mime_types['json1'] = 'text/plain';
     return $mime_types;
   }
 
