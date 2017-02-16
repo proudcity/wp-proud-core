@@ -50,6 +50,10 @@ if ( !class_exists( 'TeaserList' ) ) {
       $this->hide = !empty( $options['hide'] ) ?  $options['hide'] : [];
       $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
       $this->options = $options;
+      // Use specific post ids?
+      $this->specific_ids = !empty( $options['use_specific'] ) && !empty( $options['specific_ids'] ) 
+                          ? $options['specific_ids'] 
+                          : [];
 
       // Intercept search lists, set keyword
       global $proudsearch;
