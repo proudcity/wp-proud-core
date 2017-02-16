@@ -49,7 +49,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       // @todo remove hide option in favor of specific
       $this->hide = !empty( $options['hide'] ) ?  $options['hide'] : [];
       $this->columns = !empty( $options['columns'] ) ?  $options['columns'] : [];
-      $this->options = apply_filters( 'proud-teaser-options', $options );
+      $this->options = $options;
 
       // Intercept search lists, set keyword
       global $proudsearch;
@@ -57,12 +57,10 @@ if ( !class_exists( 'TeaserList' ) ) {
         // Collect get parameter
         $this->search_key = $proudsearch::_SEARCH_PARAM;
         // Add key for search
-        $args['proud_search'] = true;
+        $args['proud_teaser_search'] = true;
       }
       else {
         $this->search_key = 'filter_keyword';
-        // Add flag
-        $args['proud_teaser_query'] = true;
       }
 
       // Limit to $terms
@@ -113,10 +111,9 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
       // Sort posts
       $this->add_sort( $args );
-
       // Final build on args
       $args = array_merge( [
-        'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist() : $this->post_type, 
+        'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist(): $this->post_type,
         'post_status' => 'publish',
         'update_post_term_cache' => true, // don't retrieve post terms
         'update_post_meta_cache' => true, // don't retrieve post meta
@@ -263,14 +260,22 @@ if ( !class_exists( 'TeaserList' ) ) {
           // Hide search form in favor of search page
           $this->filters[$this->search_key]['#args']['class'] = 'hide';
           unset( $this->filters[$this->search_key]['#args']['after'] );
+          $this->filters['title'] = [
+            '#type' => 'html',
+            '#html' => '<h4 class="margin-top-none">' . __('Filters', 'wp-proud-core') . '</h4>',
+          ];
           // Add post type filter
           global $proudsearch;
-          $options = $proudsearch->search_whitelist( true );
-          $this->filters['post_type'] = [
+          $options = array_merge(
+            ['all' => __('All', 'wp-proud-core')],
+            $proudsearch->search_whitelist( true )
+          );
+          $this->filters['filter_post_type'] = [
             '#title' => __( 'Type', 'proud-teaser' ),
             '#type' => 'radios',
             '#options' => $options,
             '#description' => '',
+            '#default_value' => 'all'
           ];
           break;
 
@@ -330,6 +335,14 @@ if ( !class_exists( 'TeaserList' ) ) {
             // keyword search
             case $this->search_key:
               $args['s'] = sanitize_text_field( $req_val );
+              break;
+
+            // Post type filter
+            case 'filter_post_type':
+              $type = sanitize_text_field( $req_val );
+              if( $type !== 'all' ) {
+                $args['post_type'] = $type;
+              }
               break;
 
             // Jobs show filtered positions
@@ -435,7 +448,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           break;
 
+        // Search +  events need to filter out older content
         case 'event':
+        case 'search':
           // http://www.billerickson.net/wp-query-sort-by-meta/
           $query_key =  '_end_ts';
           // @ TODO figure out optimized query that allows 
@@ -444,25 +459,40 @@ if ( !class_exists( 'TeaserList' ) ) {
           // For now, just does specificity == beginning of day
           $time = current_time( 'timestamp' );
           $day_start = strtotime( date( 'Y-m-d', $time ) );
-          $args['orderby']    = 'meta_value_num';
-          $args['meta_key']   = $query_key;
-          $args['order']      = 'ASC';
-          $args['meta_query'] = array(
-            'relation' => 'AND',
-            array(
-                'key' => $query_key,
-                'compare' => 'EXISTS'
-            ),
-            array(
-                'key' => $query_key,
-                'compare' => '>=',
-                'value' => $day_start
-            ),
-          );
-          break;
-
-        // Don't order for search
-        case 'search':
+          // Event
+          if( $this->post_type === 'event' ) {
+            $args['orderby']    = 'meta_value_num';
+            $args['meta_key']   = $query_key;
+            $args['order']      = 'ASC';
+            $args['meta_query'] = array(
+              'relation' => 'AND',
+              array(
+                  'key' => $query_key,
+                  'compare' => 'EXISTS'
+              ),
+              array(
+                  'key' => $query_key,
+                  'compare' => '>=',
+                  'value' => $day_start
+              ),
+            );
+          }
+          // Search
+          else {
+            $args['meta_query'] = array(
+              'relation' => 'OR',
+              array(
+                  'key' => $query_key,
+                  'compare' => 'NOT EXISTS'
+              ),
+              array(
+                  'key' => $query_key,
+                  'compare' => '>=',
+                  'value' => $day_start
+              ),
+            );
+          }
+          
           break;
 
         default:

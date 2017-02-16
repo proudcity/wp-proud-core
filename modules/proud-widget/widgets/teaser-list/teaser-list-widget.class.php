@@ -61,8 +61,9 @@ class TeaserListWidget extends Core\ProudWidget {
   }
 
   function initialize() {
+    $settings = [];
     if (!$this->post_type) {
-      $this->settings['proud_teaser_content'] = [
+      $settings['proud_teaser_content'] = [
         '#title' => __('Content type', 'proud-teaser'),
         '#type' => 'select',
         '#options' => $this->postTypes(),
@@ -77,7 +78,7 @@ class TeaserListWidget extends Core\ProudWidget {
         $options = [];
         $this->taxonomy_heirarchy_options($taxonomy, $options);
         $default = count($options) > 20 ? array() : array_keys($options);
-        $this->settings['proud_teaser_terms'] = [
+        $settings['proud_teaser_terms'] = [
           '#title' => __( 'Limit to category', 'proud-teaser' ),
           '#type' => 'checkboxes',
           '#options' => $options,
@@ -89,7 +90,7 @@ class TeaserListWidget extends Core\ProudWidget {
     // Get display modes
     $display_modes = $this->displayModes();
     // Init Settings
-    $this->settings += [
+    $settings += [
       'proud_teaser_display' => [
         '#title' => __('Display style', 'proud-teaser'),
         '#type' => 'radios',
@@ -105,7 +106,7 @@ class TeaserListWidget extends Core\ProudWidget {
     ];
     // Should we display featured checkbox?
     if( !empty( $this->display_featured ) ) {
-      $this->settings += [  
+      $settings += [  
         'featured' => [
           '#type' => 'checkbox',
           '#title' => 'Featured',
@@ -125,7 +126,7 @@ class TeaserListWidget extends Core\ProudWidget {
         ]
       ];
     }
-    $this->settings += [  
+    $settings += [  
       'columns' => [
         '#type' => 'checkbox',
         '#title' => 'Columns',
@@ -200,6 +201,8 @@ class TeaserListWidget extends Core\ProudWidget {
         '#default_value' => false
       ],
     ];
+
+    $this->settings = apply_filters( 'proud_teaser_settings', $settings, $this->post_type );
   }
 
   /**
@@ -245,13 +248,13 @@ class TeaserListWidget extends Core\ProudWidget {
       !empty ( $instance['show_filters'] ),
       $terms,
       !empty( $instance['pager'] ),
-      array(
+      apply_filters( 'proud_teaser_extra_options', array(
         'featured' => ( !empty( $instance['featured'] ) ? $instance['featured'] : null ),
         'hide' => ( !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null ),
         'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null ),
         'use_specific' => ( !empty( $instance['use_specific'] ) ? $instance['use_specific'] : null ),
         'specific_ids' => ( !empty( $instance['specific_ids'] ) ? $instance['specific_ids'] : null )
-      )
+      ), $instance )
     );
     if( !empty ( $instance['show_filters'] ) ) {
       $teaser_filter_class = new TeaserFilterTracker( $instance['teaser_list'] );
