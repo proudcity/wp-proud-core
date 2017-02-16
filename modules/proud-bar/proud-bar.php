@@ -60,6 +60,7 @@ class ProudBar extends \ProudPlugin {
       return;
     }
     if ('beta' === $stage || 'demo' === $stage || 'example' === $stage || 'test' === $stage || 'testing' === $stage || 'new' === $stage) {
+      $custom_language = get_option('proud_test_language', null);
       require_once plugin_dir_path(__FILE__) . 'templates/proud-bar.php';
     }
   }
