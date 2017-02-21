@@ -61,7 +61,7 @@ class TeaserListWidget extends Core\ProudWidget {
   }
 
   function initialize() {
-    $settings = [];
+    $settings = $this->settings;
     if (!$this->post_type) {
       $settings['proud_teaser_content'] = [
         '#title' => __('Content type', 'proud-teaser'),
