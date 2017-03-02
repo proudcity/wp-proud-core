@@ -66,6 +66,12 @@ class IconSet extends Core\ProudWidget {
             '#default_value' => '',
             '#description' => 'The icon to use for the icon box.',
             '#to_js_settings' => false,
+          ],
+          'external' => [
+            '#type' => 'checkbox',
+            '#title' => 'Open in new tab',
+            '#return_value' => '1',
+            '#default_value' => false
           ]
         ),
       )
