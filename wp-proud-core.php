@@ -265,10 +265,9 @@ class Proudcore extends \ProudPlugin {
         $dirname = dirname( $image_meta['file'] );
         
         if ( $dirname !== '.' ) {
-          $image_baseurl = trailingslashit( $baseurl ) . $dirname; 
+          $image_baseurl = trailingslashit( trailingslashit( $baseurl ) . $dirname ); 
         }
       }
-      $image_baseurl = trailingslashit( $image_baseurl );
       // Full meta information
       foreach( $sizes as $size ) { 
         // check whether our custom image size exists in image meta 
@@ -277,15 +276,17 @@ class Proudcore extends \ProudPlugin {
           if( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
             $url = $media_meta_full['sizes'][$size]['gs_link'];
           }
-          else {
+          else if( isset( $image_baseurl ) ) {
             $url = $image_baseurl .  $image_meta['sizes'][$size]['file'];
           }
           // add source value to create srcset
-          $sources[ $image_meta['sizes'][$size]['width'] ] = array(
-            'url'        => $url,
-            'descriptor' => 'w',
-            'value'      => $image_meta['sizes'][$size]['width'],
-          );
+          if( $url ) {
+            $sources[ $image_meta['sizes'][$size]['width'] ] = array(
+              'url'        => $url,
+              'descriptor' => 'w',
+              'value'      => $image_meta['sizes'][$size]['width'],
+            );
+          }
         }
       }
     }
