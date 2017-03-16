@@ -20,6 +20,7 @@ class FullcalendarWidget extends Core\ProudWidget {
     */
     function initialize() {
         $settings = $this->settings;
+        $this->post_type = 'event';
         $options = [];
 
         $categories = get_categories( [
