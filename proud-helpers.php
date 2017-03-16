@@ -380,7 +380,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
     ));
   }
   
-  $pattern = "/(^|\n)([a-zA-Z\ \-\.]+?)\:\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p.m.))/";
+  $pattern = "/(^|\n)([a-zA-Z\ \-\.]+?)\:\s+?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))/";
   $matches = array();
   $result = preg_match_all($pattern, $string, $matches, PREG_OFFSET_CAPTURE);
 
