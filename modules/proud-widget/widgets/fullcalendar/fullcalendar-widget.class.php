@@ -19,7 +19,30 @@ class FullcalendarWidget extends Core\ProudWidget {
     * @return  void
     */
     function initialize() {
-        
+        $settings = $this->settings;
+        $options = [];
+
+        $categories = get_categories( [
+          'type' => $this->post_type, 
+          'taxonomy' => 'event-categories', 
+          'hide_empty' => 0,
+          'depth' => 0,
+        ]);
+        if( !empty( $categories ) && empty( $categories['errors'] ) ) {
+          foreach ($categories as $cat) {
+            $options[$cat->term_id] = $cat->name;
+          };
+        }
+        $default = count($options) > 20 ? array() : array_keys($options);
+        $settings['categories'] = [
+          '#title' => __( 'Limit to category', 'proud-teaser' ),
+          '#type' => 'checkboxes',
+          '#options' => $options,
+          '#default_value' => $default,
+          '#description' => ''
+        ];
+
+        $this->settings = apply_filters( 'proud_teaser_settings', $settings, $this->post_type );
     }
 
     /**
@@ -42,6 +65,9 @@ class FullcalendarWidget extends Core\ProudWidget {
      */
     public function printWidget( $args, $instance ) {
         extract($instance);
+        if ( !empty($categories) ) {
+            $args['event-categories'] = implode(',', $categories);
+        }
 
         $this->enqueue_scripts();
         echo WP_FullCalendar::calendar($args);
