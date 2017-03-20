@@ -11,7 +11,7 @@ class GravityForm extends Core\ProudWidget {
     parent::__construct(
       'proud_gravity_form', // Base ID
       __( 'Form', 'wp-proud-core' ), // Name
-      array( 'description' => __( '"ProudCity Forms', 'wp-proud-core' ), ) // Args
+      array( 'description' => __( 'ProudCity Forms', 'wp-proud-core' ), ) // Args
     );
   }
 
