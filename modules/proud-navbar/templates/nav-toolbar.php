@@ -10,5 +10,5 @@
   <a id="menu-button" href="#" class="btn navbar-btn menu-button"><span class="hamburger">
     <span>toggle menu</span>
   </span></a>
-  <a title="<?php echo $search_button['title'] ?>"<?php if( $search_button['data_key'] ) : ?>data-proud-navbar="<?php echo $search_button['data_key'] ?>"<?php endif; ?><?php echo $search_button['data_attrs'] ?> href="<?php echo $search_button['href'] ?>" class="<?php echo $search_button['classes'] ?>"><i class="fa <?php echo $search_button['icon'] ?>"></i> <?php $search_button['title'] ?></a>
+  <a title="<?php echo $search_button['title'] ?>" <?php if( $search_button['data_key'] ) : ?>data-proud-navbar="<?php echo $search_button['data_key'] ?>"<?php endif; ?><?php echo $search_button['data_attrs'] ?> href="<?php echo $search_button['href'] ?>" class="<?php echo $search_button['classes'] ?>"><i class="fa <?php echo $search_button['icon'] ?>"></i> <?php $search_button['title'] ?></a>
 </div>
