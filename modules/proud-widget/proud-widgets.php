@@ -42,7 +42,7 @@ function proud_shortcode($atts) {
 
   if ( !is_a( $wp_widget_factory->widgets[$widget_name], 'ProudWidget') ) {
     // Try to get instance info
-    $instance = !empty($instance) ? str_ireplace("&amp;", '&' ,$instance) : [];
+    $instance = !empty($atts) ? str_ireplace("&amp;", '&' ,$atts) : [];
     ob_start();
     // Print widget
     the_widget($widget_name, $instance, array('widget_id'=>'arbitrary-instance-' . strtolower($widget_name) ) );
