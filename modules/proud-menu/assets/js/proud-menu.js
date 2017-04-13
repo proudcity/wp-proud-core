@@ -44,7 +44,7 @@
 
       self.alterClass = function(level) {
         $slider.removeClass(function (index, css) {
-            return (css.match (/level-[0-9]-active/g) || []).join(' ');
+            return (css.match (/level-[0-9]+-active/g) || []).join(' ');
         }).addClass('level-' + level + '-active');
       }
 
