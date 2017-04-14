@@ -38,7 +38,7 @@ class DocumentWidget extends Core\ProudWidget {
             '#type' => 'text',
             //'#options' => $documents,
             '#default_value' => '',
-            '#description' => __( '<a href="/wp-admin/edit.php?post_type=document" target="_blank">Find the document</a> to embed, and enter the URL to the document edit page, or the document ID above.', 'wp-proud-core' ),
+            '#description' => __( '<a href="/wp-admin/edit.php?post_type=document" target="_blank">Find the document</a> to embed, and enter the URL to the document edit page (for example, '. get_site_url() .'/wp-admin/post.php?post=11060&action=edit), or the document ID above.', 'wp-proud-core' ),
           ),
         );
     }
