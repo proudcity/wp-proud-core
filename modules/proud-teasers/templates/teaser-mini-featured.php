@@ -5,6 +5,6 @@
   </div>
   <?php endif; ?>
   <?php the_title( sprintf( '<h4 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h4>' ); ?>
-  <p class="muted margin-bottom-none"><?php echo __('Posted on', 'wp-proud-core') ?> <?php echo get_the_date(); ?></p>
+  <p class="text-muted margin-bottom-none"><?php echo __('Posted on', 'wp-proud-core') ?> <?php echo get_the_date(); ?></p>
   <p class="featured-caption"><?php echo \Proud\Core\wp_trim_excerpt( '', true, false, 15 ); ?></p>
 </li>
