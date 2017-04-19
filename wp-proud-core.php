@@ -14,6 +14,7 @@ namespace Proud\Core;
 define('PROUDCITY_API', 'https://rest.proudcity.com/v1');
 //define('PROUDCITY_API', 'http://localhost:4000/v1');
 define('MY_PROUDCITY', 'https://my.proudcity.com');
+define( 'PRODCITYCITY_API_URL', 'https://city-api.proudcity.com/v1' );
 
 // Load Extendibles
 // -----------------------
@@ -107,7 +108,7 @@ class Proudcore extends \ProudPlugin {
     $this->addJsSettings(array('global' => array(
       'proudcity_api' => PROUDCITY_API,
       'proudcity_dashboard' => MY_PROUDCITY,
-      'proudcity_site_id' => str_replace( array('http://', 'https://'), '', $url ),
+      'proudcity_site_id' => getenv('PROUDCITY_APP'),
       'url' => $url,
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
