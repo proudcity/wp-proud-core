@@ -39,7 +39,7 @@
     "tag": "v0.45.1",
     "commit": "6ffc10db3980a75f6ef3fae822398ed0898c2e0b"
   },
-  "_source": "git://github.com/domoritz/leaflet-locatecontrol.git",
+  "_source": "https://github.com/domoritz/leaflet-locatecontrol.git",
   "_target": "~0.45.1",
   "_originalSource": "leaflet.locatecontrol"
 }

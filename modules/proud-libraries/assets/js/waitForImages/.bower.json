@@ -31,7 +31,7 @@
     "tag": "2.1.0",
     "commit": "54cd2f4669e60787e436a1ccf74d295a0b04b2c5"
   },
-  "_source": "git://github.com/alexanderdickson/waitForImages.git",
+  "_source": "https://github.com/alexanderdickson/waitForImages.git",
   "_target": "~2.1.0",
   "_originalSource": "waitForImages"
 }

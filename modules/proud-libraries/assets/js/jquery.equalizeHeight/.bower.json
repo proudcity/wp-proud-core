@@ -24,11 +24,11 @@
   "dependencies": {
     "waitForImages": "~2.1.0"
   },
-  "_release": "918b739e04",
+  "_release": "b5c9c6df01",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "918b739e040d0c582f043c40d22c2fcbd38403d0"
+    "commit": "b5c9c6df018956ef957ada59e2e6d7890a5b87aa"
   },
   "_source": "git@github.com:aschmoe/jquery.equalizeHeight.git",
   "_target": "master",
