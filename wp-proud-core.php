@@ -108,7 +108,7 @@ class Proudcore extends \ProudPlugin {
     $this->addJsSettings(array('global' => array(
       'proudcity_api' => PROUDCITY_API,
       'proudcity_dashboard' => MY_PROUDCITY,
-      'proudcity_site_id' => getenv('PROUDCITY_APP'),
+      'proudcity_site_id' => getenv('APP'),
       'url' => $url,
       'location' => array(
         'city' => get_option( 'city', 'Huntsville' ),
