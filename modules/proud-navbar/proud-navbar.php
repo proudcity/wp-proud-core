@@ -324,7 +324,7 @@ function print_proud_navbar_footer() {
         do_action( 'proud_navbar_overlay_311', true );
       ?>
     </div>
-    <a id="overlay-311-close" href="#" class="proud-overlay-close close-311"><i class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
+    <a id="overlay-311-close" href="#" class="proud-overlay-close close-311"><i aria-hidden="true" class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
   </div>
   <div id="overlay-search" class="proud-overlay proud-overlay-right">
     <div class="container">
@@ -333,7 +333,7 @@ function print_proud_navbar_footer() {
         do_action( 'proud_navbar_overlay_search' );
       ?>
     </div>
-    <a id="overlay-search-close" href="#" class="proud-overlay-close close-search"><i class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
+    <a id="overlay-search-close" href="#" class="proud-overlay-close close-search"><i aria-hidden="true" class="fa fa-times fa-2x"></i><span class="sr-only">Close window</span></a>
   </div>
   <?php
 }

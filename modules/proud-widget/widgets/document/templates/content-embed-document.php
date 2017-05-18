@@ -24,8 +24,8 @@ if ( !empty($form_id) ) {
 ?>
 
 <h2 style="max-width:600px;">
-  <i class="fa fa-fw <?php echo Document\get_document_icon( $id ) ?>"></i>
-  <a href="<?php echo $src; ?>" class="btn btn-primary btn-sm pull-right" download="<?php echo $filename; ?>"><i class="fa fa-download"></i> Download</a>
+  <i aria-hidden="true" class="fa fa-fw <?php echo Document\get_document_icon( $id ) ?>"></i>
+  <a href="<?php echo $src; ?>" class="btn btn-primary btn-sm pull-right" download="<?php echo $filename; ?>"><i aria-hidden="true" class="fa fa-download"></i> Download</a>
   <a href="<?php echo get_permalink( $id ); ?>"><?php echo get_the_title( $id ); ?></a>
 </h2>
 

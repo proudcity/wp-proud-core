@@ -8,7 +8,7 @@
         // Are we a weight-based or key based repeating field? 
         if( empty( $field['#keyed'] ) ): 
       ?>
-      <div class="pull-right" style="cursor: move;cursor: grab;cursor: -moz-grab;cursor: -webkit-grab;"><i class="fa fa-arrows handle"></i></div>
+      <div class="pull-right" style="cursor: move;cursor: grab;cursor: -moz-grab;cursor: -webkit-grab;"><i aria-hidden="true" class="fa fa-arrows handle"></i></div>
       <?php endif; ?>
     </h4>
   </div>
