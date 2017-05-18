@@ -84,7 +84,7 @@ class GravityForm extends Core\ProudWidget {
     // Displaying as dropdown
     if( !empty( $dropdown ) ) { 
     ?>
-      <a href="#" id="sub-dropdown" data-toggle="dropdown"><i class="fa fa-fw fa-envelope"></i>Subscribe <!--<span class="caret"></span>--></a>
+      <a href="#" id="sub-dropdown" data-toggle="dropdown"><i aria-hidden="true" class="fa fa-fw fa-envelope"></i>Subscribe <!--<span class="caret"></span>--></a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="sub-dropdown">
         <li style="padding: 10px 15px;"><?php echo $form ?></li>
       </ul>

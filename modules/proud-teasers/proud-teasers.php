@@ -216,7 +216,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           '#title' => __( 'Search Keywords', 'proud-teaser' ),
           '#args' => array(
             'placeholder' => __( 'Search Keywords', 'proud-teaser' ),
-            'after' => '<i class="fa fa-search form-control-search-icon"></i>',
+            'after' => '<i aria-hidden="true" class="fa fa-search form-control-search-icon"></i>',
           ),
           '#description' => ''
         ]

@@ -59,7 +59,7 @@ class IconLink extends Core\ProudWidget {
   public function printWidget( $args, $instance ) {
     ?>
     <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block" <?php if($instance['external']): ?>target="_blank"<?php endif;?> >
-      <i class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
+      <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
       <h4><?php echo $instance['link_title']; ?></h4>
     </a></div>
     <?php
