@@ -6,7 +6,7 @@
 namespace Proud\Core;
 
 // Hacky copied function to produce exerpt
-function wp_trim_excerpt( $text = '', $more_link = true, $use_yoast = false, $words = false ) {
+function wp_trim_excerpt( $text = '', $more_link = false, $use_yoast = false, $words = false ) {
   $raw_excerpt = $text;
   // Try using yoast ?
   if( $use_yoast ) {
