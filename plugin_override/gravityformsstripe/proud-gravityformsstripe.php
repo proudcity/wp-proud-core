@@ -22,7 +22,7 @@ class ProudGravityformsStripe {
             $charge_meta['transfer_group'] = $form['title'];
 
             // Add the ProudCity Payments fee
-            $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? parseFloat(getenv('PROUDCITY_PAYMENTS_PERCENT')) : 3;
+            $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
             $charge_meta['application_fee'] = round(30 + $submission_data['payment_amount'] * $percent); // In cents
         }
 
