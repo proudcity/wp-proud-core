@@ -34,12 +34,12 @@ class ProudGravityformsStripe {
 
         return $charge_meta;
 
-        print_R($submission_data);
-        print_r($feed);
-        print_r($entry);
-        print_r($form);
-        print_r($charge_meta);
-        exit;
+        //print_R($submission_data);
+        //print_r($feed);
+        //print_r($entry);
+        //print_r($form);
+        //print_r($charge_meta);
+        //exit;
     }
 
 
