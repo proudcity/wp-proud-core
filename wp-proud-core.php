@@ -274,6 +274,8 @@ class Proudcore extends \ProudPlugin {
       foreach( $sizes as $size ) { 
         // check whether our custom image size exists in image meta 
         if( !empty( $image_meta['sizes'][$size] ) ){
+          $url = '';
+          
           // We have WP stateless option
           if( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
             $url = $media_meta_full['sizes'][$size]['gs_link'];
