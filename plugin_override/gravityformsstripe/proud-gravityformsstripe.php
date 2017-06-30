@@ -14,19 +14,23 @@ class ProudGravityformsStripe {
 
     function gform_stripe_charge_pre_create($charge_meta, $feed, $submission_data, $form, $entry) {
         $account = get_option('proudcity_payments_account', false);
+
+        // Stripe Connect stuff
         if ($account) {
+            // Set up Stripe Connect destination
             $charge_meta['destination'] = $account;
             $charge_meta['transfer_group'] = $form['title'];
+
+            // Add the ProudCity Payments fee
+            $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? parseFloat(getenv('PROUDCITY_PAYMENTS_PERCENT')) : 3;
+            $charge_meta['application_fee'] = round(30 + $submission_data['payment_amount'] * $percent); // In cents
         }
 
-        // Metadata
-        //$charge_meta['description'] = $form['title'];
+        // Add Metadata
+        $charge_meta['description'] = $form['title'];
         $charge_meta['metadata']['form_title'] = $form['title'];
         $charge_meta['metadata']['form_id'] = $form['id'];
-
-        // Add the ProudCity Payments fee
-        $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? parseFloat(getenv('PROUDCITY_PAYMENTS_PERCENT')) : 3;
-        $charge_meta['application_fee'] = round(30 + $submission_data['payment_amount'] * $percent); // In cents
+        $charge_meta['metadata']['entry_id'] = $entry['id'];
 
         return $charge_meta;
 
