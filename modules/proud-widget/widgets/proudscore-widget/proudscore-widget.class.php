@@ -41,7 +41,7 @@ class ProudScoreWidget extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     ?>
-      <a class="btn btn-default btn-sm proudscore-widget <?php if ($instance['class']) { print $instance['class']; } ?>" 
+      <a class="btn btn-default btn-sm proudscore-widget <?php if ( !empty( $instance['class'] ) ) { print $instance['class']; } ?>" 
         href="#" title="This makes me proud" 
         <?php if($instance['title']): ?>data-title="<?php print $instance['title'] ?>"<?php endif; ?> >
         <i aria-hidden="true" class="fa fa-fw fa-heart"></i> Helpful
