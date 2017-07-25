@@ -1,0 +1,48 @@
+diff --git a/class-gf-stripe.php b/class-gf-stripe.php
+index df38b77..ba3ac7e 100755
+--- a/class-gf-stripe.php
++++ b/class-gf-stripe.php
+@@ -1658,7 +1658,10 @@ class GFStripe extends GFPaymentAddOn {
+ 		$trial_period_days     = rgars( $feed, 'meta/trialPeriod' ) ? $submission_data['trial'] : null;
+ 		$currency              = rgar( $entry, 'currency' );
+ 
+-		// Get Stripe plan for feed.
++    $single_payment_amount = apply_filters( 'gform_stripe_subscription_single_payment_amount', $single_payment_amount, $payment_amount, $form, $submission_data );
++    $trial_period_days = apply_filters( 'gform_stripe_subscription_trial_period_days', $trial_period_days, $form, $submission_data );
++
++      // Get Stripe plan for feed.
+ 		$plan_id = $this->get_subscription_plan_id( $feed, $payment_amount, $trial_period_days );
+ 		$plan    = $this->get_plan( $plan_id );
+ 
+@@ -1733,7 +1736,12 @@ class GFStripe extends GFPaymentAddOn {
+ 
+ 				if ( $has_filter ) {
+ 					// Add subscription to customer.
+-					$subscription = $customer->updateSubscription( array( 'plan' => $plan->id ) );
++          if (has_filter( 'gform_stripe_update_subscription' )) {
++            $subscription = apply_filters( 'gform_stripe_update_subscription', $customer, $plan );
++          }
++          else {
++            $subscription = $customer->updateSubscription( array( 'plan' => $plan->id ) );
++          }
+ 
+ 					// Define subscription ID.
+ 					$subscription_id = $subscription->id;
+@@ -1833,8 +1841,15 @@ class GFStripe extends GFPaymentAddOn {
+ 		// Log the customer to be created.
+ 		$this->log_debug( __METHOD__ . '(): Customer meta to be created => ' . print_r( $customer_meta, 1 ) );
+ 
+-		// Create customer.
+-		$customer = \Stripe\Customer::create( $customer_meta );
++    // Create customer.
++    if (has_filter( 'gform_stripe_create_customer' )) {
++      $customer = apply_filters( 'gform_stripe_create_customer', $customer_meta );
++    }
++    else {
++      $customer = \Stripe\Customer::create( $customer_meta );
++    }
++
++
+ 
+ 		if ( has_filter( 'gform_stripe_customer_after_create' ) ) {
+ 			// Log that filter will be executed.
