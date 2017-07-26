@@ -139,11 +139,13 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
  */
 function build_responsive_image_metadata( $media_id ) {
   $media_post = get_post($media_id);
+  $title  = !empty( $media_post->post_title ) ? $media_post->post_title : $media_post->post_name;
+  $alt = get_post_meta( $media_id, '_wp_attachment_image_alt', true );
   return [
     'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
     //'class' => @todo
-    'title' => !empty($media_post->post_title) ? $media_post->post_title : null,
-    'alt' => !empty($media_post->post_content) ? $media_post->post_content : null,
+    'title' => $title,
+    'alt' => $alt ? $alt : $title,
   ];
 }
 
