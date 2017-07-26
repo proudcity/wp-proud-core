@@ -11,6 +11,7 @@ class ProudGravityformsStripe {
         add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
 
         add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
+        add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
         add_filter('gform_stripe_update_subscription', [$this, 'gform_stripe_update_subscription'], 10, 2);
 
         add_filter('gform_stripe_subscription_single_payment_amount', [$this, 'gform_stripe_subscription_single_payment_amount'], 10, 4);
@@ -55,6 +56,14 @@ class ProudGravityformsStripe {
         $customer = \Stripe\Customer::create( $customer_meta, ['stripe_account' => $account] );
         //print_r($customer);
         return $customer;
+
+    }
+
+    function gform_stripe_create_plan($plan_meta) {
+
+        $account = get_option('proudcity_payments_account', false);
+        $plan = \Stripe\Plan::create( $plan_meta, ['stripe_account' => $account] );
+        return $plan;
 
     }
 
