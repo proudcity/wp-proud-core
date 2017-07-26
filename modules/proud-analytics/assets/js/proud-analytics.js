@@ -59,21 +59,21 @@ jQuery(document).ready(function($) {
   // Gravity form submission
   var submittedBy;
   var anaylticsSubmission = function(title, action) {
-
-      ga('send', {
-        hitType: 'event',
-        eventCategory: 'Submission',
-        eventLabel: title,
-        eventAction: action,
-        eventValue: 1
-      });
-      ga('send', {
-        hitType: 'event',
-        eventCategory: 'Score',
-        eventLabel: 'Submission',
-        eventAction: action,
-        eventValue: 5
-      });
+    action = window.location.protocol + '//' + window.location.host + action;
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Submission',
+      eventLabel: title,
+      eventAction: action,
+      eventValue: 1
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Score',
+      eventLabel: 'Submission',
+      eventAction: action,
+      eventValue: 5
+    });
   }
   $('.gform_wrapper form').once('proud-analytics', function() {
     var $self = $(this);
@@ -87,7 +87,7 @@ jQuery(document).ready(function($) {
       // Allow bound click to complete
       setTimeout(function() {
         if(submittedBy !== 'Next' && submittedBy !== 'Previous') {
-          anaylticsSubmission($(this).attr('id'), $(this).attr('action'));
+          anaylticsSubmission($self.attr('id'), $self.attr('action'));
         }
       }, 0);
     });

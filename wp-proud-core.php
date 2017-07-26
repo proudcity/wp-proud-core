@@ -48,6 +48,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-job-manager/proud-w
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-gravityforms.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/e-signature/proud-e-signature.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityformsstripe/proud-gravityformsstripe.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
