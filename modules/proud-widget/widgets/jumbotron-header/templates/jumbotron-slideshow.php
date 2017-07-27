@@ -4,7 +4,9 @@
     <?php foreach($instance['slideshow'] as $key => $slide): ?>
       <div class="item<?php echo $key === 0 ? ' active' : '' ?>">
         <div class="full-image jumbotron-header-container" style="<?php print implode( '', $arr_styles ) ?>">
-          <?php Proud\Core\print_responsive_image( $slide['resp_img'], ['jumbo-image-container'] ); ?>
+          <?php if( !empty( $slide['resp_img'] ) ) {  
+            Proud\Core\print_responsive_image( $slide['resp_img'], ['jumbo-image-container'] ); 
+          } ?>
           <div class="container"><div class="full-container"><div class="full"><div class="row">
             <div class="carousel-caption">
               <?php if( !empty( $slide['slide_title'] ) ): ?>

@@ -48,7 +48,7 @@ class FontSize extends Core\ProudWidget {
   public function printWidget( $args, $instance ) {
     ?>
     <!--<div class="dropdown font-size">-->
-      <a href="#" id="font-size" data-toggle="dropdown"><i class="fa fa-fw fa-font"></i>Size <!--<span class="caret"></span>--></a>
+      <a href="#" id="font-size" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-fw fa-font"></i>Size</a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="font-size">
         <li><a href="#" title="Increase Font Size" class="increaseFont"><i aria-hidden="true" class="fa fa-font"></i><sup>+</sup></a></li>
         <li><a href="#" title="Reset Font Size" class="resetFont">Reset</a></li>

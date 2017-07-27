@@ -131,3 +131,7 @@ function gform_admin_css_dequeue() {
   }
 }
 add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\gform_admin_css_dequeue', 100 );
+
+
+// Enable ability to controll label visibility
+add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );

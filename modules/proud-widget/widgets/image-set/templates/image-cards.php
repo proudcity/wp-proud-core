@@ -19,11 +19,11 @@
         </div>
         <?php endif; ?>
         <div class="card-block">
-          <h3 class="margin-top-none">
+          <div class="h3 margin-top-none">
             <a href="<?php print $image['link_url'] ?>">
               <?php print $image['link_title'] ?>
             </a>
-          </h3>
+          </div>
           <?php if( !empty( $image['text'] ) ): ?>
           <p class="margin-bottom-none"><?php echo $image['text']; ?></p>
           <?php endif; ?>

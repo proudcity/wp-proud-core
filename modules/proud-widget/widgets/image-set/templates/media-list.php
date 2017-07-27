@@ -24,11 +24,11 @@
         <?php endif; ?>
       </div>
       <div class="media-body">
-        <h3 class="media-heading">
+        <div class="h3 media-heading">
           <a href="<?php print $image['link_url'] ?>">
             <?php print $image['link_title'] ?>
           </a>
-        </h3>
+        </div>
         <p><?php echo ( !empty( $image['text'] ) ? $image['text'] : '&nbsp' ) ?></p>
       </div>
     <?php endif; ?>
