@@ -39,8 +39,9 @@ class ProudSOPagebuilder {
     unset($widgets['WP_Widget_Recent_Posts']);
     unset($widgets['WP_Widget_Categories']);
     //unset($widgets['WP_Widget_Text']);
-    $widgets['WP_Widget_Text']['title'] = 'Code or iFrame embed';
-    $widgets['WP_Widget_Text']['icon'] = 'fa fa-code';
+    $widgets['WP_Widget_Custom_HTML']['title'] = 'Code or iFrame embed';
+    $widgets['WP_Widget_Custom_HTML']['icon'] = 'fa fa-code';
+    unset($widgets['WP_Widget_Text']);
     unset($widgets['WP_Widget_Search']);
     unset($widgets['WP_Widget_Meta']);
     unset($widgets['WP_Widget_Archives']);
