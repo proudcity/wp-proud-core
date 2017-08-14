@@ -7,7 +7,7 @@
   $(document).ready( function(){
 
     // Extend the WP backbone model for the image button
-    if (window.wp.media && window.wp.media.view && window.wp.media.view.Button) {
+    if (window.wp && window.wp.media && window.wp.media.view && window.wp.media.view.Button) {
       window.wp.media.view.Button = window.wp.media.view.Button.extend({
         // Save orig
         oldInitialize: window.wp.media.view.Button.prototype.initialize,
