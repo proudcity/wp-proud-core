@@ -18,6 +18,9 @@ class PostTeaserListWidget extends TeaserListWidget {
     $this->post_type = 'post';
     $this->display_featured = true;
     $this->display_modes = [ 'list', 'media', 'mini', 'cards' ];
+
+    // Sort options
+    $this->display_sort = true;
   }
 }
 
@@ -34,6 +37,8 @@ class EventTeaserListWidget extends TeaserListWidget {
     $this->post_type = 'event';
     $this->display_featured = true;
     $this->display_modes = [ 'list', 'media', 'mini' ];
+
+    // @TODO sort seems like events you wouldn't really want to?
   }
 }
 
@@ -49,6 +54,14 @@ class DocumentTeaserListWidget extends TeaserListWidget {
 
     $this->post_type = 'document';
     $this->display_modes = [ 'list', 'cards', 'table', 'mini' ];
+
+    // Sort options
+    $this->display_sort = true;
+    $this->sort_by_options += [
+      'menu_order' => 'Menu Order',
+    ];
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
   }
 
   function initialize() {
@@ -90,6 +103,8 @@ class JobTeaserListWidget extends TeaserListWidget {
 
     $this->post_type = 'job_listing';
     $this->display_modes = [ 'list', 'mini', 'table' ];
+
+    // @TODO sort?
   }
 }
 
@@ -104,6 +119,8 @@ class ContactTeaserListWidget extends TeaserListWidget {
     );
     $this->post_type = 'staff-member';
     $this->display_modes = [ 'list', 'table' ];
+
+    // @TODO sort... seems like by name would only be useful if we had last name capability
   }
 
   function initialize() {
@@ -146,6 +163,15 @@ class AgencyTeaserListWidget extends TeaserListWidget {
 
     $this->post_type = 'agency';
     $this->display_modes = [ 'cards', 'media', 'icons', 'table' ];
+
+    // Sort options
+    $this->display_sort = true;
+    $this->sort_by_options += [
+      'menu_order' => 'Menu Order',
+    ];
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
+
   }
 
   function initialize() {
@@ -247,6 +273,14 @@ class QuestionTeaserListWidget extends TeaserListWidget {
     
     $this->post_type = 'question';
     $this->display_modes = [ 'list', 'accordion' ];
+
+    // Sort options
+    $this->display_sort = true;
+    $this->sort_by_options += [
+      'menu_order' => 'Menu Order',
+    ];
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
   }
 
   function initialize() {

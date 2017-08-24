@@ -15,6 +15,15 @@ class TeaserListWidget extends Core\ProudWidget {
   public $built_instance = []; // for pre-running widget in case of filter
   public $child_class; // the actual classname of class
 
+  // Sort options
+  public $display_sort = false;
+  public $sort_by_options = [
+    'date' => 'Post Date',
+    'title' => 'Alphabetical (Title)',
+  ];
+  public $sort_by_default = 'date'; // Sort by
+  public $sort_order_default = 'DESC'; // Sort direction
+
   function __construct( $base_id = false, $name = false, $description = false, $child_class = false ) {
     parent::__construct(
       $base_id ? $base_id : 'proud_teaser_list', // Base ID
@@ -102,8 +111,30 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'Number of posts to show',
         '#description' => 'Set to 0 to show all posts',
         '#default_value' => 3
-      ]
+      ],
     ];
+    // Sort (only display for )?
+    if ( !empty( $this->display_sort ) ) {
+      $settings += [
+        'sort_by' => [
+          '#title' => __('Sort By', 'proud-teaser'),
+          '#type' => 'radios',
+          '#description' => 'Set what the list will be sorted by.',
+          '#options' => $this->sort_by_options,
+          '#default_value' => $this->sort_by_default,
+        ],
+        'sort_order' => [
+          '#title' => __('Sort Order', 'proud-teaser'),
+          '#type' => 'radios',
+          '#description' => 'Ascending is A->Z, 0->10, Old->New.',
+          '#options' => [
+            'ASC' => 'Ascending',
+            'DESC' => 'Descending',
+          ],
+          '#default_value' => $this->sort_order_default,
+        ],
+      ];
+    }
     // Should we display featured checkbox?
     if( !empty( $this->display_featured ) ) {
       $settings += [  
@@ -249,6 +280,8 @@ class TeaserListWidget extends Core\ProudWidget {
       $terms,
       !empty( $instance['pager'] ),
       apply_filters( 'proud_teaser_extra_options', array(
+        'sort_by' => ( !empty( $instance['sort_by'] ) ? $instance['sort_by'] : null ),
+        'sort_order' => ( !empty( $instance['sort_order'] ) ? $instance['sort_order'] : null ),
         'featured' => ( !empty( $instance['featured'] ) ? $instance['featured'] : null ),
         'hide' => ( !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null ),
         'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null ),

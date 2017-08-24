@@ -114,7 +114,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->process_pagination( $args );
       }
       // Sort posts
-      $this->add_sort( $args );
+      $this->add_sort( $args, $options );
       // Final build on args
       $args = array_merge( [
         'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist(): $this->post_type,
@@ -416,9 +416,24 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Adds user-defined sort
+     */
+    private function apply_user_sort( &$args, $options ) {
+      // @TODO add processing for post types?  Add jobs, events?
+      $args['orderby'] = $options['sort_by'];
+      $args['order']   = $options['sort_order'];
+    }
+
+    /**
      * Adds sort
      */
-    private function add_sort(&$args) {
+    private function add_sort( &$args, $options ) {
+
+      // Have user defined sort?
+      if( !empty( $options['sort_by'] ) && !empty( $options['sort_order'] ) ) {
+        $this->apply_user_sort( $args, $options );
+        return;
+      }
 
       switch( $this->post_type ) {
         case 'post':
