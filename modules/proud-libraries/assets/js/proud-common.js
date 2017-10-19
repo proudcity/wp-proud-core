@@ -5,6 +5,28 @@
     jQuery.fn.addBack = jQuery.fn.andSelf;
   }
 
+  // Placeholder watch function
+  Proud.behaviors.shadowWatch = {
+    attach: function() {
+      $('[data-shadow-watch]').once('shadow-watch', function() {
+        var $shadow = $(this);
+        $shadow.prev().each(function() {
+          var toWatch = this;
+          var checkingCount = 0;
+          var checkingShadow = setInterval(function() {
+            console.log(toWatch.offsetHeight);
+            // Check if we have (arbitrary) height yet
+            if (toWatch.offsetHeight > 20 || checkingCount > 20) {
+              clearInterval(checkingShadow);
+              $shadow.remove();
+            }
+            checkingCount++;
+          }, 10);
+        });
+      });
+    }
+  }
+
   Proud.behaviors.height_equalize = {
     attach: function(context, settings) {
       // Run height equalizer
