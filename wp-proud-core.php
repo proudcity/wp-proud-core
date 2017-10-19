@@ -90,7 +90,6 @@ class Proudcore extends \ProudPlugin {
     // Add to allowed mimetypes
     add_filter('upload_mimes', array( $this, 'allowed_mimetypes'), 1, 1);
 
-
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
     add_shortcode( 'slogan', array($this, 'shortcode_slogan') );
@@ -129,6 +128,18 @@ class Proudcore extends \ProudPlugin {
     )));
     self::$libraries = new ProudLibaries;
     self::$layout = new \ProudLayout;
+
+    // Remove unecessary actions
+    // from http://cubiq.org/clean-up-and-optimize-wordpress-for-your-next-theme
+    remove_action( 'wp_head', 'rsd_link' );
+    remove_action( 'wp_head', 'wlwmanifest_link' );
+    remove_action( 'wp_head', 'wp_shortlink_wp_head' );
+    remove_action( 'wp_head', 'wp_generator' );
+    add_filter('the_generator', '__return_false');
+    remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10 );
+    // Emojis
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
   }
 
   // Load common libraries
