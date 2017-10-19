@@ -170,7 +170,7 @@ function get_nav_button_options( $display ) {
 
   if( !empty( $active_buttons['payments'] ) ) {
     $action_buttons['payments'] = apply_filters( 'proud_nav_button_options', [
-      'title' => 'Payments',
+      'title' => get_option('payments_label', 'Payment') . 's',
       'data_key' => 'payments',
       'href' => '#',
       'classes' => 'btn navbar-btn payments-button',
@@ -319,8 +319,8 @@ function print_proud_navbar_footer() {
   ?>
   <div id="overlay-311" class="proud-overlay proud-overlay-left">
     <div class="container">
-      <?php 
-        // Print 311 in overlay? 
+      <?php
+        // Print 311 in overlay?
         do_action( 'proud_navbar_overlay_311', true );
       ?>
     </div>
@@ -328,7 +328,7 @@ function print_proud_navbar_footer() {
   </div>
   <div id="overlay-search" class="proud-overlay proud-overlay-right">
     <div class="container">
-      <?php 
+      <?php
         // Print search in overlay?
         do_action( 'proud_navbar_overlay_search' );
       ?>
