@@ -364,6 +364,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
   $type_matches = array();
   if (preg_match_all($pattern, $string, $type_matches, PREG_OFFSET_CAPTURE)) {
     $labels = array();
+    //print_r($type_matches[0]);
     foreach ($type_matches[0] as $item) {
       array_push($labels, array(
         'label' => trim($item[0]),
@@ -385,13 +386,22 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
   $pattern = "/(^|\n)([a-zA-Z\ \-\.]+?)\:\s+?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))/";
   $matches = array();
   $result = preg_match_all($pattern, $string, $matches, PREG_OFFSET_CAPTURE);
+  $status = null;
 
   //print_r($result);
   //print_r($matches);
 
   // Cycles though all of the valid days
   for ($i = 0; $i < $result; $i++) {
-    
+
+    // This allows us to support lunch breaks like:
+    // Monday - Friday: 8:00am - 12:00pm
+    // Monday - Friday: 1:00pm - 5:00pm
+    if ($status == 1 || $status == 3) {
+      continue;
+    }
+
+
     // Do lots of clean up on the day of the week to support ranges
     $day = trim($matches[2][$i][0]);
     $day = str_replace($days, $nums, $day);
@@ -437,6 +447,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
       for ($j = count($labels)-1; $j >= 0; $j--) {
         if ( $labels[$j]['index'] <= $matches[0][$i][1] && !$found) {
           $labels[$j]['value'] = $status;
+          //print_r('status'.$status);
           $found = true;
         }
       }

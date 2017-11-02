@@ -434,6 +434,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
             );
           ?>
           <div class="<?php echo $field['#type'] ?>">
+            <input value="0" name="<?php echo $field['#name'];?>" type="hidden">
           <?php
           $this->printOptionBox(
             $field['#type'], 

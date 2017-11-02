@@ -90,7 +90,6 @@ class Proudcore extends \ProudPlugin {
     // Add to allowed mimetypes
     add_filter('upload_mimes', array( $this, 'allowed_mimetypes'), 1, 1);
 
-
     // Shortcodes
     add_shortcode( 'sitename', array($this, 'shortcode_sitename') );
     add_shortcode( 'slogan', array($this, 'shortcode_slogan') );
@@ -129,6 +128,18 @@ class Proudcore extends \ProudPlugin {
     )));
     self::$libraries = new ProudLibaries;
     self::$layout = new \ProudLayout;
+
+    // Remove unecessary actions
+    // from http://cubiq.org/clean-up-and-optimize-wordpress-for-your-next-theme
+    remove_action( 'wp_head', 'rsd_link' );
+    remove_action( 'wp_head', 'wlwmanifest_link' );
+    remove_action( 'wp_head', 'wp_shortlink_wp_head' );
+    remove_action( 'wp_head', 'wp_generator' );
+    add_filter('the_generator', '__return_false');
+    remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10 );
+    // Emojis
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
   }
 
   // Load common libraries
@@ -234,25 +245,31 @@ class Proudcore extends \ProudPlugin {
   // Add our other responsive stlyes if needed
   public function calculate_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
 
+    if (empty( $sources )) {
+      return $sources;
+    }
+
+    // Builds full responsive array
+    // @TODO this might be outdated since wp-stateless 2
     // We have only 1 source @ our full-screen size add medium, medium_large, large
     // See:
     // https://developer.wordpress.org/reference/functions/wp_calculate_image_srcset/
     // https://www.developersq.com/add-custom-srcset-values-for-responsive-images-wordpress/
-    if( !empty( $sources ) && count( $sources ) === 1 ) {
+    if (count( $sources ) === 1 ) {
       $sizes = [];
       $source_size = key( $sources );
-      if( $source_size >= 1024 ) {
+      if ( $source_size >= 1024 ) {
         $sizes = ['large', 'medium_large', 'medium'];
       }
       else if ( $source_size >= 768 ) {
         $sizes = ['medium_large', 'medium'];
       }
       // No need to process
-      if( empty( $sizes ) ) {
+      if ( empty( $sizes ) ) {
         return;
       }
       // Try to grab stateless meta options
-      if( preg_match('/\/\/storage\.googleapis\.com/i', $image_src ) && isset( $sources[$source_size]['url'] ) ) {
+      if ( preg_match('/\/\/storage\.googleapis\.com/i', $image_src ) && isset( $sources[$source_size]['url'] ) ) {
         $sources[$source_size]['url'] = $image_src;
         $media_meta_full = wp_get_attachment_metadata( $attachment_id );
       }
@@ -272,20 +289,20 @@ class Proudcore extends \ProudPlugin {
         }
       }
       // Full meta information
-      foreach( $sizes as $size ) { 
+      foreach ( $sizes as $size ) {
         // check whether our custom image size exists in image meta 
-        if( !empty( $image_meta['sizes'][$size] ) ){
+        if ( !empty( $image_meta['sizes'][$size] ) ){
           $url = '';
           
           // We have WP stateless option
-          if( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
+          if ( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
             $url = $media_meta_full['sizes'][$size]['gs_link'];
           }
-          else if( isset( $image_baseurl ) ) {
+          else if ( isset( $image_baseurl ) ) {
             $url = $image_baseurl .  $image_meta['sizes'][$size]['file'];
           }
           // add source value to create srcset
-          if( $url ) {
+          if ( $url ) {
             $sources[ $image_meta['sizes'][$size]['width'] ] = array(
               'url'        => $url,
               'descriptor' => 'w',
@@ -295,7 +312,7 @@ class Proudcore extends \ProudPlugin {
         }
       }
     }
-    //return sources with new srcset value
+
     return $sources;
   }
 
