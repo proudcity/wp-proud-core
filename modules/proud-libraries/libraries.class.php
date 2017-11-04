@@ -117,7 +117,6 @@ class ProudLibaries {
         'angular' => $path . 'angular/angular.min.js'
       ],
       'js_footer' => true,
-      'deps' => ['lodash']
     ];
 
     // Angular core has sanitize, resource, bindonce
