@@ -1,0 +1,14 @@
+{
+  "name": "lodash-compat",
+  "homepage": "https://github.com/lodash/lodash-compat",
+  "version": "3.10.2",
+  "_release": "3.10.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "3.10.2",
+    "commit": "6e9a556031859db63cb872718e4127c2f251d762"
+  },
+  "_source": "https://github.com/lodash/lodash-compat.git",
+  "_target": "~3.10.1",
+  "_originalSource": "lodash-compat"
+}

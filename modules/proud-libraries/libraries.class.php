@@ -23,7 +23,7 @@ class ProudLibaries {
       'title' => 'Lodash',
       'website' => 'http://getproudcity.com',
       'js' => [
-        'lodash' => $path . 'lodash/lodash.min.js'
+        'lodash' => $path . 'lodash-compat/lodash.min.js'
       ],
       'deps' => ['underscore'],
       'js_footer' => true
