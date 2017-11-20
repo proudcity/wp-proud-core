@@ -97,6 +97,9 @@ class Proudcore extends \ProudPlugin {
     add_shortcode( 'title', array($this, 'shortcode_title') );
     add_shortcode( 'featured-image', array($this, 'shortcode_featured_image') );
 
+    // Set cookie lifetime
+    add_filter('auth_cookie_expiration', array($this, 'cookieExpiration'), 99, 3);
+
     // -- ReST tweaks
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
@@ -177,6 +180,21 @@ class Proudcore extends \ProudPlugin {
     </script>
     <?php
   }
+
+
+  // Set expiration time
+  // https://stackoverflow.com/a/21356746
+  function cookieExpiration($seconds, $user_id, $remember){
+    // 14 days
+    $expiration = 14*24*60*60;
+    //http://en.wikipedia.org/wiki/Year_2038_problem
+    if ( PHP_INT_MAX - time() < $expiration ) {
+        //Fix to a little bit earlier!
+        $expiration =  PHP_INT_MAX - time() - 5;
+    }
+    return $expiration;
+  }
+
 
   // Add REST API support to an already registered post types
   public function restPostSupport() {
