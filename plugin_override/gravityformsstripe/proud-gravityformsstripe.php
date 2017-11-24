@@ -12,6 +12,7 @@ class ProudGravityformsStripe {
 
         add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
         add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
+        add_filter('gform_stripe_get_plan', [$this, 'gform_stripe_get_plan'], 10, 1);
         add_filter('gform_stripe_update_subscription', [$this, 'gform_stripe_update_subscription'], 10, 2);
 
         add_filter('gform_stripe_subscription_single_payment_amount', [$this, 'gform_stripe_subscription_single_payment_amount'], 10, 4);
@@ -67,11 +68,45 @@ class ProudGravityformsStripe {
 
     }
 
+    function gform_stripe_get_plan($plan_id) {
+
+        try {
+
+            // Get Stripe plan.
+            $account = get_option('proudcity_payments_account', false);
+            $plan = \Stripe\Plan::retrieve( $plan_id, ['stripe_account' => $account] );
+
+        } catch ( \Exception $e ) {
+
+            /**
+             * There is no error type specific to failing to retrieve a subscription when an invalid plan ID is passed. We assume here
+             * that any 'invalid_request_error' means that the subscription does not exist even though other errors (like providing
+             * incorrect API keys) will also generate the 'invalid_request_error'. There is no way to differentiate these requests
+             * without relying on the error message which is more likely to change and not reliable.
+             */
+
+            // Get error response.
+            $response = $e->getJsonBody();
+
+            // If error is an invalid request error, return error message.
+            if ( rgars( $response, 'error/type' ) !== 'invalid_request_error' ) {
+                $plan = $this->authorization_error( $e->getMessage() );
+            } else {
+                $plan = false;
+            }p
+
+        }
+
+        return $plan;
+
+    }
+
+
     function gform_stripe_update_subscription($customer, $plan) {
 
         $account = get_option('proudcity_payments_account', false);
         $subscription = $customer->updateSubscription( array( 'plan' => $plan->id ), ['stripe_account' => $account] );
-        //print_R($subscription);
+        print_R($subscription);exit;
         return $subscription;
 
     }
@@ -94,7 +129,7 @@ class ProudGravityformsStripe {
             return ceil($daysTilNextMonth);
         }
 
-        return $trial_period_days;
+        return $trial_period_days+1;
 
     }
 
