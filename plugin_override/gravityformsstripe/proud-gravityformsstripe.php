@@ -93,7 +93,7 @@ class ProudGravityformsStripe {
                 $plan = $this->authorization_error( $e->getMessage() );
             } else {
                 $plan = false;
-            }p
+            }
 
         }
 
