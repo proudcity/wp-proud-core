@@ -35,7 +35,7 @@ class ProudAuthentication extends \ProudPlugin {
       $current_url = home_url(add_query_arg(array(),$wp->request));
 
       if ( !is_user_logged_in() && empty($_GET['auth0']) && strpos($_SERVER['REQUEST_URI'], 'wp-login') === false && strpos($_SERVER['REQUEST_URI'], 'wp-admin') === false ) {
-        header("Location: https://my.proudcity.com/login?msg=Please%20login%20to%20access%20your%20intranet&destination=" . urlencode($current_url));
+        header("Location: https://my.proudcity.com/login?msg=Please%20login%20to%20access%20your%20intranet"); //&destination=" . urlencode($current_url));
         exit;
       }
 
