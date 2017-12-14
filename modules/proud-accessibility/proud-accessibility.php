@@ -1,4 +1,7 @@
 <?php
+
+require_once plugin_dir_path(__FILE__) . 'lib/accessibility-statement.class.php';
+
 /**
  * @author ProudCity
  */
