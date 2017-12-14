@@ -51,6 +51,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-e
 require_once plugin_dir_path(__FILE__) . 'plugin_override/e-signature/proud-e-signature.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityformsstripe/proud-gravityformsstripe.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/buddydrive/proud-buddydrive.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-seo/proud-wordpress-seo.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
