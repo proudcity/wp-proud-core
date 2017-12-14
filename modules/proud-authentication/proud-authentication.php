@@ -24,17 +24,22 @@ class ProudAuthentication extends \ProudPlugin {
   // Do we need to put this behind an HTTP-auth wall, or redirect them to login to WordPress?
   public function checkAuthentication() {
 
+    if (php_sapi_name() === "cli") {
+      return;
+    }
+
     $authRequired = getenv("AUTH_REQUIRED");
     if ($authRequired === 'wordpress') {
 
-      if (!is_user_logged_in() && !($_GET['auth0'] == 1 && !empty($_GET['code'])) ) {
-        global $wp;
-        $current_url = home_url(add_query_arg(array(),$wp->request));
-        header("Location: https://my.proudcity.com/login?msg=Please%20login%20to%20access%20your%20intranet&destination=" . urlencode($current_url));
+      global $wp;
+      $current_url = home_url(add_query_arg(array(),$wp->request));
+
+      if ( !is_user_logged_in() && empty($_GET['auth0']) && strpos($_SERVER['REQUEST_URI'], 'wp-login') === false && strpos($_SERVER['REQUEST_URI'], 'wp-admin') === false ) {
+        header("Location: https://my.proudcity.com/login?msg=Please%20login%20to%20access%20your%20intranet"); //&destination=" . urlencode($current_url));
         exit;
       }
 
-    } elseif (getenv("AUTH_REQUIRED") && php_sapi_name() !== "cli") {
+    } elseif ($authRequired) {
 
       $user = getenv("AUTH_USERNAME");
       $pass = getenv("AUTH_PASSWORD");
