@@ -7,7 +7,7 @@
 			<li>Open and transparent about our process.</li>
 			<li>Attentive to community feedback surrounding usability of our website.</li>
 		</ol>
-		<p><strong>Please do not hesitate to contact us!</strong>  You can do so <a href="">here</a>.</p>
+		<p><strong>Please do not hesitate to contact us!</strong>  You can <a href="/contact">do so here</a>.</p>
 		<p>Accessibility is process, not a checkbox but here are some of the steps we have taken:</p>
 		<ul>
 			<li>Accessible forms: "aria" attributes, descriptive labels, tab-able interfaces</li>
