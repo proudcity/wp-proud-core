@@ -17,6 +17,8 @@ class ProudGravityformsStripe {
 
         add_filter('gform_stripe_subscription_single_payment_amount', [$this, 'gform_stripe_subscription_single_payment_amount'], 10, 4);
         add_filter('gform_stripe_subscription_trial_period_days', [$this, 'gform_stripe_subscription_trial_period_days'], 10, 3);
+        add_filter('gform_stripe_post_create_subscription', [$this, 'gform_stripe_post_create_subscription'], 10, 2);
+
     }
 
 
@@ -106,7 +108,7 @@ class ProudGravityformsStripe {
 
         $account = get_option('proudcity_payments_account', false);
         $subscription = $customer->updateSubscription( array( 'plan' => $plan->id ), ['stripe_account' => $account] );
-        print_R($subscription);exit;
+
         return $subscription;
 
     }
@@ -114,24 +116,70 @@ class ProudGravityformsStripe {
     function gform_stripe_subscription_trial_period_days($trial_period_days, $form, $submission_data) {
 
         $day = get_option('proudcity_payments_recurring_date', false);
+        $dayDouble = get_option('proudcity_payments_recurring_date_double', false);
 
         if ($day) {
-            $curMonth = date('n');
-            $curYear  = date('Y');
 
-            if ($curMonth == 12)
-                $firstDayNextMonth = mktime(0, 0, 0, 0, $day, $curYear+1);
-            else
-                $firstDayNextMonth = mktime(0, 0, 0, $curMonth+1, $day);
+            // The ProudCity Stripe account is set the America/Los_Angeles
+            date_default_timezone_set('America/Los_Angeles');
+            $date = time();
+            $curDay = (int) date('d', $date);
+            $curMonth = (int) date('n', $date);
+            $curYear  = (int) date('Y', $date);
 
-            $daysTilNextMonth = ($firstDayNextMonth - mktime()) / (24 * 3600);
+            // No trial necessary
+            if ($curDay <= $day) {
+                return $day - $curDay;
+            }
 
-            return ceil($daysTilNextMonth);
+            // Trial logic for $dayDouble is done in gform_stripe_post_create_subscription() below
+
+
+            // We need to trial until $day next month
+            if ($curMonth == 12) {
+                $firstDayNextMonth = mktime(0, 0, 0, 1, $day, $curYear+1);
+            }
+            else {
+                $firstDayNextMonth = mktime(0, 0, 0, $curMonth+1, $day, $curYear);
+            }
+
+            $daysTilNextMonth = ($firstDayNextMonth - mktime(0, 0, 0, $curMonth, $curDay, $curYear)) / (24 * 3600);
+
+            $daysTilNextMonth = ceil($daysTilNextMonth) - 1;
+            return $daysTilNextMonth;
         }
 
-        return $trial_period_days+1;
+        return $trial_period_days;
 
     }
+
+
+
+    function gform_stripe_post_create_subscription($customer, $plan) {
+
+        $account = get_option('proudcity_payments_account', false);
+        $day = get_option('proudcity_payments_recurring_date', false);
+        $dayDouble = get_option('proudcity_payments_recurring_date_double', false);
+
+        // The ProudCity Stripe account is set the America/Los_Angeles
+        date_default_timezone_set('America/Los_Angeles');
+        $date = time();
+        $curDay = (int)date('d', $date);
+        $curMonth = (int)date('n', $date);
+        $curYear = (int)date('Y', $date);
+
+        if ($curDay > $day && $curDay <= $dayDouble) {
+            $charge_meta = [
+                "customer" => $customer->id,
+                "amount" => $plan->amount,
+                "currency" => "usd",
+                "description" => date('F', $date) . ': ' . $plan->name,
+            ];
+            $charge = \Stripe\Charge::create($charge_meta, ['stripe_account' => $account]);
+        }
+    }
+
+
 
     function gform_stripe_subscription_single_payment_amount($single_payment_amount, $payment_amount, $form, $submission_data) {
 
