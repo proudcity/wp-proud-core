@@ -53,7 +53,9 @@ class GoogleTranslate extends Core\ProudWidget {
       <a href="#" id="translate" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i aria-hidden="true" class="fa fa-fw fa-globe"></i>Translate</a>
       <ul class="dropdown-menu nav nav-pills" aria-labelledby="translate">
         <li>
-          <div id="google_translate_element"></div>
+          <label><span class="sr-only">Translate language select</span>
+            <div id="google_translate_element"></div>
+          </label>
         </li>
       </ul>
     <!--</div>-->
