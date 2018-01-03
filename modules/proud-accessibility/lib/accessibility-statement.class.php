@@ -100,7 +100,6 @@ class ProudAccessibilityPage {
 			$path = plugins_url('../includes/js/',__FILE__);
 			wp_register_script( 'proud-accessibility-page', $path . 'accessibility-page.js', ['proud-core'], false, true);
 			wp_enqueue_script('proud-accessibility-page');
-
 		}
 	}
 
