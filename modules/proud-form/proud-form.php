@@ -6,7 +6,6 @@
 namespace Proud\Core;
 
 include_once( ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php' );
-use GFAPI as GFAPI;
 
 if ( ! class_exists( 'FormHelper' ) ) {
 
@@ -273,7 +272,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         case 'gravityform':
           if (is_plugin_active('gravityforms/gravityforms.php')) {
             $options = ['' => __('-- Select form --')];
-            $forms = GFAPI::get_forms();
+            $forms = \GFAPI::get_forms();
             foreach ($forms as $key => $form) {
               $options[  $form['id'] ] = $form['title'];
             }
