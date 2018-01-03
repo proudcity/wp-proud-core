@@ -1,7 +1,6 @@
 <?php
 
-use Proud\Theme\Wrapper,
-    Proud\Document;
+use Proud\Document;
 
 $src = get_post_meta( $id, 'document', true );
 $filename = get_post_meta( $id, 'document_filename', true );
