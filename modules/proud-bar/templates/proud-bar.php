@@ -1,6 +1,6 @@
 <div class="proudbar">
   <?php if('new' !== $stage): ?><div class="proudbar-title pull-left">
-    <a href="//proudcity.com/how-it-works" target="_blank" title="How ProudCity works"><?php print $stage ?></a>
+    <?php print $stage ?>
   </div><?php endif; ?>
   
   <?php if ( 'example' === $stage || 'demo' === $stage ): ?> 
