@@ -14,7 +14,7 @@ class ProudWordpressSeo {
     /**
      * Meta description label
      */
-    public function yoast_change_description( $type ) {
+    public function yoast_change_description( $desc ) {
         $items = [
             'documents' => 'Search, view, and download official documents'
         ];
@@ -28,10 +28,11 @@ class ProudWordpressSeo {
                 return __( $items[$slug], 'wp-proud-core' );
             }
         }
+
+        return $desc;
     }
-
-
 }
 
 new ProudWordpressSeo();
-get_post_field( 'post_name', get_post() );
+// @TODO Jeff was this for something?
+//get_post_field( 'post_name', get_post() );
