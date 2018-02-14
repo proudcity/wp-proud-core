@@ -55,7 +55,7 @@ class ProudSOPagebuilder {
 		$widgets['SiteOrigin_Widget_Image_Widget']['title'] = 'Image';
 		$widgets['SiteOrigin_Widget_Image_Widget']['icon']  = 'fa fa-camera';
 
-		//unset($widgets['SiteOrigin_Widget_Image_Widget']);
+        unset( $widgets['WP_Widget_Media_Image'] );
 
 		unset( $widgets['SiteOrigin_Widget_Slider_Widget'] );
 		unset( $widgets['SiteOrigin_Widget_Button_Widget'] );
@@ -125,7 +125,6 @@ class ProudSOPagebuilder {
 			}
 		}
 
-		//print_r($widgets);
 		return $widgets;
 	}
 
