@@ -29,6 +29,8 @@ require_once plugin_dir_path(__FILE__) . 'proud-helpers.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.class.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-authentication/proud-authentication.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-accessibility/proud-accessibility.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-patternlibrary/proud-patternlibrary.php';
+
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-menu/proud-menu.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-widget/proud-widgets.php';

@@ -1,0 +1,185 @@
+
+
+// The search / answers overlay demo
+
+.menu-option-footer {
+
+  // Search mode activated
+  // ------------------------------------
+  ul.search-autosuggest {
+    padding: 0;
+    margin-top: 1em;
+    margin-left: -12px;
+
+    li {
+      list-style: none;
+
+      a {
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        min-height: 2em;
+        color: $black;
+        line-height: 1.5em;
+        font-weight: bold;
+
+        &:hover {
+          color: $brand-primary;
+        }
+      }
+
+      i {
+        font-size: 1.5em;
+        display: block;
+        float: left;
+        text-align: center;
+        width: 40px;
+      }
+    }
+    
+  }
+
+  #search-bg {
+    left: 110%;
+  }
+
+  #search-311 {
+    left: -110%;
+  }
+
+
+  #search-bg,
+  #search-311 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(#FFF, 1);
+    opacity: 1;
+    z-index: 1050;
+    box-shadow: 0px 2px 5px 5px rgba(0,0,0, 0.1);  
+    @include transition(left 0.3s ease-in 0s);
+    
+    
+    .search-close {
+      padding: 15px;
+      color: $black;
+      position: absolute;
+      right: 0;
+      top: 0px;
+    }
+
+    form {
+      // display: none;
+      margin-top: 36px;
+      padding: 30px;
+      max-width: 500px;
+      margin-right: auto;
+      margin-left: auto;
+
+    }
+  }
+
+  .search-active {
+    #search-bg {
+      opacity: 1;
+      left: 0;
+    }
+  }
+
+  .active-311 {
+    #search-311 {
+      opacity: 1;
+      left: 0;
+    }
+  }
+
+  .app {
+    text-align: center;
+
+    img {
+      display: inline-block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 50px;
+    }
+  }
+
+
+  @include respond($xs-only) {
+
+    .affix {
+      position: relative!important;
+      top: 0!important;
+    }
+
+    #search-bg {
+
+      .search-close {
+
+        i {
+          font-size: 2em;
+        }
+      }
+    }
+  }
+
+  @include respond($sm-up) {
+
+    #search-bg,
+    #search-311 {
+      left: 0;
+      opacity: 0;
+      z-index: -1;
+      @include transition(opacity 0.3s ease-in-out, z-index 0.2s linear);
+    }
+
+    .search-active {
+      #search-bg {
+        z-index: $nav-user-overlay-z;
+        opacity: 1;
+        left: 0;
+      }
+    }
+
+    .active-311 {
+      #search-311 {
+        z-index: $nav-user-overlay-z;
+        opacity: 1;
+        left: 0;
+      }
+    }
+
+
+    ul.search-autosuggest {
+
+      li {
+
+        a {
+          font-size: 1.5em;
+          line-height: 2em;
+        }
+
+        i {
+          font-size: 2em;
+          width: 60px;
+        }
+      }
+    }
+  }
+
+  @include respond($lg-up) {
+
+    #search-bg,
+    #search-311 {
+      padding-top: 100px;
+
+      .search-close {
+        top: 50px;
+      }
+    }
+  }
+
+}
