@@ -61,7 +61,7 @@ if ( ! class_exists( 'SiteMap' ) ) {
 					$menu_header = ! empty( $menu->ageny_link )
 						? "<a href=\"$menu->ageny_link\" rel=\"bookmark\">$menu->name</a>"
 						: esc_html( $menu->name );
-					$menus       .= '<h3>' . $menu_header . '</h3>';
+					$menus       .= '<h2 class="h3">' . $menu_header . '</h2>';
 					$menus       .= '<ul>' . wp_nav_menu( array(
 							'menu'       => $menu->term_id,
 							'container'  => 'false',

@@ -64,7 +64,7 @@ class LogoWidget extends Core\ProudWidget {
                 'alt' => 'Alt'
               ] ); ?> 
             <?php endif; ?>
-            <h4 class="site-name"><?php bloginfo(); ?></h4>
+            <div class="h4 site-name"><?php bloginfo(); ?></div>
           </a>  
         </div>
       </div>

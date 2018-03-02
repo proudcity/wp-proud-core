@@ -16,22 +16,22 @@
 			<li>Required "alt" descriptions on images</li>
 			<li>Font size adjustment</li>
 		</ul>
-		<h3>PDF documents</h3>
+		<h2 class="h3">PDF documents</h2>
 		<p>Some of the documents that appear on this website are in PDF format and those using assistive technology may be unable to read documents directly, unless they have the requisite plug-ins:</p>
 		<ul>
       <li><a href="https://get.adobe.com/reader/" target="_blank">Download Acrobat Reader</a></li>
       <li><a href="http://www.adobe.com/accessibility/" target="_blank">Access Adobe Accessibility</a></li>
 		</ul>
-    <h3>Contact us</h3>
+    <h2 class="h3">Contact us</h2>
     <p>Please do not hesitate to let us know your thoughts or concerns!  You can <a href="/contact">do so here</a>.</p>
 	</div>
 	<div class="text-left col-md-4 right-sidebar">
-		<h4>Accessibility links</h4>
+		<h2 class="h4">Accessibility links</h2>
 		<ul>
 			<li><a href="https://www.w3.org/TR/WCAG/" target="_blank">WCAG Guidlines</a></li>
 			<li><a href="https://www.access-board.gov/guidelines-and-standards/communications-and-it/about-the-section-508-standards" target="_blank">Section 508</a></li>
 		</ul>
-		<h4>Browser tools</h4>
+		<h2 class="h4">Browser tools</h2>
 		<ul>
 			<li><a href="http://www.microsoft.com/enable/products/default.aspx" target="_blank">Internet Explorer Accessibility</a></li>
 			<li><a href="http://www.accessfirefox.com/" target="_blank">Firefox Accessibility</a></li>

@@ -266,7 +266,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           unset( $this->filters[$this->search_key]['#args']['after'] );
           $this->filters['title'] = [
             '#type' => 'html',
-            '#html' => '<h4 class="margin-top-none">' . __('Filters', 'wp-proud-core') . '</h4>',
+            '#html' => '<h3 class="h4 margin-top-none">' . __('Filters', 'wp-proud-core') . '</h3>',
           ];
           // Add post type filter
           global $proudsearch;
@@ -684,10 +684,12 @@ if ( !class_exists( 'TeaserList' ) ) {
       switch( $this->display_type ) {
         case 'mini':
           if(in_the_loop()) {
-            $header_tag = 'h4';
+            $header_tag = 'h3';
+            $header_class = 'h4';
           }
           else {
-            $header_tag = 'h5';
+            $header_tag = 'h4';
+            $header_class = 'h5';
           }
           break;
 
