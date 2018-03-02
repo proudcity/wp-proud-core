@@ -16,11 +16,11 @@
 </div>
 <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
   <div class="navbar-header"><div class="container">
-    <h3 class="clearfix">
+    <div class="h3" class="clearfix">
       <a href="<?php echo get_logo_link_url(); ?>" title="Home" rel="home" id="header-logo" class="nav-logo same-window">
         <?php echo get_navbar_logo() ?>
       </a>
       <a href="<?php echo get_site_name_link_url(); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
-    </h3>
+    </div>
   </div></div>
 </div>
