@@ -17,9 +17,9 @@ class ProudPatternLibrary {
 		// @TODO modify this so we're not loading every page load
 		// Add our template
 //		add_filter( 'template_include', [ $this, 'page_template' ], 99 );
-        $this->hook( 'template_redirect', 'template_redirect');
-        $this->hook( 'query_vars', 'query_vars');
-        $this->hook( 'init', 'register_rewrite_rules');
+        add_action( 'template_redirect', [ $this, 'template_redirect']);
+        add_action( 'query_vars', [ $this, 'query_vars']);
+        add_action( 'init', [ $this, 'register_rewrite_rules']);
 
         //add_action( 'wp_enqueue_scripts', [$this, 'scripts'] );
 	}
