@@ -188,7 +188,7 @@ function get_nav_button_options( $display ) {
       'href' => $report_service === 'link' ? $report_link : '#',
       'classes' =>  'btn navbar-btn issue-button',
       'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
-      'icon' => 'fa-wrench',
+      'icon' => 'fa-exclamation-triangle',
     ], 'report', $display );
   }
   return $action_buttons;

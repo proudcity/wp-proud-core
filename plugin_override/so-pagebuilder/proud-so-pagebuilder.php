@@ -65,7 +65,7 @@ class ProudSOPagebuilder {
 		unset( $widgets['SiteOrigin_Widget_SocialMediaButtons_Widget'] );
 		unset( $widgets['SiteOrigin_Widget_PostCarousel_Widget'] );
 
-		$widgets['ActionsBox']['icon'] = 'fa fa-wrench';
+		$widgets['ActionsBox']['icon'] = 'fa fa-exclamation-triangle';
 		$widgets['LocalMap']['icon']   = 'fa fa-map-marker';
 		unset( $widgets['ActionsMenu'] );
 		unset( $widgets['MainMenuList'] );
