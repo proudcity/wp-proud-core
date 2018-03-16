@@ -58,16 +58,21 @@ if ( ! class_exists( 'SiteMap' ) ) {
 				// Build menus
 				$menus = '';
 				foreach ( $menu_items as $menu ) {
-					$menu_header = ! empty( $menu->ageny_link )
+					$menu_header = !empty( $menu->ageny_link )
 						? "<a href=\"$menu->ageny_link\" rel=\"bookmark\">$menu->name</a>"
 						: esc_html( $menu->name );
 					$menus       .= '<h2 class="h3">' . $menu_header . '</h2>';
-					$menus       .= '<ul>' . wp_nav_menu( array(
+					// Menu has children so print them
+					if ($menu->count) {
+						$children = wp_nav_menu( array(
 							'menu'       => $menu->term_id,
 							'container'  => 'false',
 							'items_wrap' => '%3$s',
 							'echo'       => '0'
-						) ) . '</ul>';
+						) );
+						$menus       .= '<ul>' . $children . '</ul>';
+					}
+
 				}
 			}
 
