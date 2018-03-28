@@ -6,6 +6,6 @@
 </ul>
 <label class="sr-only">Access Links</label>
 <ul class="list-inline">
-  <li><a href="/accessibility-commitment">Accessibility</a></li>
+  <li><a href="/accessibility-statement">Accessibility</a></li>
   <li><a href="/sitemap">Sitemap</a></li>
 </ul>

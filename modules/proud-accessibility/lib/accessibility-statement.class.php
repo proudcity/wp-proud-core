@@ -8,8 +8,11 @@ class ProudAccessibilityPage {
 	// Page Content
 	const _ACCESS_PAGE_TEMPLATE = 'proud-accessibility/statement-page.php';
 
-	// Search page slug
-	const _ACCESS_PAGE_SLUG = 'accessibility-commitment';
+	// Accessibility page slug
+	const _ACCESS_PAGE_SLUG = 'accessibility-statement';
+
+	// Old accessibility page slug
+	const _ACCESS_PAGE_SLUG_REDIRECT = 'accessibility-commitment';
 
 	// Add js?
 	static $add_js;
@@ -33,6 +36,10 @@ class ProudAccessibilityPage {
 			if ( '' != $new_template ) {
 				return $new_template;
 			}
+		} else if ( is_page( self::_ACCESS_PAGE_SLUG_REDIRECT  ) ) {
+			// redirect
+			wp_safe_redirect( self::_ACCESS_PAGE_SLUG );
+			exit;
 		}
 
 		return $template;
