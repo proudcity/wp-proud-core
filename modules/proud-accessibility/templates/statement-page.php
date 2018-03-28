@@ -35,7 +35,7 @@
 		<ul>
 			<li><a href="http://www.microsoft.com/enable/products/default.aspx" target="_blank">Internet Explorer Accessibility</a></li>
 			<li><a href="http://www.accessfirefox.com/" target="_blank">Firefox Accessibility</a></li>
-			<li><a href="https://www.google.com/accessibility/all-products-features.html" target="_blank">Chrome Accessibilityn</a></li>
+			<li><a href="https://www.google.com/accessibility/all-products-features.html" target="_blank">Chrome Accessibility</a></li>
 		</ul>
 	</div>
 </div>
