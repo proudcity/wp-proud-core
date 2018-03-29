@@ -237,6 +237,10 @@ function get_nav_primary_menu() {
   $menu = '';
   $menu = apply_filters( 'proud_nav_primary_menu', $menu );
 
+  // Menu wrap with accessible label
+  $menu_wrap = '<label id="primary-menu-label" class="sr-only">Primary menu links</label>';
+  $menu_wrap .= '<ul role="navigation" aria-labelledby="primary-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
+
   // No plugin overtaking, try primary
   if( !$menu && has_nav_menu( 'primary_navigation' ) ) {
     $menu_args = [ 
@@ -252,7 +256,7 @@ function get_nav_primary_menu() {
       'after'             => '',
       'link_before'       => '',
       'link_after'        => '',
-      'items_wrap'        => '<ul id="%1$s" class="%2$s">%3$s</ul>',
+      'items_wrap'        => $menu_wrap,
       'depth'             => 1,
       'walker'            => ''
     ];
@@ -290,13 +294,6 @@ function print_proud_navbar() {
     ob_start();
     include plugin_dir_path(__FILE__) . 'templates/navbar.php';
     $navbar = ob_get_contents();
-    ob_end_clean();
-  }
-  // Should we add transparent mask?
-  if( proud_navbar_transparent() ) {
-    ob_start();
-    include plugin_dir_path(__FILE__) . 'templates/navbar-transparent.php';
-    $navbar .= ob_get_contents();
     ob_end_clean();
   }
   echo $navbar;

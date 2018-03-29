@@ -142,6 +142,8 @@
 
   Proud.behaviors.proudNavbar = { attach: function(context, settings) {
 
+    var $body = $('body');
+
     // Click top buttons
     $('[data-proud-navbar]').once('proud-navbar', function() {
       var $self = $(this);
@@ -158,11 +160,32 @@
       });
     });
 
+    // Focus out timer
+    var menuItemTimer = null;
+
     // mobile menu open
     $('#menu-button').once('proud-navbar', function() {
       $(this).click(function(e) {
         e.preventDefault();
+        if (menuItemTimer) {
+          clearTimeout(menuItemTimer);
+        }
+        if(!$body.hasClass('menu-nav-open')) {
+          $('#main-menu').children(":first").children().focus();
+        }
         proudNav.toggleMenu();
+      });
+    });
+
+    // On main menu focus (tabbing) open up menu
+    $('#main-menu').once('proud-main-menu', function() {
+      $('a', $(this)).on('focusin', function () {
+        clearTimeout(menuItemTimer);
+        proudNav.openLayer('menu');
+      }).on('focusout', function () {
+        menuItemTimer = setTimeout(function() {
+          proudNav.closeLayers(['menu']);
+        }, 100);
       });
     });
 
