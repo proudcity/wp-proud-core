@@ -31,16 +31,18 @@ class ProudAccessibilityPage {
 
 	public function page_template( $template ) {
 
-		if ( is_page( self::_ACCESS_PAGE_SLUG ) ) {
-			$new_template = locate_template( self::_ACCESS_PAGE_TEMPLATE );
-			if ( '' != $new_template ) {
-				return $new_template;
-			}
-		} else if ( is_page( self::_ACCESS_PAGE_SLUG_REDIRECT  ) ) {
-			// redirect
-			wp_safe_redirect( self::_ACCESS_PAGE_SLUG );
-			exit;
-		}
+	  if (php_sapi_name() !== 'cli') {
+      if ( is_page( self::_ACCESS_PAGE_SLUG ) ) {
+        $new_template = locate_template( self::_ACCESS_PAGE_TEMPLATE );
+        if ( '' != $new_template ) {
+          return $new_template;
+        }
+      } else if ( is_page( self::_ACCESS_PAGE_SLUG_REDIRECT  ) ) {
+        // redirect
+        wp_safe_redirect( self::_ACCESS_PAGE_SLUG );
+        exit;
+      }
+    }
 
 		return $template;
 	}
