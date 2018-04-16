@@ -168,8 +168,6 @@ if ( !class_exists( 'TeaserList' ) ) {
         plugins_url( '/assets/images/teaser-card-default-image.png',  __FILE__  ),
         $this->post_type
       );
-      d($args);
-      d($this->query);
     }
 
     /**
