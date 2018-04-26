@@ -118,7 +118,7 @@ class ContactTeaserListWidget extends TeaserListWidget {
       get_class($this)
     );
     $this->post_type = 'staff-member';
-    $this->display_modes = [ 'list', 'table' ];
+    $this->display_modes = [ 'list', 'table', 'cards' ];
 
     // @TODO sort... seems like by name would only be useful if we had last name capability
   }
