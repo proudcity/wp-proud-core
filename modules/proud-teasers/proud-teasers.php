@@ -471,16 +471,18 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'event':
         case 'search':
           // http://www.billerickson.net/wp-query-sort-by-meta/
-          $query_key =  '_end_ts';
+          $query_key =  '_event_end_date';
           // @ TODO figure out optimized query that allows 
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-          $time = current_time( 'timestamp' );
-          $day_start = strtotime( date( 'Y-m-d', $time ) );
+	      $time = current_time( 'timestamp' );
+	      $day_start = strtotime('midnight', $time);
+	      $EM_DateTime = new \EM_DateTime($day_start);
           // Event
           if( $this->post_type === 'event' ) {
-            $args['orderby']    = 'meta_value_num';
+            $args['orderby']    = 'meta_value';
+            $args['meta_type'] = 'DATE';
             $args['meta_key']   = $query_key;
             $args['order']      = 'ASC';
             $args['meta_query'] = array(
@@ -491,8 +493,9 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
               array(
                   'key' => $query_key,
+                  'type' => 'DATE',
                   'compare' => '>=',
-                  'value' => $day_start
+                  'value' => $EM_DateTime->getDate()
               ),
             );
           }
@@ -506,8 +509,9 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
               array(
                   'key' => $query_key,
+	              'type' => 'DATE',
                   'compare' => '>=',
-                  'value' => $day_start
+                  'value' => $EM_DateTime->getDate()
               ),
             );
           }
