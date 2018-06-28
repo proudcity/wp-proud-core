@@ -24,7 +24,7 @@
     </ul>
     <h2 class="h3">Accessibility links</h2>
     <ul>
-      <li><a href="https://www.w3.org/TR/WCAG/" target="_blank">WCAG Guidlines</a></li>
+      <li><a href="https://www.w3.org/TR/WCAG/" target="_blank">WCAG Guidelines</a></li>
       <li><a href="https://www.access-board.gov/guidelines-and-standards/communications-and-it/about-the-section-508-standards" target="_blank">Section 508</a></li>
     </ul>
     <h2 class="h3">Browser tools</h2>
