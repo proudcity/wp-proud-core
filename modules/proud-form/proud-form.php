@@ -237,6 +237,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('image-upload');
     }
 
+    public function printFileUpload($media_id, $url, $translate) {
+      include $this->template('file-upload');
+    }
+
     public function printTextArea($id, $name, $value, $rows, $translate = false) {
       include $this->template('textarea');
     }
@@ -286,6 +290,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
           break;
 
         case 'select_media':
+        case 'select_image':
+        case 'select_file':
           // add extra class
           $extra_group_class .= ' clearfix';
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
@@ -319,7 +325,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
             }
           }
           $this->printTextInput($field['#id'], $field['#name'], $media_id, $this->form_id, array('class' => 'visible-print-block'));
-          $this->printImageUpload($media_id, $url, $this->form_id);
+          if ($field['#type'] === 'select_file') {
+            $this->printFileUpload($media_id, $url, $this->form_id);
+          }
+          else {
+            $this->printImageUpload($media_id, $url, $this->form_id);
+          }
           if( !empty( $field['#description'] ) ) 
             $this->printDescription($field['#description']);
           break;
