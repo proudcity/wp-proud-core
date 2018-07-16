@@ -1,13 +1,10 @@
 jQuery(document).ready( function($){
   function media_upload( button_class, button_type ) {
-    alert('a')
     if(wp.media && wp.media.editor) {
       var _custom_media = true,
       _orig_send_attachment = wp.media.editor.send.attachment;
-      alert('s')
       jQuery('body').on('click', button_class, function(e) {
-        alert('j')
-          if (type === 'image') {
+          if (button_type === 'image') {
             var $img = $(this).prev('img');
             var $input = $img.prev('input');
           }
@@ -21,7 +18,7 @@ jQuery(document).ready( function($){
           wp.media.editor.send.attachment = function(props, attachment){
               if ( _custom_media  ) {
                  $input.val(attachment.id);
-                 if (type === 'image') {
+                 if (button_type === 'image') {
                    $img.attr('src', attachment.url);
                  }
                  else {
