@@ -91,6 +91,30 @@ class DocumentTeaserListWidget extends TeaserListWidget {
   }
 }
 
+// Meetings
+class MeetingTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_meeting_teaser_list', // Base ID
+      __( 'Meetings list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
+    );
+
+    $this->post_type = 'document';
+    $this->display_modes = [ 'list', 'cards' ];
+
+    // Sort options
+//    $this->display_sort = true;
+//    $this->sort_by_options += [
+//      'menu_order' => 'Menu Order',
+//    ];
+    // @todo
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
+  }
+}
+
 // Jobs
 class JobTeaserListWidget extends TeaserListWidget {
   function __construct(  ) {
@@ -133,6 +157,7 @@ class ContactTeaserListWidget extends TeaserListWidget {
         '#default_value' => [],
         '#options' => [
           'agency' => _x( 'Agency', 'post type singular name', 'wp-agency' ),
+          'phone' => __( 'Phone', 'proud-teaser' ),
           'social' => __( 'Social', 'proud-teaser' ),
         ],
         '#states' => [
@@ -151,7 +176,7 @@ class ContactTeaserListWidget extends TeaserListWidget {
 }
 
 
-// Contacts
+// Agency
 class AgencyTeaserListWidget extends TeaserListWidget {
   function __construct(  ) {
     parent::__construct(
