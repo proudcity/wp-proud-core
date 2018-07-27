@@ -45,6 +45,7 @@ class TeaserListWidget extends Core\ProudWidget {
       'staff-member' => __('Staff Members', 'proud-teaser'),
       'document' => __('Documents', 'proud-teaser'),
       'job_listing' => __('Jobs', 'proud-teaser'),
+      'meeting' => __('Meetings', 'proud-teaser'),
     ];
   }
 
@@ -86,14 +87,16 @@ class TeaserListWidget extends Core\ProudWidget {
       if( $taxonomy ) {
         $options = [];
         $this->taxonomy_heirarchy_options($taxonomy, $options);
-        $default = count($options) > 20 ? array() : array_keys($options);
-        $settings['proud_teaser_terms'] = [
-          '#title' => __( 'Limit to category', 'proud-teaser' ),
-          '#type' => 'checkboxes',
-          '#options' => $options,
-          '#default_value' => $default,
-          '#description' => ''
-        ];
+        if (count($options)) {
+          $default = count($options) > 20 ? array() : array_keys($options);
+          $settings['proud_teaser_terms'] = [
+            '#title' => __( 'Limit to category', 'proud-teaser' ),
+            '#type' => 'checkboxes',
+            '#options' => $options,
+            '#default_value' => $default,
+            '#description' => ''
+          ];
+        }
       }
     }
     // Get display modes
