@@ -880,11 +880,11 @@ function process_filter_submit() {
         if( $retain_filter ) {
           if( is_array( $value ) ) {
             foreach ($value as $val) {
-              $params[] = $key . '[]=' . urlencode( sanitize_text_field( $val ) );
+              $params[] = $key . '[]=' . urlencode( stripcslashes( sanitize_text_field( $val ) ) );
             }
           }
           else {
-            $params[] = $key . '=' . urlencode( sanitize_text_field( $value ) );
+            $params[] = $key . '=' . urlencode( stripcslashes( sanitize_text_field( $value ) ) );
           }
         }
       }
