@@ -1,12 +1,19 @@
 fontawesome-iconpicker
 ========================
 
+<!--[![Build Status](https://img.shields.io/travis/farbelous/fontawesome-iconpicker/master.svg?style=flat-square)](https://travis-ci.org/farbelous/fontawesome-iconpicker)-->
+<!--[![npm@next](https://img.shields.io/npm/v/fontawesome-iconpicker/next.svg?style=flat-square)](https://www.npmjs.com/package/fontawesome-iconpicker?activeTab=versions)-->
+[![npm](https://img.shields.io/npm/v/fontawesome-iconpicker.svg?style=flat-square)](https://www.npmjs.com/package/fontawesome-iconpicker)
+[![Donate](https://img.shields.io/badge/%E2%9D%A4-Donate%20to%20this%20project-e0a61d.svg?longCache=true&style=flat-square)](https://github.com/itsjavi/itsjavi.github.io/blob/master/BACKERS.md#sponsors--backers)
+[![Supporters](https://img.shields.io/badge/%F0%9F%92%AA-Supporters-333333.svg?longCache=true&style=flat-square)](https://github.com/itsjavi/itsjavi.github.io/blob/master/BACKERS.md#sponsors)
+
+
 Font Awesome Icon Picker is a fully customizable plugin for Twitter Bootstrap,
-with a powerful base API, based on [bootstrap-popover-picker](https://itsjavi.com/bootstrap-popover-picker/)
+with a powerful base API, based on [bootstrap-popover-picker](https://farbelous.github.io/bootstrap-popover-picker/)
 
-You can use Font Awesome or another font icon set of your choice (icon list is totally customizable).
+You can use Font Awesome 5 or another font icon set of your choice (icon list is totally customizable).
 
-[View demos](https://itsjavi.com/fontawesome-iconpicker/)
+[View demos](https://farbelous.github.io/fontawesome-iconpicker/)
 
 ## Instantiation
 
@@ -49,6 +56,13 @@ In order of call:
 * iconpickerDestroy
 * iconpickerDestroyed
 
+```javascript
+// Bind iconpicker events to the element
+$('.my').on('iconpickerSelected', function(event){
+  /* event.iconpickerValue */
+});
+```
+
 ## Popover placement extensions
 
 This plugin comes with more placement options than the original Bootstrap Popover.
@@ -59,7 +73,7 @@ Here are all the possibilities in detail:
             F       7
             E       8
             D C B A 9
-            
+
     0.      inline (no placement, display as inline-block)
     1.      topLeftCorner
     2.      topLeft
@@ -82,7 +96,7 @@ Here are all the possibilities in detail:
 ## Available options
 
 ```javascript
-var defaults = {
+var options = {
     title: false, // Popover title (optional) only if specified in the template
     selected: false, // use this value as the current item and ignore the original
     defaultValue: false, // use this value as the current item if input or element value is empty
@@ -95,7 +109,7 @@ var defaults = {
     searchInFooter: false, // If true, the search will be added to the footer instead of the title
     mustAccept: false, // only applicable when there's an iconpicker-btn-accept button in the popover footer
     selectedCustomClass: 'bg-primary', // Appends this class when to the selected item
-    icons: [], // list of icon classes (declared at the bottom of this script for maintainability)
+    icons: [], // list of icon objects [{title:String, searchTerms:String}]. By default, all Font Awesome icons are included.
     fullClassFormatter: function(val) {
         return 'fa ' + val;
     },
@@ -116,13 +130,3 @@ var defaults = {
     }
 };
 ```
-
-## TO-DO
-- [x] Support other icon fonts
-- [x] Fix: input marked as error when it is empty
-- [x] Add role=button to each item, for making them tabbable
-- [x] Ability to use the user input as the filter instead of the popover input
-- [x] Fix bottomRight position when using component mode
-- [x] Better dropdown compatibility
-- [x] Ability to mix various class prefixes and use a customizable class formatter function
-- [ ] ~~Ability to select and copy the icon character (the would need to be hardcoded in js)~~ (Use the chrome extension)

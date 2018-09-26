@@ -16,7 +16,7 @@
     "jquery.equalizeHeight": "git@github.com:aschmoe/jquery.equalizeHeight#master",
     "mapbox.js": "~2.2.3",
     "leaflet.locatecontrol": "~0.45.1",
-    "fontawesome-iconpicker": "git@github.com:aschmoe/fontawesome-iconpicker#fontawesome-4.7",
+    "fontawesome-iconpicker": "~3.1.0",
     "dragula.js": "dragula#~3.6.7",
     "picturefill": "~3.0.2",
     "iframe-resizer": "^3.5.8"

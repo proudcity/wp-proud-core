@@ -1,31 +1,14 @@
 {
   "name": "fontawesome-iconpicker",
-  "main": [
-    "dist/css/fontawesome-iconpicker.css",
-    "dist/css/fontawesome-iconpicker.min.css",
-    "dist/js/fontawesome-iconpicker.js",
-    "dist/js/fontawesome-iconpicker.min.js"
-  ],
-  "dependencies": {
-    "jquery": ">=1.10",
-    "bootstrap": "^3"
-  },
-  "ignore": [
-    "\\.*",
-    "/extension",
-    "/src",
-    "index.html",
-    "/package.json",
-    "/Gruntfile.js"
-  ],
-  "homepage": "https://github.com/aschmoe/fontawesome-iconpicker",
-  "_release": "0b5ef5430e",
+  "homepage": "https://github.com/itsjavi/fontawesome-iconpicker",
+  "version": "3.1.0",
+  "_release": "3.1.0",
   "_resolution": {
-    "type": "branch",
-    "branch": "fontawesome-4.7",
-    "commit": "0b5ef5430e0bc13bf3b350448481336be2f4ea05"
+    "type": "version",
+    "tag": "3.1.0",
+    "commit": "40b766c2a33b268a1bbdd3fe41e94f61467fd1be"
   },
-  "_source": "git@github.com:aschmoe/fontawesome-iconpicker.git",
-  "_target": "fontawesome-4.7",
-  "_originalSource": "git@github.com:aschmoe/fontawesome-iconpicker"
+  "_source": "https://github.com/itsjavi/fontawesome-iconpicker.git",
+  "_target": "~3.1.0",
+  "_originalSource": "fontawesome-iconpicker"
 }
