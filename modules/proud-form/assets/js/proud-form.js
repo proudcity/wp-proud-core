@@ -18,7 +18,7 @@
         }
       };
     }
-    $body.on('click', '.iconpicker', function(e) { 
+    $body.on('click', 'input.iconpicker', function(e) {
       $(e.target).once('iconpicker', function() {
         $(this).iconpicker(iconSettings).data('iconpicker').show();
       })
