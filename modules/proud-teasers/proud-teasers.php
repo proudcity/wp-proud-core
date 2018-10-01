@@ -469,6 +469,7 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         // Search +  events need to filter out older content
         case 'event':
+        case 'meeting':
         case 'search':
           // http://www.billerickson.net/wp-query-sort-by-meta/
           $query_key =  '_event_end_date';
@@ -476,9 +477,10 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-	      $time = current_time( 'timestamp' );
-	      $day_start = strtotime('midnight', $time);
-	      $EM_DateTime = new \EM_DateTime($day_start);
+	        $time = current_time( 'timestamp' );
+	        $day_start = strtotime('midnight', $time);
+          $EM_DateTime = new \EM_DateTime($day_start);
+
           // Event
           if( $this->post_type === 'event' ) {
             $args['orderby']    = 'meta_value';
@@ -499,6 +501,29 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
             );
           }
+          // Meeting
+          elseif( $this->post_type === 'meeting' ) {
+            // @todo: make this work
+//            $query_key = 'datetime';
+//            $order = 'ASC'; //@todo
+//            $args['orderby'] = 'meta_value';
+//            $args['meta_type'] = 'DATE';
+//            $args['meta_key'] = $query_key;
+//            $args['order'] = $order;
+//            $args['meta_query'] = array(
+//              'relation' => 'AND',
+//              array(
+//                'key' => $query_key,
+//                'compare' => 'EXISTS'
+//              ),
+//              array(
+//                'key' => $query_key,
+//                'type' => 'DATE',
+//                'compare' => '>=',
+//                'value' => $EM_DateTime->getDate()
+//              ),
+//            );
+          }
           // Search
           else {
             $args['meta_query'] = array(
@@ -509,13 +534,12 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
               array(
                   'key' => $query_key,
-	              'type' => 'DATE',
+	                'type' => 'DATE',
                   'compare' => '>=',
                   'value' => $EM_DateTime->getDate()
               ),
             );
           }
-          
           break;
 
         default:
@@ -677,6 +701,14 @@ if ( !class_exists( 'TeaserList' ) ) {
           //   $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));    
           // } 
           $terms = wp_get_post_terms( $post->ID, 'document_taxonomy', array("fields" => "all"));
+          break;
+        case 'meeting':
+          $meta = get_post_meta( $post->ID );
+          $datetime = new \Datetime($meta['datetime'][0]);
+          $location_obj = get_post($meta['location'][0]);
+          $location_name = $location_obj->post_title;
+          $location_meta = get_post_meta($meta['location'][0]);
+          $location = @$location_meta['address'][0] . ', ' . @$location_meta['city'][0] . ' ' . @$location_meta['zip'][0];
           break;
       }
       $hide = $this->hide;
