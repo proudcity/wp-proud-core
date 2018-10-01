@@ -149,7 +149,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
      * @param string $number, if null uses default: 1
      */
     public static function formValues( $values, $form_id_base = null, $field_base = 'form', $number = 1, $fields = [] ) {
-      return ( ! empty( $values[$field_base . '-' . $form_id_base][$number] ) ) 
+      return ( ! empty( $values[$field_base . '-' . $form_id_base][$number] ) )
            ? self::updateGroupsWeight( $values[$field_base . '-' . $form_id_base][$number], $fields )
            : [];
     }
@@ -292,7 +292,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
         case 'select_media':
         case 'select_image':
         case 'select_file':
-          // add extra class
+
+        // add extra class
           $extra_group_class .= ' clearfix';
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
           // Image should be a media['ID'], but due to 
@@ -301,6 +302,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $media_id = '';
           $url = '';
           if( !empty( $field['#value'] ) ) {
+
             // Already have media value
             if( is_numeric ( $field['#value'] ) ) {
               $media_id = $field['#value'];
@@ -309,6 +311,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
             // but global $post is empty on site origins form.
             else if( '[featured-image]' === $field['#value'] ) {
               $media_id = '[featured-image]';
+            }
+            elseif($json = json_decode($field['#value'], true)) {
+              $media_id = $json['id'];
+              $media = $json;
             }
             // URL... this option should be slowly phased out
             else {
@@ -326,6 +332,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           }
           $this->printTextInput($field['#id'], $field['#name'], $media_id, $this->form_id, array('class' => 'visible-print-block'));
           if ($field['#type'] === 'select_file') {
+            $url = wp_get_attachment_url($media_id);
             $this->printFileUpload($media_id, $url, $this->form_id);
           }
           else {

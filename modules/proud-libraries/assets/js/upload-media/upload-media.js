@@ -10,8 +10,7 @@ jQuery(document).ready( function($){
           }
           else {
             var $filename = $(this).prev('div.upload_file_name');
-            var $meta_input = $filename.prev('input');
-            var $input = $meta_input.prev('input');
+            var $input = $filename.prev('input');
           }
           var send_attachment_bkp = wp.media.editor.send.attachment;
           _custom_media = true;
@@ -22,8 +21,8 @@ jQuery(document).ready( function($){
                    $img.attr('src', attachment.url);
                  }
                  else {
-                   $filename.html('<a href="'+ attachment.url +'">'+ attachment.url +'</a>');
-                   $meta_input.val(JSON.stringify(attachment));
+                   $filename.html('<a href="'+ attachment.url +'">'+ attachment.filename +'</a>');
+                   $input.val(attachment.id);
                  }
               } else {
                   return _orig_send_attachment.apply( $input.attr('id'), [props, attachment] );
