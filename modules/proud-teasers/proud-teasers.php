@@ -314,8 +314,8 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function process_post( &$args ) {
       // Grab values
       foreach( $this->filters as $key => $filter ) {
-        if(!empty( $_REQUEST[$key] ) ) {
-          $req_val = wp_unslash( $_REQUEST[$key] );
+        if(!empty( $_GET[$key] ) ) {
+          $req_val = wp_unslash( $_GET[$key] );
           switch( $key ) {
             // taxonomies
             case 'filter_categories':
@@ -405,7 +405,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function process_pagination(&$args) {
       $this->pagination = true;
       // $paged = ( get_query_var( 'pager' ) ) ? get_query_var( 'pager' ) : 1;
-      $pager = !empty($_REQUEST['pager']) ? $_REQUEST['pager'] : 1;
+      $pager = !empty($_GET['pager']) ? $_GET['pager'] : 1;
       // Set the global paged var
       global $paged;
       $paged = sanitize_text_field( $pager );
