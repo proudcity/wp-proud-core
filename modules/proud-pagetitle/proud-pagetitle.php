@@ -21,8 +21,8 @@ add_action('admin_enqueue_scripts', 'proud_pagetitle_admin_script');
  */
 function proud_pagetitle_get_duplicates($title, $id) {
    global $wpdb;
-   $title_exists = $wpdb->get_results( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = '" . sanitize_text_field($title) . "' AND post_status = 'publish'") );
-   $id = sanitize_text_field($id);
+   $title_exists = $wpdb->get_results( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = '" . sanitize_text_field( $title ) . "' AND post_status = 'publish'") );
+   $id = sanitize_text_field( $id );
    foreach( $title_exists as $key => $post ) {
         if( $id !== $post->ID ){
             return TRUE;

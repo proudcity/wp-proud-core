@@ -38,7 +38,7 @@ echo '<li role="presentation" class="divider"></li><li role="presentation" class
     endwhile;
 
     sort($files);
-    $version = isset($_GET['v']) ? $_GET['v'] : '';
+    $version = isset($_GET['v']) ? sanitize_text_field( $_GET['v'] ) : '';
     $indexpage = isset($_GET['page']) ? 'index.php?v='.$version : '';
     foreach ($files as $file):
         $filename = preg_replace("/\.html$/i", "", $file);

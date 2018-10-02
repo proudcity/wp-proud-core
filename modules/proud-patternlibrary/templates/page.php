@@ -1,7 +1,7 @@
 <?php include_once('../functions.php'); ?>
 <?php 
 $project_name = "ProudCity Pattern Library";
-$version = !empty($_GET['v']) ? $_GET['v'] : FALSE;
+$version = !empty($_GET['v']) ? sanitize_text_field( $_GET['v'] ) : FALSE;
 if ($version == 'local') {
   $css = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css">
           <link rel="stylesheet" href="http://localhost:9000/css/app.css">
