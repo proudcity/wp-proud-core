@@ -314,3 +314,34 @@ class QuestionTeaserListWidget extends TeaserListWidget {
   }
 
 }
+
+
+// Meetings
+class UpcomingMeetingTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_upcoming_meeting_teaser_list', // Base ID
+      __( 'Upcoming Meetings list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of upcoming Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
+    );
+
+    $this->post_type = 'meeting';
+    $this->display_modes = [ 'list' ];
+    //$this->sort_order_default = 'ASC';
+  }
+}
+class PastMeetingTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_past_meeting_teaser_list', // Base ID
+      __( 'Completed Meetings list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of Meetings that have occured in a category with a display style', 'wp-proud-core' ), ), // Args
+      get_class($this)
+    );
+
+    $this->post_type = 'meeting';
+    $this->display_modes = [ 'list' ];
+    //$this->sort_order_default = 'DESC';
+  }
+}
