@@ -91,30 +91,6 @@ class DocumentTeaserListWidget extends TeaserListWidget {
   }
 }
 
-// Meetings
-class MeetingTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_meeting_teaser_list', // Base ID
-      __( 'Meetings list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
-      get_class($this)
-    );
-
-    $this->post_type = 'document';
-    $this->display_modes = [ 'list', 'cards' ];
-
-    // Sort options
-//    $this->display_sort = true;
-//    $this->sort_by_options += [
-//      'menu_order' => 'Menu Order',
-//    ];
-    // @todo
-    $this->sort_by_default = 'menu_order'; // Sort by
-    $this->sort_order_default = 'ASC'; // Sort direction
-  }
-}
-
 // Jobs
 class JobTeaserListWidget extends TeaserListWidget {
   function __construct(  ) {
@@ -316,27 +292,12 @@ class QuestionTeaserListWidget extends TeaserListWidget {
 }
 
 
-// Meetings
-class UpcomingMeetingTeaserListWidget extends TeaserListWidget {
+class MeetingTeaserListWidget extends TeaserListWidget {
   function __construct(  ) {
     parent::__construct(
-      'proud_upcoming_meeting_teaser_list', // Base ID
-      __( 'Upcoming Meetings list', 'wp-proud-core' ), // Name
+      'proud_meeting_teaser_list', // Base ID
+      __( 'Meetings list', 'wp-proud-core' ), // Name
       array( 'description' => __( 'List of upcoming Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
-      get_class($this)
-    );
-
-    $this->post_type = 'meeting';
-    $this->display_modes = [ 'list' ];
-    //$this->sort_order_default = 'ASC';
-  }
-}
-class PastMeetingTeaserListWidget extends TeaserListWidget {
-  function __construct(  ) {
-    parent::__construct(
-      'proud_past_meeting_teaser_list', // Base ID
-      __( 'Completed Meetings list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of Meetings that have occured in a category with a display style', 'wp-proud-core' ), ), // Args
       get_class($this)
     );
 

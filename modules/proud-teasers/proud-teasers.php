@@ -503,26 +503,11 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
-            // @todo: make this work
-//            $query_key = 'datetime';
-//            $order = 'ASC'; //@todo
-//            $args['orderby'] = 'meta_value';
-//            $args['meta_type'] = 'DATE';
-//            $args['meta_key'] = $query_key;
-//            $args['order'] = $order;
-//            $args['meta_query'] = array(
-//              'relation' => 'AND',
-//              array(
-//                'key' => $query_key,
-//                'compare' => 'EXISTS'
-//              ),
-//              array(
-//                'key' => $query_key,
-//                'type' => 'DATE',
-//                'compare' => '>=',
-//                'value' => $EM_DateTime->getDate()
-//              ),
-//            );
+            $query_key = 'datetime';
+            $args['orderby'] = 'meta_value';
+            $args['meta_type'] = 'DATE';
+            $args['meta_key'] = $query_key;
+            $args['order'] = 'DESC';
           }
           // Search
           else {

@@ -259,6 +259,7 @@ class TeaserListWidget extends Core\ProudWidget {
       case 'event':
         return 'event-categories';
       case 'meeting':
+      case 'meeting_past':
         return 'meeting-categories';
     }
     return false;
@@ -414,8 +415,8 @@ function register_teaser_list_widget() {
   register_widget( 'ContactTeaserListWidget' );
   register_widget( 'AgencyTeaserListWidget' );
   register_widget( 'QuestionTeaserListWidget' );
-  register_widget( 'UpcomingMeetingTeaserListWidget' );
-  register_widget( 'PastMeetingTeaserListWidget' );
+  register_widget( 'MeetingTeaserListWidget' );
+  //register_widget( 'PastMeetingTeaserListWidget' );
 }
 add_action( 'widgets_init', 'register_teaser_list_widget', 10 );
 
