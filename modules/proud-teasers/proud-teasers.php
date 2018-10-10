@@ -159,6 +159,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         ]
       ) );
 
+      echo "<h1>hi there</h1>";
+
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
 
@@ -314,8 +316,8 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function process_post( &$args ) {
       // Grab values
       foreach( $this->filters as $key => $filter ) {
-        if(!empty( $_REQUEST[$key] ) ) {
-          $req_val = wp_unslash( $_REQUEST[$key] );
+        if(!empty( $_GET[$key] ) ) {
+          $req_val = wp_unslash( $_GET[$key] );
           switch( $key ) {
             // taxonomies
             case 'filter_categories':
@@ -405,7 +407,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function process_pagination(&$args) {
       $this->pagination = true;
       // $paged = ( get_query_var( 'pager' ) ) ? get_query_var( 'pager' ) : 1;
-      $pager = !empty($_REQUEST['pager']) ? $_REQUEST['pager'] : 1;
+      $pager = !empty($_GET['pager']) ? $_GET['pager'] : 1;
       // Set the global paged var
       global $paged;
       $paged = sanitize_text_field( $pager );
@@ -477,8 +479,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-	        $time = current_time( 'timestamp' );
-	        $day_start = strtotime('midnight', $time);
+	      $time = current_time( 'timestamp', 1 );
+	      $day_start = strtotime('midnight', $time);
           $EM_DateTime = new \EM_DateTime($day_start);
 
           // Event

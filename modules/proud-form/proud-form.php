@@ -319,10 +319,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
             // URL... this option should be slowly phased out
             else {
               global $wpdb;
-              $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $field['#value'] ) );
+              $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", esc_url_raw( $field['#value'] ) ) );
               // Don't set the URL unless we have a value
               if( !empty( $media_id ) ) {
-                $url = $field['#value'];
+                $url = esc_url_raw( $field['#value'] );
               } 
             }
             // Have media ID but not URL, so query
