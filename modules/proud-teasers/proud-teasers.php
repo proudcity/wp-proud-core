@@ -159,6 +159,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         ]
       ) );
 
+      echo "<h1>hi there</h1>";
+
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
 
@@ -477,8 +479,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-	        $time = current_time( 'timestamp' );
-	        $day_start = strtotime('midnight', $time);
+	      $time = current_time( 'timestamp', 1 );
+	      $day_start = strtotime('midnight', $time);
           $EM_DateTime = new \EM_DateTime($day_start);
 
           // Event
