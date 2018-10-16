@@ -159,8 +159,6 @@ if ( !class_exists( 'TeaserList' ) ) {
         ]
       ) );
 
-      echo "<h1>hi there</h1>";
-
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
 
