@@ -302,7 +302,31 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'meeting';
-    $this->display_modes = [ 'list' ];
-    //$this->sort_order_default = 'DESC';
+    $this->display_modes = [ 'list', 'table' ];
+
+    $this->settings += [
+      'proud_teaser_hide' => [
+      '#title' => __('Hide Columns', 'proud-teaser'),
+      '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
+      '#type' => 'checkboxes',
+      '#default_value' => [],
+      '#options' => [
+        'date' => __( 'Date', 'proud-teaser' ),
+        'category' => __( 'Category', 'proud-teaser' ),
+        'content_available' => __( 'Content Available', 'proud-teaser' ),
+      ],
+      '#states' => [
+        'hidden' => [
+          'proud_teaser_display' => [
+            'operator' => '!=',
+            'value' => ['table'],
+            'glue' => '||'
+          ],
+        ],
+      ],
+    ],
+  ];
+
+  //$this->sort_order_default = 'DESC';
   }
 }
