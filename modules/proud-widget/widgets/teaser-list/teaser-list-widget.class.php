@@ -260,8 +260,6 @@ class TeaserListWidget extends Core\ProudWidget {
         return 'event-categories';
       case 'meeting':
         return 'meeting-taxonomy';
-      case 'meeting_past':
-        return 'meeting-categories';
     }
     return false;
   }

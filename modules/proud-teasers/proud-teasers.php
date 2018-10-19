@@ -188,6 +188,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           return 'document_taxonomy';
         case 'question':
           return 'faq-topic';
+        case 'meeting':
+          return 'meeting-taxonomy';
       }
       return false;
     }
@@ -532,6 +534,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           $args['order']   = 'ASC';
           break;
       }
+
+      print_r($args);
     }
 
     /** 
