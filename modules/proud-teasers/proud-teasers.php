@@ -535,7 +535,6 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
       }
 
-      print_r($args);
     }
 
     /** 
