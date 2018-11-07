@@ -312,6 +312,7 @@ class MeetingTeaserListWidget extends TeaserListWidget {
       '#default_value' => [],
       '#options' => [
         'date' => __( 'Date', 'proud-teaser' ),
+        'time' => __( 'Time', 'proud-teaser' ),
         'content_available' => __( 'Content Available', 'proud-teaser' ),
       ],
       '#states' => [
