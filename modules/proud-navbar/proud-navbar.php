@@ -205,7 +205,7 @@ function get_nav_search_options( $display ) {
     'href' => '#',
     'classes' => 'btn navbar-btn search-button',
     'data_attrs' => '',
-    'icon' => 'fa-search"',
+    'icon' => 'fa-search',
   ], 'search', $display );
   return $search_button;
 }
