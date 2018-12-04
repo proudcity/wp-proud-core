@@ -109,9 +109,13 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->build_filters( $terms );
         $this->process_post( $args );
       }
+
       // Pager?
       if( $pagination ) {
         $this->process_pagination( $args );
+      } else {
+      	// Don't count when not necessary
+      	$args['no_found_rows'] = true;
       }
       // Sort posts
       $this->add_sort( $args, $options );
@@ -119,8 +123,10 @@ if ( !class_exists( 'TeaserList' ) ) {
       $args = array_merge( [
         'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist(): $this->post_type,
         'post_status' => 'publish',
-        'update_post_term_cache' => true, // don't retrieve post terms
-        'update_post_meta_cache' => true, // don't retrieve post meta
+        // performance enhancements
+        'update_post_term_cache' => false,
+        'update_post_meta_cache' => false,
+//        'cache_results'          => false @TODO this too?
       ] , $args );
 
       // Do we need to execute a featured (sticky) query?

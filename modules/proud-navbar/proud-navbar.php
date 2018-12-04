@@ -97,7 +97,7 @@ function get_navbar_logo() {
       }
       // Legacy URL based image
       else {
-        $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $logo ) );
+        $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s' AND post_type='attachment' LIMIT 1;", $logo ) );
       }
       // Build responsive image, get width
       if( $media_id ) {

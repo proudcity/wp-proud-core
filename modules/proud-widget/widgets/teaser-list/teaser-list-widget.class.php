@@ -86,7 +86,10 @@ class TeaserListWidget extends Core\ProudWidget {
       $taxonomy = $this->get_taxonomy($this->post_type);
       if( $taxonomy ) {
         $options = [];
-        $this->taxonomy_heirarchy_options($taxonomy, $options);
+        // Don't load when not in admin
+        if ( is_admin() ) {
+	        $this->taxonomy_heirarchy_options($taxonomy, $options);
+        }
         if (count($options)) {
           $default = count($options) > 20 ? array() : array_keys($options);
           $settings['proud_teaser_terms'] = [

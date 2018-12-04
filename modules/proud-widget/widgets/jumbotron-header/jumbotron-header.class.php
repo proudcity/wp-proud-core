@@ -372,7 +372,7 @@ class JumbotronHeader extends Core\ProudWidget {
     else {//if( false !== filter_var( $image, FILTER_VALIDATE_URL ) ) {
       $url = do_shortcode($image);
       global $wpdb;
-      $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+      $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s' AND post_type='attachment' LIMIT 1;", $url ));
     }
     
     // Build image attrs 

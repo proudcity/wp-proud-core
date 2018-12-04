@@ -201,15 +201,19 @@ class AgencyTeaserListWidget extends TeaserListWidget {
       }
     }
 
-    // Build list of agencies
-    $query = new \WP_Query( [
-      'post_type' => 'agency',
-      'post_status' => 'publish',
-      'posts_per_page' => 100,
-    ] );
     $agency_list = [];
-    foreach ($query->posts as $key => $agency) {
-      $agency_list[$agency->ID] = $agency->post_title; 
+
+    // Don't load when not in admin
+    if ( is_admin() ) {
+	    // Build list of agencies
+	    $query = new \WP_Query( [
+		    'post_type'      => 'agency',
+		    'post_status'    => 'publish',
+		    'posts_per_page' => 100,
+	    ] );
+	    foreach ( $query->posts as $key => $agency ) {
+		    $agency_list[ $agency->ID ] = $agency->post_title;
+	    }
     }
 
     $this->settings += [
