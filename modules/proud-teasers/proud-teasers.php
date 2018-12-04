@@ -62,6 +62,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->search_key = $proudsearch::_SEARCH_PARAM;
         // Add key for search
         $args['proud_teaser_search'] = true;
+        // Performance enhancement
+        $args['cache_results'] = false;
       }
       else {
         $this->search_key = 'filter_keyword';
@@ -117,6 +119,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       	// Don't count when not necessary
       	$args['no_found_rows'] = true;
       }
+
       // Sort posts
       $this->add_sort( $args, $options );
       // Final build on args
@@ -125,8 +128,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         'post_status' => 'publish',
         // performance enhancements
         'update_post_term_cache' => false,
-        'update_post_meta_cache' => false,
-//        'cache_results'          => false @TODO this too?
+        'update_post_meta_cache' => true,
       ] , $args );
 
       // Do we need to execute a featured (sticky) query?
@@ -154,7 +156,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $args[ 'posts_per_page' ] = ( (int) $args[ 'posts_per_page' ] ) === 0 ? 100 : $args[ 'posts_per_page' ];
       // Build query
       $this->query = new \WP_Query( apply_filters( 
-        'proud_teaser_query_args', 
+        'proud_teaser_query_args',
         $args,
         [
           'type' => $this->post_type,
