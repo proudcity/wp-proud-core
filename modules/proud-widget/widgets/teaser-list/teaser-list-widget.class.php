@@ -90,16 +90,14 @@ class TeaserListWidget extends Core\ProudWidget {
         if ( is_admin() ) {
 	        $this->taxonomy_heirarchy_options($taxonomy, $options);
         }
-        if (count($options)) {
-          $default = count($options) > 20 ? array() : array_keys($options);
-          $settings['proud_teaser_terms'] = [
-            '#title' => __( 'Limit to category', 'proud-teaser' ),
-            '#type' => 'checkboxes',
-            '#options' => $options,
-            '#default_value' => $default,
-            '#description' => ''
-          ];
-        }
+        $default = count($options) > 20 ? array() : array_keys($options);
+        $settings['proud_teaser_terms'] = [
+	        '#title' => __( 'Limit to category', 'proud-teaser' ),
+	        '#type' => 'checkboxes',
+	        '#options' => $options,
+	        '#default_value' => $default,
+	        '#description' => ''
+        ];
       }
     }
     // Get display modes
@@ -238,6 +236,8 @@ class TeaserListWidget extends Core\ProudWidget {
         '#default_value' => false
       ],
     ];
+
+
 
     $this->settings = apply_filters( 'proud_teaser_settings', $settings, $this->post_type );
   }
