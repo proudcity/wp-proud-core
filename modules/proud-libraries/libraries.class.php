@@ -20,13 +20,13 @@ class ProudLibaries {
     $path = plugins_url( 'assets/js/',__FILE__ );
 
     self::$libraries['lodash'] = [
-      'title' => 'Lodash',
-      'website' => 'http://getproudcity.com',
-      'js' => [
-        'lodash' => $path . 'lodash-compat/lodash.min.js'
-      ],
-      'deps' => ['underscore'],
-      'js_footer' => true
+	    'title' => 'Lodash',
+	    'website' => 'http://getproudcity.com',
+	    'js' => [
+		    'lodash' => includes_url() . 'js/dist/vendor/lodash.min.js'
+	    ],
+	    'deps' => ['underscore'],
+	    'js_footer' => true
     ];
 
     self::$libraries['proud-common'] = [

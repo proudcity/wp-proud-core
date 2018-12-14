@@ -20,9 +20,9 @@
     // localLayers = ['menu', 'search']
     self.closeLayers = function(localLayers, callback) {
       // Default is all
-      localLayers = localLayers || _.keys(layerOpen);
+      localLayers = localLayers || lodash.keys(layerOpen);
       var classes = [];
-      _.map(localLayers, function(layer) {
+      lodash.map(localLayers, function(layer) {
         classes.push(layerClasses[layer]);
         layerOpen[layer] = false;
       });
@@ -125,7 +125,7 @@
       $body.keydown(function(e) {  //keypress did not work with ESC;
         if (e.which == '27') {
           var closing = true;
-          _.map(layerOpen, function(val) {
+          lodash.map(layerOpen, function(val) {
             if(val && closing) {
               self.closeLayers();
               closing = false;
