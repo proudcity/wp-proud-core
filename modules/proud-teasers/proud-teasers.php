@@ -494,7 +494,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // Event
           if( $this->post_type === 'event' ) {
             $args['orderby']    = 'meta_value';
-            $args['meta_type'] = 'DATE';
+            // This was causing issues
+//            $args['meta_type'] = 'DATE';
             $args['meta_key']   = $query_key;
             $args['order']      = 'ASC';
             $args['meta_query'] = array(
