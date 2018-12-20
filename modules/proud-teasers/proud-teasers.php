@@ -489,7 +489,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           // For now, just does specificity == beginning of day
 	      $time = current_time( 'timestamp', 1 );
 	      $day_start = strtotime('midnight', $time);
-          $EM_DateTime = new \EM_DateTime($day_start);
+          $EM_DateTime = new \EM_DateTime($day_start, 'UTC');
 
           // Event
           if( $this->post_type === 'event' ) {
