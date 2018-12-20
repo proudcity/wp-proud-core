@@ -482,13 +482,13 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'meeting':
         case 'search':
           // http://www.billerickson.net/wp-query-sort-by-meta/
-          $query_key =  '_event_end';
+          $query_key =  '_event_start_local';
           // @ TODO figure out optimized query that allows 
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
 	      $time = current_time( 'timestamp', 1 );
-	      $day_start = strtotime('midnight', $time);
+	      $day_start = strtotime('midnight', $time );
           $EM_DateTime = new \EM_DateTime($day_start, 'UTC');
 
           // Event
@@ -513,10 +513,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
-            $query_key = 'datetime';
             $args['orderby'] = 'meta_value';
             $args['meta_type'] = 'DATE';
-            $args['meta_key'] = $query_key;
+            $args['meta_key'] = 'datetime';
             $args['order'] = 'DESC';
           }
           // Search
