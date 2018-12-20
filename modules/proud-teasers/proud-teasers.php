@@ -482,7 +482,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'meeting':
         case 'search':
           // http://www.billerickson.net/wp-query-sort-by-meta/
-          $query_key =  '_event_end_date';
+          $query_key =  '_event_end';
           // @ TODO figure out optimized query that allows 
           // 1. All day
           // 2. ENd time greater than now
