@@ -306,7 +306,7 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'meeting';
-    $this->display_modes = [ 'list', 'table' ];
+    $this->display_modes = [ 'list', 'mini', 'table' ];
 
     $this->settings += [
       'proud_teaser_hide' => [
