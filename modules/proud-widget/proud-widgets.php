@@ -25,6 +25,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.ph
 require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/fullcalendar/fullcalendar-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/embed/embed-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/proudcity-analytics/proudcity-analytics-widget.class.php';
 
 /**
  * Converts shortcode into widget if its a proud widget
