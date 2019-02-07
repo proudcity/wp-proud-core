@@ -2,6 +2,9 @@ jQuery(document).ready(function($) {
 
   // Email (mailto:) link click
   var anaylticsMailto = function(email) {
+    if (ga === undefined) {
+      return;
+    }
     ga('send', {
       hitType: 'event',
       eventCategory: 'Score',
@@ -16,6 +19,9 @@ jQuery(document).ready(function($) {
 
   // Phone number (tel:) link click
   var anaylticsPhone = function(phone) {
+    if (ga === undefined) {
+      return;
+    }
     ga('send', {
       hitType: 'event',
       eventCategory: 'Score',
@@ -30,6 +36,9 @@ jQuery(document).ready(function($) {
 
   // Widget click
   var anaylticsWidgetClick = function(e) {
+    if (ga === undefined) {
+      return;
+    }
     var activeClass = 'btn-primary';
     e.preventDefault();
     var title = $(this).attr('data-title') ? $(this).attr('data-title') : $('h1.entry-title').length ? $('h1.entry-title').text() : document.title;
@@ -41,7 +50,10 @@ jQuery(document).ready(function($) {
       eventValue: jQuery(this).hasClass(activeClass) ? -5 : +5
     });
 
-    if (!$(this).hasClass(activeClass)) { 
+    if (!$(this).hasClass(activeClass)) {
+      if (ga === undefined) {
+        return;
+      }
       ga('send', {
         hitType: 'event',
         eventCategory: 'Heart',
@@ -59,6 +71,9 @@ jQuery(document).ready(function($) {
   // Gravity form submission
   var submittedBy;
   var anaylticsSubmission = function(title, action) {
+    if (ga === undefined) {
+      return;
+    }
     action = window.location.protocol + '//' + window.location.host + action;
     ga('send', {
       hitType: 'event',
@@ -101,7 +116,7 @@ jQuery(document).ready(function($) {
 
   // Social clicks
   var analyticsSocialClick = function(e) {
-    if(e.target.href) {
+    if(e.target.href && ga !== undefined) {
       var label;
       if(e.target.href.match(/facebook\.com/i)) {
         label = 'Facebook';
@@ -135,6 +150,9 @@ jQuery(document).ready(function($) {
 
   // AddToCalendar click
   var anaylticsCalendarShare = function(title, slug) {
+    if (ga === undefined) {
+      return;
+    }
     ga('send', {
       hitType: 'event',
       eventCategory: 'AddEvent',
