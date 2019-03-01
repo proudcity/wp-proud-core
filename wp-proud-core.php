@@ -148,6 +148,7 @@ class Proudcore extends \ProudPlugin {
     // Emojis
     remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
     remove_action( 'wp_print_styles', 'print_emoji_styles' );
+    add_filter( 'login_message', array( $this, 'login_message' ) );
   }
 
   // Load common libraries
@@ -403,6 +404,19 @@ class Proudcore extends \ProudPlugin {
   public function shortcode_featured_image( ){
     return get_the_post_thumbnail_url(get_the_ID());
   }
+
+  // Add a message to the login screen (if it is set in the proud_login_message option)
+  public function login_message( $message ) {
+    if ( empty($message) ){
+      $msg = get_option('proud_login_message', false);
+      if ($msg) {
+        return '<p>' . $msg . '</p>';
+      }
+    } else {
+      return $message;
+    }
+  }
+
 
 }
 
