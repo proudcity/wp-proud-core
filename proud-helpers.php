@@ -481,3 +481,98 @@ Veterans Day: Friday, November 11 2019
 Thanksgiving Day: Thursday, November 28 2019
 Christmas Day: Monday, December 25 2019';
 }
+
+//
+// WP Stateless helpers
+//
+
+/**
+ * Gets a meta array for a stateless hosted file
+ * @param $fid
+ * @return array
+ */
+function getStatelessFileMeta ($fid) {
+    $url             = wp_get_attachment_url( $fid );
+    $upload_root_url = trailingslashit( 'https://storage.googleapis.com/' . \ud_get_stateless_media()->get( 'sm.bucket' ) );
+
+    if ( strpos( $url, $upload_root_url ) !== false ) {
+        // Init WP-Stateless client
+        $client = \ud_get_stateless_media()->get_client();
+
+        // Get file name (https://storage.googleapis.com/.../wp-content/uploads/...)
+        $file       = wp_normalize_path( str_replace( $upload_root_url, '', $url ) );
+        $media_item = $client->get_media( $file );
+
+        // Handle sizes
+        $size        = $media_item['size'];
+        $size_nice   = (float) $size;
+        $size_suffix = ' B';
+        $precision   = 0;
+
+        if ( $size_nice >= 1000000 ) {
+            $size_nice   = $size_nice / 1000000;
+            $size_suffix = ' MB';
+        } else if ( $size_nice >= 1000 ) {
+            $size_nice   = $size_nice / 1000;
+            $size_suffix = ' KB';
+        }
+
+        if ( $size_nice < 10 ) {
+            $precision = 1;
+        }
+
+        $size_nice = round( $size_nice, $precision ) . $size_suffix;
+
+        // Mime, etc
+        $mime      = $media_item['contentType'];
+        $fileparts = explode( '/', $mime );
+        $filetype  = $fileparts[1];
+
+        return [
+            'fid'        => $fid,
+            'url'        => $url,
+            'size'       => $size_nice,
+            'size_bytes' => $size,
+            'icon'       => document_icon_map( $filetype ),
+            'mime'       => $mime,
+            'filetype'   => $filetype,
+        ];
+    }
+
+    return [
+        'fid' => $fid,
+    ];
+}
+
+/**
+ * Helper returns a fontawesome icon
+ */
+function document_icon_map($filetype) {
+    switch ( $filetype ) {
+        case 'pdf':
+            return 'fa-file-pdf-o';
+        case 'doc':
+        case 'docx':
+            return 'fa-file-word-o';
+        case 'ppt':
+        case 'pptx':
+            return 'fa-file-powerpoint-o';
+        case 'xls':
+        case 'xlsx':
+            return 'fa-file-excel-o';
+        case 'wav':
+        case 'aif':
+        case 'mp3':
+            return 'fa-file-audio-o';
+        case 'zip':
+        case 'tar':
+            return 'fa-file-zip-o';
+        case 'png':
+        case 'jpg':
+        case 'jpeg':
+        case 'gif':
+            return 'fa-file-photo-o';
+        default:
+            return 'fa-file-text-o';
+    }
+}
