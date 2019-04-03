@@ -253,6 +253,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('option-box');
     }
 
+    public function printHidden($id, $name, $value) {
+        include $this->template('hidden');
+    }
+
     public function printDescription($description) {
       include $this->template('description');
     }
@@ -470,7 +474,15 @@ if ( ! class_exists( 'FormHelper' ) ) {
           </div>
           <?php
         break;
-        
+
+        case 'hidden':
+          $this->printHidden(
+            $field['#id'],
+            $field['#name'],
+            $field['#value']
+          );
+          break;
+
         default:
           ?>
           <div class="alert alert-danger">Form type not handled</div>
