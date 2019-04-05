@@ -1,0 +1,1 @@
+<input id="<?php echo $id ?>" name="<?php echo $name ?>" type="hidden" value="<?php echo esc_attr( $value ); ?>"
