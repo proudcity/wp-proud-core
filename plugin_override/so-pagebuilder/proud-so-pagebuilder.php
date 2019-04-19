@@ -16,6 +16,7 @@ class ProudSOPagebuilder {
 		// add_filter('siteorigin_panels_layout_attributes', array($this, 'alter_attr'), 10);
 		add_filter( 'siteorigin_panels_row_style_attributes', array( $this, 'so_row_style_attributes' ), 10, 2 );
 		add_filter( 'siteorigin_panels_row_classes', array( $this, 'so_row_style_classes' ), 10, 2 );
+        add_filter( 'siteorigin_panels_css_row_gutter', array( $this, 'so_css_row_gutter' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
 	}
 
@@ -155,12 +156,18 @@ class ProudSOPagebuilder {
 
 	// Add container class to rows that aren't full width
 	function so_row_style_classes( $classes, $args ) {
+
 		if ( ! empty( $args['cells'] ) && $args['cells'] > 1 ) {
 			$classes[] = 'panel-row-multiple';
 		}
 
 		return $classes;
 	}
+
+	// Reduce SO panels margin to 0, allow bootstrap to handle
+	function so_css_row_gutter () {
+	    return 0;
+    }
 
 
 	function proud_prebuilt_layouts( $layouts ) {
