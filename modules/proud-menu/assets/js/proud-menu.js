@@ -30,7 +30,8 @@
       }
 
       self.alterHeight = function(levelTo, animate) {
-        var toHeight = $slider.find('.level-' + levelTo).height();
+        // on bigger screens this is getting cut off, so add 2
+        var toHeight = $slider.find('.level-' + levelTo).height() + 2;
         if(!animate) {
           $slider.height(toHeight);
         }

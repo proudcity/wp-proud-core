@@ -40,8 +40,12 @@ function proud_navbar_transparent() {
  */
 function proud_navbar_body_class( $classes ) {
   $classes[] = 'proud-navbar-active';
+  // Do we have the topbar?
+  if ( get_theme_mod( 'proud_topbar_enable', false ) ) {
+      $classes[] = 'proud-navbar-topbar-active';
+  }
   // Do we have the navbar transparent?
-  if( proud_navbar_transparent() ) {
+  if ( proud_navbar_transparent() ) {
     $classes[] = 'proud-navbar-transparent';
   }
   return $classes;
@@ -79,68 +83,134 @@ function get_site_name_link_url() {
 }
 
 /**
- *  Returns logo html
+ * Builds out a logo meta
+ *
+ * @param $logo
+ * @param $title_name
+ *
+ * @return array
+ */
+function build_logo_meta( $logo, $title_name ) {
+    $image_meta = [];
+    $custom_width = false;
+
+    if($logo) {
+        global $wpdb;
+        // Media ID based image
+        if( is_numeric( $logo ) ) {
+            $media_id = $logo;
+        }
+        // Legacy URL based image
+        else {
+            $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s' AND post_type='attachment' LIMIT 1;", $logo ) );
+        }
+        // Build responsive image, get width
+        if( $media_id ) {
+            // Build responsive meta
+            if( get_theme_mod( $title_name ) ) {
+                $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
+            }
+            else {
+                $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
+            }
+            $image_meta['meta']['image_meta']['alt'] = 'Home';
+            $image_meta['meta']['image_meta']['title'] = 'Home';
+            $image_meta['meta']['image_meta']['class'] = 'logo';
+            if( !get_theme_mod( $title_name ) ) {
+                // try to maximize height @ 64px (and not divide by zero)
+                // 64 = max height, 32 = current horizontal padding
+                $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
+                // 140 max width
+                $custom_width = $custom_width < 140 ? $custom_width : 140;
+            }
+        }
+    }
+
+    return [
+        'image_meta' => $image_meta,
+        'custom_width' => $custom_width,
+    ];
+}
+
+/**
+ * Gets logo markup
+ *
+ * @param $logo
+ * @param $title_name
+ *
+ * @return false|string
+ */
+function get_logo_markup( $logo, $title_name, $pc_default = true ) {
+    $logo_meta = build_logo_meta( $logo, $title_name );
+    // @TODO does this do anything?
+//    $custom_width = $logo_meta['custom_width'];
+
+    // Build user uploaded logo
+    if( !empty( $logo_meta['image_meta'] ) ) {
+        ob_start();
+        Proud\Core\print_retina_image( $logo_meta['image_meta'], false, true );
+        $logo_markup = ob_get_contents();
+        ob_end_clean();
+    }
+    // Build proud logo
+    else if ($pc_default) {
+        ob_start();
+        Proud\Core\print_proud_logo( 'icon-white', [
+            'class' => 'logo',
+            'title' => 'Home',
+            'alt' => 'Home'
+        ] );
+        $logo_markup = ob_get_contents();
+        ob_end_clean();
+    }
+
+    return $logo_markup;
+}
+
+/**
+ *  Returns navbar logo html
+ */
+function get_topbar_logo() {
+    static $topbar_logo_markup  = null;
+
+    if ( null === $topbar_logo_markup ) {
+        // Grab logo
+        $logo = get_theme_mod( 'proud_topbar_logo' );
+        $topbar_logo_markup = get_logo_markup( $logo, 'proud_topbar_title', false );
+    }
+
+    return $topbar_logo_markup;
+}
+
+/**
+ *  Returns navbar logo html
  */
 function get_navbar_logo() {
   static $logo_markup  = null;
-  $custom_logo_id = get_theme_mod( 'custom_logo' );
-  if( null === $logo_markup ) {
-    // Grab logo
-    $logo =  Core\get_proud_logo();
-    $image_meta = [];
-    $custom_width = false;
-    if($logo) {
-      global $wpdb;
-      // Media ID based image
-      if( is_numeric( $logo ) ) {
-        $media_id = $logo;
-      }
-      // Legacy URL based image
-      else {
-        $media_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s' AND post_type='attachment' LIMIT 1;", $logo ) );
-      }
-      // Build responsive image, get width
-      if( $media_id ) {
-        // Build responsive meta
-        if( get_theme_mod( 'proud_logo_includes_title' ) ) {
-          $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo-wide', 'proud-logo-wide-retina' );
-        }
-        else {
-          $image_meta = Core\build_retina_image_meta( $media_id, 'proud-logo', 'proud-logo-retina' );
-        }
-        $image_meta['meta']['image_meta']['alt'] = 'Home';
-        $image_meta['meta']['image_meta']['title'] = 'Home';
-        $image_meta['meta']['image_meta']['class'] = 'logo';
-        if( !get_theme_mod( 'proud_logo_includes_title' ) ) {
-          // try to maximize height @ 64px (and not divide by zero)
-          // 64 = max height, 32 = current horizontal padding 
-          $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width']/$image_meta['meta']['height'] * 64 + 32 : 140;
-          // 140 max width 
-          $custom_width = $custom_width < 140 ? $custom_width : 140;
-        }
-      }
-    }
-    // Build user uploaded logo
-    if( !empty( $image_meta ) ) {
-      ob_start();
-      Proud\Core\print_retina_image( $image_meta, false, true );
-      $logo_markup = ob_get_contents();
-      ob_end_clean();
-    }
-    // Build proud logo
-    else {
-      ob_start();
-      Proud\Core\print_proud_logo( 'icon-white', [
-          'class' => 'logo',
-          'title' => 'Home',
-          'alt' => 'Home'
-      ] );
-      $logo_markup = ob_get_contents();
-      ob_end_clean();
-    }
+
+  if ( null === $logo_markup ) {
+      // Grab logo
+      $logo =  Core\get_proud_logo();
+      $logo_markup = get_logo_markup( $logo, 'proud_logo_includes_title' );
+
   }
 
   return $logo_markup;
+}
+
+/**
+ *  Returns navbar topbar logo area
+ */
+function get_topbar_logo_area() {
+    $topbar_logo = get_topbar_logo();
+    $topbar_title = get_theme_mod( 'proud_topbar_title' );
+
+    ob_start();
+    include plugin_dir_path(__FILE__) . 'templates/nav-topbar-logo-area.php';
+    $topbar_logo_area = ob_get_contents();
+    ob_end_clean();
+
+    return $topbar_logo_area;
 }
 
 /**
@@ -231,6 +301,47 @@ function get_nav_action_toolbar() {
 }
 
 /**
+ * Prints topbar menu
+ */
+function get_nav_topbar_menu() {
+    $menu = '';
+    $menu = apply_filters( 'proud_nav_topbar_menu', $menu );
+
+    // Menu wrap with accessible label
+    $menu_wrap = '<label id="topbar-menu-label" class="sr-only">Quick top menu links</label>';
+    $menu_wrap .= '<ul role="navigation" aria-labelledby="topbar-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
+
+    // No plugin overtaking, try primary
+    if( !$menu && has_nav_menu( 'topbar_menu' ) ) {
+        $menu_args = [
+            'theme_location'    => 'topbar_menu',
+            'container'         => 'div',
+            'container_class'   => 'topbar-navigation',
+            'container_id'      => '',
+            'menu_class'        => 'nav navbar-nav',
+            'menu_id'           => 'topbar-menu',
+            'echo'              => true,
+            'fallback_cb'       => 'wp_page_menu',
+            'before'            => '',
+            'after'             => '',
+            'link_before'       => '',
+            'link_after'        => '',
+            'items_wrap'        => $menu_wrap,
+            'depth'             => 1,
+            'walker'            => ''
+        ];
+        ob_start();
+        wp_nav_menu( $menu_args );
+        $menu = ob_get_contents();
+        ob_end_clean();
+    }
+    // Allow altering
+    $menu = apply_filters( 'proud_nav_topbar_menu_alter', $menu );
+
+    return $menu;
+}
+
+/**
  * Prints primary menu
  */
 function get_nav_primary_menu() {
@@ -291,6 +402,8 @@ function print_proud_navbar() {
 
   // No plugin overtaking, print template
   if( !$navbar ) {
+    $topbar_active = get_theme_mod( 'proud_topbar_enable', false );
+    $topbar_has_action_toolbar = $topbar_active && get_theme_mod( 'proud_topbar_action_icons', false );
     ob_start();
     include plugin_dir_path(__FILE__) . 'templates/navbar.php';
     $navbar = ob_get_contents();
