@@ -131,6 +131,9 @@ if ( !class_exists( 'ProudLayout' ) ) {
           }
           
           if( $display ) {
+            // Make sure breadcrumb runs to get proper hierarchy
+            \Proud\Core\ProudBreadcrumb::build_breadcrumb();
+            // Return true, filtered
             return apply_filters( 'proud/display_sidebar', $display, $req );
           }
         }

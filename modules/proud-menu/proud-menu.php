@@ -254,43 +254,72 @@ add_action('wp_enqueue_scripts',  __NAMESPACE__ . '\\proud_menu_load_js');
  * Prints out breadcrumb
  */
 class ProudBreadcrumb {
+    static $active_trail;
 
-  /** 
-   * Prints breadcrumb
-   */
-  public static function print_breadcrumb( ) {
-    global $pageInfo;    
-    if( !empty( $pageInfo['menu'] ) ) {
-      global $proud_menu_util;
-      $menu_items = $proud_menu_util::get_menu_items( $pageInfo['menu'] );
-      $active_trail = $proud_menu_util::get_active_trail( $pageInfo['menu'] );
-      if( !empty( $menu_items ) ) {
-        $length = count($menu_items);
-        $i = 1;
-        foreach( $menu_items as $menu_item ) {
-          if( isset( $active_trail[(string) $menu_item->ID] ) ) {
-            $active_trail[(string) $menu_item->ID] = [
-              'url' => $menu_item->url,
-              'title' => $menu_item->title
-            ];
-            // We've filled it up
-            if( !empty( end( $active_trail ) ) ) {
-              $active_trail[(string) $menu_item->ID]['active'] = true;
-              break;
+    public static function build_breadcrumb() {
+        global $pageInfo;
+
+        if ( empty( $pageInfo['menu'] ) ) {
+            self::$active_trail = [];
+            return;
+        }
+
+        if ( empty( self::$active_trail ) ) {
+            global $proud_menu_util;
+            $menu_items   = $proud_menu_util::get_menu_items( $pageInfo['menu'] );
+            $active_trail = $proud_menu_util::get_active_trail( $pageInfo['menu'] );
+            if ( ! empty( $menu_items ) ) {
+                foreach ( $menu_items as $menu_item ) {
+                    $menu_id = (string) $menu_item->ID;
+                    if ( isset( $active_trail[ $menu_id ] ) ) {
+                        $active_trail[ $menu_id ] = [
+                            'url'   => $menu_item->url,
+                            'title' => $menu_item->title,
+                            'menu_id' => $menu_id,
+                            'post_id' => (string) $menu_item->object_id,
+                            'post_type' => $menu_item->object,
+                        ];
+                        // We've filled it up
+                        if ( ! empty( end( $active_trail ) ) ) {
+                            $active_trail[ $menu_id ]['active'] = true;
+                            break;
+                        }
+                    }
+                }
+                if ( ! empty( $pageInfo['parent_post_type'] ) ) {
+                    // If we're an agency, prepend the agency title
+                    if ( $pageInfo['parent_post_type'] === 'agency' ) {
+                        array_unshift( $active_trail, [
+                            'url'   => get_permalink( $pageInfo['parent_post'] ),
+                            'title' => get_the_title( $pageInfo['parent_post'] )
+                        ] );
+                    } else {
+                        $firstItem = reset( $active_trail );
+
+                        // Our parent item doesn't match top level, reset
+                        if ( $firstItem['post_id'] !== (string) $pageInfo['parent_post'] ) {
+                            $pageInfo['parent_link'] = $firstItem['menu_id'];
+                            $pageInfo['parent_post'] = $firstItem['post_id'];
+                            $pageInfo['parent_post_type'] = $firstItem['post_type'];
+                        }
+                    }
+                }
+
+                self::$active_trail = $active_trail;
             }
-          }
-          $i++;
         }
-        // If we're an agency, prepend the agency title
-        if( !empty( $pageInfo['parent_post_type'] ) && $pageInfo['parent_post_type'] === 'agency' ) {
-          array_unshift($active_trail, [
-            'url' => get_permalink( $pageInfo['parent_post'] ),
-            'title' => get_the_title( $pageInfo['parent_post'] )
-          ]);
-        }
-      }  
-      // self::build_crumbs($active_trail, $menu_structure);
-      include(plugin_dir_path( __FILE__ ) . 'templates/breadcrumb.php');
     }
-  }
+
+    /**
+     * Prints breadcrumb
+     */
+    public static function print_breadcrumb() {
+        global $pageInfo;
+        if ( ! empty( $pageInfo['menu'] ) ) {
+            self::build_breadcrumb();
+            // Extract for template;
+            $active_trail = self::$active_trail;
+            include( plugin_dir_path( __FILE__ ) . 'templates/breadcrumb.php' );
+        }
+    }
 }
