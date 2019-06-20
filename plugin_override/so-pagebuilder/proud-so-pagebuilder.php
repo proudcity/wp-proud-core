@@ -646,39 +646,36 @@ class ProudSOPagebuilder {
 								),
 						),
 				),
-			'grid_cells'  =>
-				array(
-					0 =>
-						array(
-							'grid'   => 0,
-							'weight' => 1,
-						),
-					1 =>
-						array(
-							'grid'   => 1,
-							'weight' => 1,
-						),
-					2 =>
-						array(
-							'grid'   => 2,
-							'weight' => 0.5,
-						),
-					3 =>
-						array(
-							'grid'   => 2,
-							'weight' => 0.5,
-						),
-					4 =>
-						array(
-							'grid'   => 3,
-							'weight' => 1,
-						),
-					5 =>
-						array(
-							'grid'   => 4,
-							'weight' => 1,
-						),
-				)
+      'grid_cells' =>
+        array (
+          0 =>
+            array (
+              'grid' => 0,
+              'index' => 0,
+              'weight' => 1,
+              'style' =>
+                array (
+                ),
+            ),
+          1 =>
+            array (
+              'grid' => 1,
+              'index' => 0,
+              'weight' => 0.33,
+              'style' =>
+                array (
+                ),
+            ),
+          2 =>
+            array (
+              'grid' => 1,
+              'index' => 1,
+              'weight' => 0.67,
+              'style' =>
+                array (
+                ),
+            ),
+        ),
 		);
 
 		return $layouts;
