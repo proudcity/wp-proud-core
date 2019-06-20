@@ -173,8 +173,8 @@ class ProudSOPagebuilder {
 	function proud_prebuilt_layouts( $layouts ) {
 
 		$layouts['agency-page'] = array(
-			'name'        => __( 'Agency home page', 'proud' ),
-			'description' => __( 'Agency header and sidebar with contact info', 'proud' ),    // Optional
+			'name'        => __( 'Department home page', 'proud' ),
+			'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
 			'widgets'     =>
 				array(
 					0 =>
@@ -300,6 +300,179 @@ class ProudSOPagebuilder {
 						),
 				),
 		);
+
+    $layouts['division-page'] = array(
+      'name'        => __( 'Division page', 'proud' ),
+      'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
+      'widgets' =>
+        array (
+          0 =>
+            array (
+              'headertype' => 'simple',
+              'text' => '<h1>[title]</h1>',
+              'background' => 'image',
+              'pattern' => '',
+              'repeat' => 'full',
+              'featured_image' => 'yes',
+              'image' => '[featured-image]',
+              'slideshow' =>
+                array (
+                  0 =>
+                    array (
+                      'slide_title' => '',
+                      'description' => '',
+                      'link_title' => '',
+                      'link_url' => '',
+                      'slide_image' => '',
+                      'weight' => '0',
+                    ),
+                ),
+              'random' =>
+                array (
+                  0 =>
+                    array (
+                      'random_image' => '',
+                      'weight' => '0',
+                    ),
+                ),
+              'image_vertical' => 'middle',
+              'box_position' => 'middle_left',
+              'make_inverse' => 'no',
+              'option_name' => 'widget_proud_jumbotron_header',
+              'panels_info' =>
+                array (
+                  'class' => 'JumbotronHeader',
+                  'raw' => false,
+                  'grid' => 0,
+                  'cell' => 0,
+                  'id' => 0,
+                  'style' =>
+                    array (
+                      'background_image_attachment' => false,
+                      'background_display' => 'tile',
+                    ),
+                ),
+            ),
+          1 =>
+            array (
+              'title' => '',
+              'option_name' => 'widget_agency_menu',
+              'panels_info' =>
+                array (
+                  'class' => 'AgencyMenu',
+                  'raw' => false,
+                  'grid' => 1,
+                  'cell' => 0,
+                  'id' => 1,
+                  'style' =>
+                    array (
+                    ),
+                ),
+            ),
+          2 =>
+            array (
+              'title' => 'Custom Contact Block enter content',
+              'name' => 'Jane Smith',
+              'name_title' => '',
+              'name_link' => '',
+              'email' => '',
+              'phone' => '111-111-1111',
+              'fax' => '',
+              'sms' => '',
+              'address' => '',
+              'hours' => '',
+              'social_facebook' => '',
+              'social_twitter' => '',
+              'social_instagram' => '',
+              'social_youtube' => '',
+              'social_rss' => '',
+              'social_ical' => '',
+              'option_name' => 'widget_custom_contact',
+              'panels_info' =>
+                array (
+                  'class' => 'CustomContact',
+                  'raw' => false,
+                  'grid' => 1,
+                  'cell' => 0,
+                  'id' => 2,
+                  'style' =>
+                    array (
+                      'background_image_attachment' => false,
+                      'background_display' => 'tile',
+                    ),
+                ),
+            ),
+          3 =>
+            array (
+              'title' => '',
+              'text' => '',
+              'text_selected_editor' => 'tinymce',
+              'autop' => true,
+              '_sow_form_id' => '56ab38067a600',
+              'option_name' => 'widget_sow-editor',
+              'panels_info' =>
+                array (
+                  'class' => 'SiteOrigin_Widget_Editor_Widget',
+                  'raw' => false,
+                  'grid' => 1,
+                  'cell' => 1,
+                  'id' => 3,
+                  'style' =>
+                    array (
+                      'background_image_attachment' => false,
+                      'background_display' => 'tile',
+                    ),
+                ),
+            ),
+        ),
+        'grids' =>
+        array (
+          0 =>
+            array (
+              'cells' => 1,
+              'style' =>
+                array (
+                  'background_display' => 'tile',
+                  'row_stretch' => 'full',
+                ),
+            ),
+          1 =>
+            array (
+              'cells' => 2,
+              'style' =>
+                array (
+                ),
+            ),
+        ),
+        'grid_cells' =>
+        array (
+          0 =>
+            array (
+              'grid' => 0,
+              'index' => 0,
+              'weight' => 1,
+              'style' =>
+                array (
+                ),
+            ),
+          1 =>
+            array (
+              'grid' => 1,
+              'index' => 0,
+              'style' =>
+                array (
+                ),
+            ),
+          2 =>
+            array (
+              'grid' => 1,
+              'index' => 1,
+              'style' =>
+                array (
+                ),
+            ),
+        ),
+    );
 
 		$layouts['landing-page'] = array(
 			'name'        => __( 'Landing page', 'proud' ),
