@@ -25,10 +25,37 @@ if ( !class_exists( 'ProudLayout' ) ) {
         public function get_site_origins_meta( ) {
           static $site_origins_meta = null;
           if( $site_origins_meta === null && function_exists( 'siteorigin_panels_is_panel' ) ) {
-            $id = get_the_ID();
             $site_origins_meta = get_post_meta( get_the_ID(), 'panels_data', false );
           }
-          return $site_origins_meta;
+          if ( !empty( $site_origins_meta ) ) {
+              return reset( $site_origins_meta );
+          }
+          return false;
+        }
+
+        /**
+         * Helper function tests if breadcrumb present with full page-header
+         *
+         * @return boolean
+         */
+        public function post_has_full_breadcrumb( ) {
+            static $has_breadcrumb = null;
+            if ( $has_breadcrumb === null ) {
+                // Set false to avoid another round
+                $has_breadcrumb = false;
+                $meta           = $this->get_site_origins_meta();
+                if ( $meta ) {
+                    // widget active, is breadcrumb, is page_header
+                    if ( ! empty( $meta['widgets'][0]['panels_info']['class'] )
+                         && $meta['widgets'][0]['panels_info']['class'] === 'BreadcrumbWidget'
+                         && ! empty( $meta['widgets'][0]['page_header'] )
+                    ) {
+                        $has_breadcrumb = true;
+                    }
+                }
+            }
+
+            return $has_breadcrumb;
         }
 
         /**
@@ -38,33 +65,30 @@ if ( !class_exists( 'ProudLayout' ) ) {
          * @returns name of jumbotron style
          */
         public function post_has_full_jumbotron_header( ) {
-          static $has_jumbotron = null;
-          if( $has_jumbotron === null ) {
-            // Set false to avoid another round
-            $has_jumbotron = false;
-            $site_origins_meta = $this->get_site_origins_meta( );
-            if( !empty( $site_origins_meta ) ) {
-              $meta = reset( $site_origins_meta );
-              if( !empty( $meta['widgets'] ) ) {
-                // Check if we're first jumbotron large
-                $widget = $meta['widgets'][0];
-                // widget active, is jumbotron, is full width
-                if(  !empty( $widget['panels_info']['class'] ) 
-                  && $widget['panels_info']['class'] === 'JumbotronHeader'
-                  && !empty( $widget['headertype'] )
-                  && $meta['grids'][0]['cells'] === 1
-                  && !empty( $meta['grids'][0]['style']['row_stretch'] )
-                  && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
-                    || $meta['grids'][0]['style']['row_stretch'] === 'full-stretched' )
-                ) {
-                  // Set to header type.  Transparent
-                  // navbar needs to know
-                  $has_jumbotron = $widget['headertype'];
+            static $has_jumbotron = null;
+            if ( $has_jumbotron === null ) {
+                // Set false to avoid another round
+                $has_jumbotron = false;
+                $meta          = $this->get_site_origins_meta();
+                if ( $meta ) {
+                    // Check if we're first jumbotron large
+                    // widget active, is jumbotron, is full width
+                    if ( ! empty( $meta['widgets'][0]['panels_info']['class'] )
+                         && $meta['widgets'][0]['panels_info']['class'] === 'JumbotronHeader'
+                         && ! empty( $meta['widgets'][0]['headertype'] )
+                         && $meta['grids'][0]['cells'] === 1
+                         && ! empty( $meta['grids'][0]['style']['row_stretch'] )
+                         && ( $meta['grids'][0]['style']['row_stretch'] === 'full'
+                              || $meta['grids'][0]['style']['row_stretch'] === 'full-stretched' )
+                    ) {
+                        // Set to header type.  Transparent
+                        // navbar needs to know
+                        $has_jumbotron = $meta['widgets'][0]['headertype'];
+                    }
                 }
-              }
             }
-          }
-          return $has_jumbotron;
+
+            return $has_jumbotron;
         }
 
         /**
@@ -97,22 +121,23 @@ if ( !class_exists( 'ProudLayout' ) ) {
           if ( is_page() ) {
             // $pageInfo is set in wp-proud-core on init
             global $pageInfo;
-            if ( !empty( $pageInfo ) ) {
+            if ( !empty( $pageInfo['parent_post'] ) || !empty( $pageInfo['parent_link'] ) ) {
               if ( $req === false ) {
-                $display = (bool) ( !empty( $pageInfo['parent_post'] ) 
-                               ||   !empty( $pageInfo['parent_link'] ) )
+                $display = (bool) !$this->post_has_full_breadcrumb()
                                && !$this->post_has_full_jumbotron_header();
               }
               // Parent header specific call
               // There must be a parent item
               elseif ( $req === 'title' ) {
                 $display = (bool) !empty( $pageInfo['parent_post'] )
+                               && !$this->post_has_full_breadcrumb()
                                && !$this->post_has_full_jumbotron_header();
               }
               // Sidebar specific call
               // parent should MUST be agecy
               elseif ( $req === 'agency' ) {
-                $display = (bool) !empty( $pageInfo['parent_post'] ) 
+                $display = (bool) !empty( $pageInfo['parent_post'] )
+                               && !$this->post_has_full_breadcrumb()
                                && !$this->post_has_full_jumbotron_header()
                                && !empty( $pageInfo['parent_post_type'] ) 
                                && $pageInfo['parent_post_type'] === 'agency';
@@ -120,8 +145,8 @@ if ( !class_exists( 'ProudLayout' ) ) {
               // Sidebar specific call
               // parent should NOT be agency
               elseif ( $req === 'noagency' ) {
-                $display = (bool) isset( $pageInfo['parent_link'] ) 
-                               && !empty( $pageInfo['parent_link'] )
+                $display = (bool) !empty( $pageInfo['parent_link'] )
+                               && !$this->post_has_full_breadcrumb()
                                && !$this->post_has_full_jumbotron_header()
                                && (  empty( $pageInfo['parent_post_type'] ) 
                                   || $pageInfo['parent_post_type'] !== 'agency'
