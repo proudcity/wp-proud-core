@@ -12,13 +12,14 @@ class FullcalendarWidget extends Core\ProudWidget {
         );
     }
 
-
     /**
     * Define shortcode settings.
     *
     * @return  void
     */
     function initialize() {
+        add_filter( 'wpmfc_calendar_taxonomy_args', array($this, 'wpmfc_calendar_taxonomy_args'), 10, 2 );
+
         $settings = $this->settings;
         $this->post_type = 'event';
         $options = [];
@@ -44,6 +45,19 @@ class FullcalendarWidget extends Core\ProudWidget {
         ];
 
         $this->settings = apply_filters( 'proud_teaser_settings', $settings, $this->post_type );
+    }
+
+    /**
+     * Filter FullCalender to make "All Event Categories" the default
+     *
+     * @param $taxonomy_args
+     * @param $taxonomy
+     *
+     * @return array
+     */
+    public function wpmfc_calendar_taxonomy_args($taxonomy_args, $taxonomy) {
+        $taxonomy_args['selected'] = 0;
+        return $taxonomy_args;
     }
 
     /**
