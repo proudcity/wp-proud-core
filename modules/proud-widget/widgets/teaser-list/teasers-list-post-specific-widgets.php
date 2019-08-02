@@ -133,8 +133,10 @@ class ContactTeaserListWidget extends TeaserListWidget {
         '#default_value' => [],
         '#options' => [
           'agency' => _x( 'Agency', 'post type singular name', 'wp-agency' ),
+          'position' => __( 'Position', 'proud-teaser' ),
           'phone' => __( 'Phone', 'proud-teaser' ),
           'social' => __( 'Social', 'proud-teaser' ),
+          'email' => __( 'Email', 'proud-teaser' ),
         ],
         '#states' => [
           'hidden' => [
