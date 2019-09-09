@@ -120,6 +120,13 @@ class ContactTeaserListWidget extends TeaserListWidget {
     $this->post_type = 'staff-member';
     $this->display_modes = [ 'list', 'table', 'cards' ];
 
+    $this->display_sort = true;
+    $this->sort_by_options += [
+      'menu_order' => 'Menu Order',
+    ];
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
+
     // @TODO sort... seems like by name would only be useful if we had last name capability
   }
 
