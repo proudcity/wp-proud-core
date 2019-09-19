@@ -487,8 +487,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-	      $time = current_time( 'timestamp', 1 );
-	      $day_start = strtotime('midnight', $time );
+	        $time = current_time( 'timestamp', 1 );
+	        $day_start = strtotime('midnight', $time );
           $EM_DateTime = new \EM_DateTime($day_start, 'UTC');
 
           // Event
@@ -515,9 +515,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
             $args['orderby'] = 'meta_value';
-            $args['meta_type'] = 'DATE';
+//            $args['meta_type'] = 'DATE';
             $args['meta_key'] = 'datetime';
-            $args['order'] = 'DESC';
+            $args['order'] = 'ASC';
           }
           // Search
           else {
