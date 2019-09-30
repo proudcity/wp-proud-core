@@ -340,6 +340,13 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     ],
   ];
 
-  //$this->sort_order_default = 'DESC';
+  // Sort options
+  $this->display_sort = true;
+  $this->sort_by_options += [
+    'datetime' => 'Meeting Date',
+  ];
+  $this->sort_by_default = 'datetime'; // Sort by
+  $this->sort_order_default = 'DESC'; // Sort direction
+
   }
 }
