@@ -69,6 +69,17 @@ if ( !class_exists( 'TeaserList' ) ) {
         $this->search_key = 'filter_keyword';
       }
 
+      // Sort posts
+      $this->add_sort( $args, $options );
+      // Final build on args
+      $args = array_merge( [
+        'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist(): $this->post_type,
+        'post_status' => 'publish',
+        // performance enhancements
+        'update_post_term_cache' => false,
+        'update_post_meta_cache' => true,
+      ] , $args );
+
       // Limit to $terms
       if ( $terms ) {
         $args['tax_query'] = [
@@ -120,16 +131,6 @@ if ( !class_exists( 'TeaserList' ) ) {
       	$args['no_found_rows'] = true;
       }
 
-      // Sort posts
-      $this->add_sort( $args, $options );
-      // Final build on args
-      $args = array_merge( [
-        'post_type' => $this->post_type == 'search' ? $proudsearch->search_whitelist(): $this->post_type,
-        'post_status' => 'publish',
-        // performance enhancements
-        'update_post_term_cache' => false,
-        'update_post_meta_cache' => true,
-      ] , $args );
 
       // Do we need to execute a featured (sticky) query?
       // @TODO make custom post types work with sticky
@@ -154,6 +155,7 @@ if ( !class_exists( 'TeaserList' ) ) {
 
       // If posts per page is set to 0, make it show all posts (up to 100)
       $args[ 'posts_per_page' ] = ( (int) $args[ 'posts_per_page' ] ) === 0 ? 100 : $args[ 'posts_per_page' ];
+
       // Build query
       $this->query = new \WP_Query( apply_filters( 
         'proud_teaser_query_args',
@@ -442,8 +444,15 @@ if ( !class_exists( 'TeaserList' ) ) {
       // Have user defined sort?
       if( !empty( $options['sort_by'] ) && !empty( $options['sort_order'] ) ) {
         $this->apply_user_sort( $args, $options );
+
+        if ($this->post_type === 'meeting' && $options['sort_by'] === 'datetime') {
+          $args['meta_type'] = 'DATE';
+          $args['meta_key'] = 'datetime';
+        }
+
         return;
       }
+
 
       switch( $this->post_type ) {
         case 'post':
@@ -481,6 +490,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'event':
         case 'meeting':
         case 'search':
+
           // http://www.billerickson.net/wp-query-sort-by-meta/
           $query_key =  '_event_start_local';
           // @ TODO figure out optimized query that allows 
@@ -511,13 +521,15 @@ if ( !class_exists( 'TeaserList' ) ) {
                   'value' => $EM_DateTime->getDate()
               ),
             );
+
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
-            $args['orderby'] = 'meta_value';
+//
+//            $args['orderby'] = 'meta_value';
 //            $args['meta_type'] = 'DATE';
-            $args['meta_key'] = 'datetime';
-            $args['order'] = 'ASC';
+//            $args['meta_key'] = 'datetime';
+//            $args['order'] = 'ASC';
           }
           // Search
           else {
