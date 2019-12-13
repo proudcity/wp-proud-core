@@ -10,6 +10,7 @@ jQuery(document).ready( function($){
           }
           else {
             var $filename = $(this).prev('div.upload_file_name');
+            var $removeBtn = $(this).parent().find('.remove_file_button');
             var $input = $filename.prev('input');
           }
           var send_attachment_bkp = wp.media.editor.send.attachment;
@@ -22,6 +23,8 @@ jQuery(document).ready( function($){
                  }
                  else {
                    $filename.html('<a href="'+ attachment.url +'">'+ attachment.filename +'</a>');
+                   console.log(' $removeBtn',  $removeBtn.html());
+                   $removeBtn.show();
                    $input.val(attachment.id);
                  }
               } else {
@@ -36,4 +39,18 @@ jQuery(document).ready( function($){
 
   media_upload('.upload_image_button', 'image');
   media_upload('.upload_file_button', 'file');
+
+  $('.upload_image_button, .upload_file_button, .remove_file_button').css({
+    'min-width': 0,
+    'max-width': '120px',
+  });
+  $('.remove_file_button').bind('click', function(e) {
+    e.preventDefault();
+    var $parent = $(this).parent();
+    $parent.find('.form-control').val('');
+    $parent.find('.upload_file_name').html('');
+    $parent.find('.upload_file_button').val('Select File');
+    $(this).hide();
+  })
+  $('.remove_file_button').css({'margin': 0});
 });
