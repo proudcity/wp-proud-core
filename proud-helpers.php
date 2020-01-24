@@ -470,16 +470,16 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
 // Returns a text string of Federal Holidays.
 // Form: https://www.redcort.com/us-federal-bank-holidays/ 
 function federalHolidays() {
-  return 'New Year\'s Day: Tuesday, January 1 2019
-Martin Luther King, Jr. Day: Monday, January 20 2019
-George Washington’s Birthday: Monday, February 17 2019
-Memorial Day: Monday, May 25 2019
-Independence Day: Thursday, July 3 2019
-Labor Day: Monday, September 7 2019
-Columbus Day: Monday, October 12 2019
-Veterans Day: Monday, November 11 2019
-Thanksgiving Day: Thursday, November 26 2019
-Christmas Day: Wednesday, December 25 2019';
+  return 'New Year\'s Day: Tuesday, January 1 2020
+Martin Luther King, Jr. Day: Monday, January 20 2020
+George Washington’s Birthday: Monday, February 17 2020
+Memorial Day: Monday, May 25 2020
+Independence Day: Thursday, July 3 2020
+Labor Day: Monday, September 7 2020
+Columbus Day: Monday, October 12 2020
+Veterans Day: Monday, November 11 2020
+Thanksgiving Day: Thursday, November 26 2020
+Christmas Day: Wednesday, December 25 2020';
 }
 
 
