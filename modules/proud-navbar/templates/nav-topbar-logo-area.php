@@ -2,7 +2,7 @@
     <ul class="logo-menu list-unstyled clearfix">
         <?php if ( $topbar_logo ): ?>
             <li class="h3">
-                <a href="<?php echo get_logo_link_url(); ?>" title="Home" rel="home" id="header-logo" class="nav-logo same-window">
+                <a href="<?php echo get_logo_link_url(); ?>" title="Home" rel="home" id="header-logo-topbar" class="nav-logo same-window">
                     <?php echo $topbar_logo ?>
                 </a>
             </li>
