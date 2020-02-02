@@ -34,6 +34,14 @@ class ProudGravityformsStripe {
             // Add the ProudCity Payments fee
             $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
             $charge_meta['application_fee'] = round(30 + $submission_data['payment_amount'] * $percent); // In cents
+
+            // Add the statement descriptor suffix
+            // Will be in the form `ProudCity * $descriptor` (can be22 characters total)
+            // Example: `ProudCity * San Rafael` (22 chars)
+            // https://stripe.com/docs/statement-descriptors
+            $descriptor = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
+            $charge_meta['statement_descriptor'] = $descriptor;
+            $charge_meta['statement_descriptor_suffix'] = $descriptor;
         }
 
         // Add Metadata
