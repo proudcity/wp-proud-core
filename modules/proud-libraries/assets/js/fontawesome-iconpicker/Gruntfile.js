@@ -1,13 +1,29 @@
-'use strict';
+"use strict";
+
+const FONTAWESOME_VERSION = "5.13.0";
+const jsBanner = `/*!
+ * Font Awesome Icon Picker
+ * https://farbelous.github.io/fontawesome-iconpicker/
+ *
+ * @author Javi Aguilar, itsjavi.com
+ * @license MIT License
+ * @see https://github.com/farbelous/fontawesome-iconpicker/blob/master/LICENSE
+ */
+ `;
+
 module.exports = function(grunt) {
-    const parsedIconPicker = 'prod/src/js/iconpicker.js';
-    const tempIconsFile = '.icons.temp';
+    const parsedIconPicker = "prod/src/js/iconpicker.js";
+    const tempIconsFile = ".icons.temp";
     grunt.initConfig({
         download: {
             somefile: {
-                src: ['https://raw.githubusercontent.com/FortAwesome/Font-Awesome/5.1.1/advanced-options/metadata/icons.yml'],
+                src: [
+                    "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/" +
+                    FONTAWESOME_VERSION +
+                    "/metadata/icons.yml"
+                ],
                 dest: tempIconsFile
-            },
+            }
         },
         yaml: {
             getIcons: {
@@ -21,27 +37,27 @@ module.exports = function(grunt) {
                         sourceJSON = JSON.parse(sourceJSON);
                         Object.keys(sourceJSON).forEach(function(key) {
                             let ele = sourceJSON[key];
-                            let icon = 'fa-' + key;
+                            let icon = "fa-" + key;
                             ele.styles.forEach(function(style) {
                                 style = style.toLowerCase();
-                                if (style.startsWith('brand')) {
+                                if (style.startsWith("brand")) {
                                     targetJSON.icons.push({
-                                        title: 'fab ' + icon,
+                                        title: "fab " + icon,
                                         searchTerms: ele.search.terms
                                     });
-                                } else if (style.startsWith('solid')) {
+                                } else if (style.startsWith("solid")) {
                                     targetJSON.icons.push({
-                                        title: 'fas ' + icon,
+                                        title: "fas " + icon,
                                         searchTerms: ele.search.terms
                                     });
-                                } else if (style.startsWith('regular')) {
+                                } else if (style.startsWith("regular")) {
                                     targetJSON.icons.push({
-                                        title: 'far ' + icon,
+                                        title: "far " + icon,
                                         searchTerms: ele.search.terms
                                     });
-                                } else if (style.startsWith('light')) {
+                                } else if (style.startsWith("light")) {
                                     targetJSON.icons.push({
-                                        title: 'fal ' + icon,
+                                        title: "fal " + icon,
                                         searchTerms: ele.search.terms
                                     });
                                 }
@@ -55,16 +71,16 @@ module.exports = function(grunt) {
                     src: [tempIconsFile],
                     dest: tempIconsFile
                 }]
-            },
+            }
         },
-        'string-replace': {
+        "string-replace": {
             dist: {
                 files: {
-                    'prod/': ['src/js/iconpicker.js'],
+                    "prod/": ["src/js/iconpicker.js"]
                 },
                 options: {
                     replacements: [{
-                        pattern: '//###REPLACE-WITH-FONT-AWESOME-5-FONTS###',
+                        pattern: "//###REPLACE-WITH-FONT-AWESOME-5-FONTS###",
                         replacement: "<%= grunt.file.read('" + tempIconsFile + "') %>"
                     }]
                 }
@@ -77,9 +93,7 @@ module.exports = function(grunt) {
                     compress: false
                 },
                 files: {
-                    'dist/css/fontawesome-iconpicker.css': [
-                        'src/less/iconpicker.less'
-                    ]
+                    "dist/css/fontawesome-iconpicker.css": ["src/less/iconpicker.less"]
                 }
             },
             distMin: {
@@ -88,26 +102,26 @@ module.exports = function(grunt) {
                     compress: true
                 },
                 files: {
-                    'dist/css/fontawesome-iconpicker.min.css': [
-                        'src/less/iconpicker.less'
+                    "dist/css/fontawesome-iconpicker.min.css": [
+                        "src/less/iconpicker.less"
                     ]
                 }
             }
         },
         jsbeautifier: {
-            files: ['Gruntfile.js', 'src/js/*.js', parsedIconPicker]
+            files: ["Gruntfile.js", "src/js/*.js", parsedIconPicker]
         },
         uglify: {
             distMin: {
                 options: {
                     compress: {},
                     beautify: false,
-                    preserveComments: 'some'
+                    comments: "some",
+                    banner: jsBanner
                 },
                 files: {
-                    'dist/js/fontawesome-iconpicker.min.js': [
-                        'src/js/license.js',
-                        'src/js/jquery.ui.pos.js',
+                    "dist/js/fontawesome-iconpicker.min.js": [
+                        "src/js/jquery.ui.pos.js",
                         parsedIconPicker
                     ]
                 }
@@ -116,12 +130,12 @@ module.exports = function(grunt) {
                 options: {
                     compress: false,
                     beautify: true,
-                    preserveComments: 'some'
+                    comments: "some",
+                    banner: jsBanner
                 },
                 files: {
-                    'dist/js/fontawesome-iconpicker.js': [
-                        'src/js/license.js',
-                        'src/js/jquery.ui.pos.js',
+                    "dist/js/fontawesome-iconpicker.js": [
+                        "src/js/jquery.ui.pos.js",
                         parsedIconPicker
                     ]
                 }
@@ -129,53 +143,40 @@ module.exports = function(grunt) {
         },
         watch: {
             less: {
-                files: [
-                    'src/less/*.less'
-                ],
-                tasks: ['less']
+                files: ["src/less/*.less"],
+                tasks: ["less"]
             },
             js: {
-                files: [
-                    'src/js/*.js'
-                ],
-                tasks: ['uglify']
+                files: ["src/js/*.js"],
+                tasks: ["uglify"]
             }
         },
         clean: {
-            dist: [
-                'dist/css',
-                'dist/js/*.js'
-            ],
-            temp: [
-                tempIconsFile,
-                'prod/'
-            ]
+            dist: ["dist/css", "dist/js/*.js"],
+            temp: [tempIconsFile, "prod/"]
         }
     });
 
     // Load tasks
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-jsbeautifier');
-    grunt.loadNpmTasks('grunt-yaml');
-    grunt.loadNpmTasks('grunt-http-download');
-    grunt.loadNpmTasks('grunt-string-replace');
+    grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-contrib-watch");
+    grunt.loadNpmTasks("grunt-contrib-less");
+    grunt.loadNpmTasks("grunt-jsbeautifier");
+    grunt.loadNpmTasks("grunt-yaml");
+    grunt.loadNpmTasks("grunt-http-download");
+    grunt.loadNpmTasks("grunt-string-replace");
 
     // Register tasks
-    grunt.registerTask('default', [
-        'download',
-        'yaml',
-        'string-replace',
-        'clean:dist',
-        'less',
-        'jsbeautifier',
-        'uglify',
-        'clean:temp'
+    grunt.registerTask("default", [
+        "download",
+        "yaml",
+        "string-replace",
+        "clean:dist",
+        "less",
+        "jsbeautifier",
+        "uglify",
+        "clean:temp"
     ]);
-    grunt.registerTask('dev', [
-        'watch'
-    ]);
-
+    grunt.registerTask("dev", ["watch"]);
 };
