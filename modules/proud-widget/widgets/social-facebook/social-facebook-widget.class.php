@@ -18,6 +18,12 @@ class SocialFacebook extends Core\ProudWidget {
   function initialize() {
     // $this->settings = [];
     $this->settings = [
+      'title' => [
+        '#title' => 'Title',
+        '#type' => 'text',
+        '#default_value' => 'Facebook',
+        '#to_js_settings' => false
+      ],
       'facebook_page_url' => [
         '#title' => 'Facebook Page URL',
         '#type' => 'text',
@@ -69,7 +75,7 @@ class SocialFacebook extends Core\ProudWidget {
     ?>
     <div id="fb-root"></div>
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v6.0"></script>
-    <div class="fb-page" data-href="<?php echo $instance['facebook_page_url'] ?>" data-tabs="<?php echo implode(', ', array_keys($instance['tabs'])) ?>" data-width="500" data-height="<?php echo $instance['height'] ?>" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="false"><blockquote cite="https://www.facebook.com/facebook" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/facebook">Facebook</a></blockquote></div>
+    <div class="fb-page" data-href="<?php echo $instance['facebook_page_url'] ?>" data-tabs="<?php echo implode(', ', array_keys($instance['tabs'])) ?>" data-width="500" data-height="<?php echo $instance['height'] ?>" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="false"></div>
     <?php
   }
 }

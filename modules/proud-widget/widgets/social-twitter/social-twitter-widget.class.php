@@ -18,6 +18,12 @@ class SocialTwitter extends Core\ProudWidget {
   function initialize() {
     // $this->settings = [];
     $this->settings = [
+      'title' => [
+        '#title' => 'Title',
+        '#type' => 'text',
+        '#default_value' => 'Twitter',
+        '#to_js_settings' => false
+        ],
       'handle' => [
         '#title' => 'Handle',
         '#type' => 'text',
@@ -58,8 +64,8 @@ class SocialTwitter extends Core\ProudWidget {
   public function printWidget( $args, $instance ) {
     $handle = str_replace('@', '', $instance['handle']);
     ?>
-    <div style="height:<?php echo $instance['height'] ?>px">
-      <a class="twitter-timeline" href="https://twitter.com/<?php echo $handle ?>">Tweets by <?php echo $handle ?></a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <div style="height:<?php echo $instance['height'] ?>px; border: 1px solid #eee; margin-bottom: 1em;overflow-y:scroll;">
+      <a class="twitter-timeline" href="https://twitter.com/<?php echo $handle ?>"></a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     </div>
     <?php
   }
