@@ -51,7 +51,7 @@ class JumbotronHeader extends Core\ProudWidget {
       ],
       'page_title'=> [
         '#title' => __( 'Title', 'wp-proud-core' ),
-        // '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
+        '#description' => __( 'Enter <code>[title]</code> to use the page title. Other tokens: <code>[sitename]</code> <code>[slogan]</code>.', 'wp-proud-core' ),
         '#type' => 'text',
         '#default_value'  => '',
         '#states' => [
@@ -81,7 +81,7 @@ class JumbotronHeader extends Core\ProudWidget {
       ],
       'text'=> [
         '#title' => __( 'Text', 'wp-proud-core' ),
-        '#description' => __( 'HTML code is allowed', 'wp-proud-core' ),
+        '#description' => __( 'HTML code is allowed. Certain tokens also supported: <code>[widget widget_name="SearchBox"]</code>.', 'wp-proud-core' ),
         '#type' => 'textarea',
         '#default_value'  => '',
         'rows' => 15,
