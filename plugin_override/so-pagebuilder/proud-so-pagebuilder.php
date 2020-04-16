@@ -220,6 +220,15 @@ class ProudSOPagebuilder {
                 'name'        => __( 'Watch live page', 'proud' ),
                 'description' => __( 'Stream your meetings live online', 'proud' ),
             ],
+            'department' => [
+                'name'        => __( 'Department home page', 'proud' ),
+                'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
+                // 'screenshot' => 'https://siteorigin.com/wp-content/themes/siteorigin-theme/images/logo/logo-hover@2x.png',
+            ],
+            'division' => [
+                'name'        => __( 'Division page', 'proud' ),
+                'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
+            ],
             'department-documents' => [
                 'name'        => __( 'Department documents', 'proud' ),
                 'description' => __( 'A searchable list of documents for a specific department', 'proud' ),
@@ -232,22 +241,14 @@ class ProudSOPagebuilder {
                 'name'        => __( 'Department staff page', 'proud' ),
                 'description' => __( 'A staff list for a specific department', 'proud' ),
             ],
-
-
-
-
-
-
-            // 'agency' => [
-            //     'name'        => __( 'Department home page', 'proud' ),
-            //     'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
-            //     // 'screenshot' => 'https://siteorigin.com/wp-content/themes/siteorigin-theme/images/logo/logo-hover@2x.png',
-            // ],
-            // 'division' => [
-            //     'name'        => __( 'Division page', 'proud' ),
-            //     'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
-            // ],
-            
+            'meeting-category' => [
+                'name'        => __( 'Meeting category page', 'proud' ),
+                'description' => __( 'A list of meetings for a specific category', 'proud' ),
+            ],
+            'meeting-archive' => [
+                'name'        => __( 'Meeting archive page', 'proud' ),
+                'description' => __( 'A list of meetings that is ideal for annual archives', 'proud' ),
+            ],
             
         ];
 
