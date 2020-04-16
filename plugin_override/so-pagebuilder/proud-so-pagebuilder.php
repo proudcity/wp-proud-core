@@ -131,7 +131,7 @@ class ProudSOPagebuilder {
 
 	// Load scripts
 	function scripts() {
-		$path = plugins_url( 'assets/js/', __FILE__ ) . 'proud-so-pagebuilder.js';
+		$path = plugins_url( 'assets/js/', __FILE__ ) . 'proud-sobuilder.js';
 		wp_register_script( 'proud-so-admin-js', $path );
         wp_enqueue_script( 'proud-so-admin-js' );
     }
@@ -170,809 +170,91 @@ class ProudSOPagebuilder {
     }
 
 
-    // To generate these exports, follow steps on https://siteorigin.com/thread/programmatically-define-prebuilt-page-layouts/
+    // To generate these exports, follow steps on https://siteorigin.com/thread/programmatically-define-prebuilt-layouts/
     // Or, just enable Debug Bar and Debug Bar Consolr, and enter
     //   <pre><?php var_export( get_post_meta(30746, 'panels_data', true));
 	function proud_prebuilt_layouts( $layouts ) {
 
-		$layouts['agency-page'] = array(
-			'name'        => __( 'Department home page', 'proud' ),
-			'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
-			'widgets'     =>
-				array(
-					0 =>
-						array(
-							'text'         => '<h1>[title]</h1>',
-							'headertype'   => 'header',
-							'background'   => 'image',
-							'pattern'      => '',
-							'repeat'       => 'full',
-							'image'        => '[featured-image]',
-							'make_inverse' => 'no',
-							'panels_info'  =>
-								array(
-									'class' => 'JumbotronHeader',
-									'grid'  => 0,
-									'cell'  => 0,
-									'id'    => 0,
-								),
-						),
-					1 =>
-						array(
-							'title'       => '',
-							'panels_info' =>
-								array(
-									'class' => 'AgencyMenu',
-									'raw'   => false,
-									'grid'  => 1,
-									'cell'  => 0,
-									'id'    => 1,
-								),
-						),
-					2 =>
-						array(
-							'title'       => '',
-							'panels_info' =>
-								array(
-									'class' => 'AgencySocial',
-									'raw'   => false,
-									'grid'  => 1,
-									'cell'  => 0,
-									'id'    => 2,
-								),
-						),
-					3 =>
-						array(
-							'title'       => 'Contact',
-							'panels_info' =>
-								array(
-									'class' => 'AgencyContact',
-									'raw'   => false,
-									'grid'  => 1,
-									'cell'  => 0,
-									'id'    => 3,
-								),
-						),
-					4 =>
-						array(
-							'title'       => 'Hours',
-							'panels_info' =>
-								array(
-									'class' => 'AgencyHours',
-									'raw'   => false,
-									'grid'  => 1,
-									'cell'  => 0,
-									'id'    => 4,
-								),
-						),
-					5 =>
-						array(
-							'title'                => '',
-							'text'                 => '',
-							'text_selected_editor' => 'tinymce',
-							'autop'                => true,
-							'_sow_form_id'         => '56ab38067a600',
-							'panels_info'          =>
-								array(
-									'class' => 'SiteOrigin_Widget_Editor_Widget',
-									'grid'  => 1,
-									'cell'  => 1,
-									'id'    => 5,
-									'style' =>
-										array(
-											'background_image_attachment' => false,
-											'background_display'          => 'tile',
-										),
-								),
-						),
-				),
-			'grids'       =>
-				array(
-					0 =>
-						array(
-							'cells' => 1,
-							'style' =>
-								array(
-									'row_stretch'        => 'full',
-									'background_display' => 'tile',
-								),
-						),
-					1 =>
-						array(
-							'cells' => 2,
-							'style' =>
-								array(),
-						),
-				),
-			'grid_cells'  =>
-				array(
-					0 =>
-						array(
-							'grid'   => 0,
-							'weight' => 1,
-						),
-					1 =>
-						array(
-							'grid'   => 1,
-							'weight' => 0.33345145287029998,
-						),
-					2 =>
-						array(
-							'grid'   => 1,
-							'weight' => 0.66654854712970002,
-						),
-				),
-		);
-
-    $layouts['division-page'] = array(
-      'name'        => __( 'Division page', 'proud' ),
-      'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
-      'widgets' => 
-        array (
-          0 => 
-          array (
-            'headertype' => 'simple',
-            'text' => '<h1>[title]</h1>',
-            'background' => 'image',
-            'pattern' => '',
-            'repeat' => 'full',
-            'featured_image' => 'yes',
-            'image' => '[featured-image]',
-            'slideshow' => 
-            array (
-              0 => 
-              array (
-                'slide_title' => '',
-                'description' => '',
-                'link_title' => '',
-                'link_url' => '',
-                'slide_image' => '',
-                'weight' => '0',
-              ),
-            ),
-            'random' => 
-            array (
-              0 => 
-              array (
-                'random_image' => '',
-                'weight' => '0',
-              ),
-            ),
-            'image_vertical' => 'middle',
-            'box_position' => 'middle_left',
-            'make_inverse' => 'no',
-            'option_name' => 'widget_proud_jumbotron_header',
-            'panels_info' => 
-            array (
-              'class' => 'JumbotronHeader',
-              'raw' => false,
-              'grid' => 0,
-              'cell' => 0,
-              'id' => 0,
-              'widget_id' => '8f550c99-57cd-4a02-8a9e-9d0e8d399fa9',
-              'style' => 
-              array (
-                'background_image_attachment' => false,
-                'background_display' => 'tile',
-              ),
-            ),
-          ),
-          1 => 
-          array (
-            'page_header' => '0',
-            'panels_info' => 
-            array (
-              'class' => 'BreadcrumbWidget',
-              'raw' => false,
-              'grid' => 1,
-              'cell' => 0,
-              'id' => 1,
-              'widget_id' => 'e86d93cf-74bf-469b-9974-d6996aaf5ff8',
-              'style' => 
-              array (
-                'background_image_attachment' => false,
-                'background_display' => 'tile',
-              ),
-            ),
-          ),
-          2 => 
-          array (
-            'title' => '',
-            'option_name' => 'widget_agency_menu',
-            'panels_info' => 
-            array (
-              'class' => 'AgencyMenu',
-              'raw' => false,
-              'grid' => 2,
-              'cell' => 0,
-              'id' => 2,
-              'widget_id' => '1ec2b97c-f43e-4ca4-b5e5-6179003000c2',
-              'style' => 
-              array (
-              ),
-            ),
-          ),
-          3 => 
-          array (
-            'title' => 'Custom Contact Block enter content',
-            'name' => 'Jane Smith',
-            'name_title' => '',
-            'name_link' => '',
-            'email' => '',
-            'phone' => '111-111-1111',
-            'fax' => '',
-            'sms' => '',
-            'address' => '',
-            'hours' => '',
-            'social_facebook' => '',
-            'social_twitter' => '',
-            'social_instagram' => '',
-            'social_youtube' => '',
-            'social_rss' => '',
-            'social_ical' => '',
-            'option_name' => 'widget_custom_contact',
-            'panels_info' => 
-            array (
-              'class' => 'CustomContact',
-              'raw' => false,
-              'grid' => 2,
-              'cell' => 0,
-              'id' => 3,
-              'widget_id' => '4a1424a5-afdd-42b2-8486-96444ccd1209',
-              'style' => 
-              array (
-                'background_image_attachment' => false,
-                'background_display' => 'tile',
-              ),
-            ),
-          ),
-          4 => 
-          array (
-            'title' => '',
-            'text' => '',
-            'text_selected_editor' => 'tinymce',
-            'autop' => true,
-            '_sow_form_id' => '56ab38067a600',
-            'option_name' => 'widget_sow-editor',
-            'panels_info' => 
-            array (
-              'class' => 'SiteOrigin_Widget_Editor_Widget',
-              'raw' => false,
-              'grid' => 2,
-              'cell' => 1,
-              'id' => 4,
-              'widget_id' => '869f7140-e7e5-41d2-a014-48f41f61bccd',
-              'style' => 
-              array (
-                'background_image_attachment' => false,
-                'background_display' => 'tile',
-              ),
-            ),
-          ),
-        ),
-        'grids' => 
-        array (
-          0 => 
-          array (
-            'cells' => 1,
-            'style' => 
-            array (
-              'background_display' => 'tile',
-              'row_stretch' => 'full',
-            ),
-          ),
-          1 => 
-          array (
-            'cells' => 1,
-            'style' => 
-            array (
-              'background_image_attachment' => false,
-              'background_display' => 'tile',
-              'cell_alignment' => 'flex-start',
-            ),
-            'ratio' => 1,
-            'ratio_direction' => 'right',
-          ),
-          2 => 
-          array (
-            'cells' => 2,
-            'style' => 
-            array (
-            ),
-          ),
-        ),
-        'grid_cells' => 
-        array (
-          0 => 
-          array (
-            'grid' => 0,
-            'index' => 0,
-            'weight' => 1,
-            'style' => 
-            array (
-            ),
-          ),
-          1 => 
-          array (
-            'grid' => 1,
-            'index' => 0,
-            'weight' => 1,
-            'style' => 
-            array (
-            ),
-          ),
-          2 => 
-          array (
-            'grid' => 2,
-            'index' => 0,
-            'weight' => 0.33,
-            'style' => 
-            array (
-            ),
-          ),
-          3 => 
-          array (
-            'grid' => 2,
-            'index' => 1,
-            'weight' => 0.67,
-            'style' => 
-            array (
-            ),
-          ),
-        ),
-    );
+        $layoutKeys = [
+            'homepage' => [
+                'name'        => __( 'Homepage', 'proud' ),
+                'description' => __( 'The standard ProudCity homepage', 'proud' ),         
+            ],
+            'landing' => [
+                'name'        => __( 'Landing page', 'proud' ),
+                'description' => __( 'Used on the homepage and other similar pages', 'proud' ),   
+            ],
+            'connect' => [
+                'name'        => __( 'Connect page', 'proud' ),
+                'description' => __( 'Links to Social networks and Facebook and Twitter embeds', 'proud' ),    
+            ],
+            'directory' => [
+                'name'        => __( 'Directory page', 'proud' ),
+                'description' => __( 'A list of Department contact information', 'proud' ),   
+            ],
+            'contact' => [
+                'name'        => __( 'Contact page', 'proud' ),
+                'description' => __( 'Contact links, form, phone number, address and hours', 'proud' ),
+            ],
+            'events' => [
+                'name'        => __( 'Events page', 'proud' ),
+                'description' => __( 'A searchable list of upcoming events', 'proud' ),
+            ],
+            'news' => [
+                'name'        => __( 'News page', 'proud' ),
+                'description' => __( 'A searchable list recent news posts', 'proud' ),
+            ],
+            'government' => [
+                'name'        => __( 'Government page', 'proud' ),
+                'description' => __( 'A list of officials, deparments, and documents', 'proud' ),
+            ],
+            'services' => [
+                'name'        => __( 'Services page', 'proud' ),
+                'description' => __( 'A page dedicated to the ProudCity Service Center', 'proud' ),
+            ],
+            'service' => [
+                'name'        => __( 'Service page', 'proud' ),
+                'description' => __( 'Details and FAQ for an individual service', 'proud' ), //@todo
+            ],
+            'live' => [
+                'name'        => __( 'Watch live page', 'proud' ),
+                'description' => __( 'Stream your meetings live online', 'proud' ),
+            ],
+            'department-documents' => [
+                'name'        => __( 'Department documents', 'proud' ),
+                'description' => __( 'A searchable list of documents for a specific department', 'proud' ),
+            ],
+            'department-faq' => [
+                'name'        => __( 'Department FAQ page', 'proud' ),
+                'description' => __( 'Frequently asked questions for a specific department', 'proud' ),
+            ],
+            'department-staff' => [
+                'name'        => __( 'Department staff page', 'proud' ),
+                'description' => __( 'A staff list for a specific department', 'proud' ),
+            ],
 
 
-		$layouts['landing-page'] = array(
-			'name'        => __( 'Landing page', 'proud' ),
-			'description' => __( 'Used on the homepage and other similar pages', 'proud' ),    // Optional
-			'widgets'     => array(
-				0 =>
-					array(
-						'title'       => '',
-						'text'        => 'teafd',
-						'filter'      => false,
-						'panels_info' =>
-							array(
-								'class' => 'WP_Widget_Text',
-								'raw'   => false,
-								'grid'  => 0,
-								'cell'  => 0,
-								'id'    => 0,
-								'style' =>
-									array(
-										'background_display' => 'tile',
-									),
-							),
-					),
-				1 =>
-					array(
-						'title'            => '',
-						'active_tabs'      =>
-							array(
-								'faq'      => 'faq',
-								'payments' => 'payments',
-								'report'   => 'report',
-								'status'   => 'status',
-							),
-						'category_section' =>
-							array(
-								0 => true,
-							),
-						'panels_info'      =>
-							array(
-								'class' => 'ActionsBox',
-								'raw'   => false,
-								'grid'  => 1,
-								'cell'  => 0,
-								'id'    => 1,
-							),
-					),
-				2 =>
-					array(
-						'title'                => 'Recent news',
-						'proud_teaser_content' => 'post',
-						'proud_teaser_display' => 'mini',
-						'post_count'           => '3',
-						'link_title'           => 'More news',
-						'link_url'             => '/news',
-						'panels_info'          =>
-							array(
-								'class' => 'TeaserListWidget',
-								'raw'   => false,
-								'grid'  => 2,
-								'cell'  => 0,
-								'id'    => 2,
-								'style' =>
-									array(
-										'background_display' => 'tile',
-									),
-							),
-					),
-				3 =>
-					array(
-						'title'                => 'Upcoming events',
-						'proud_teaser_content' => 'event',
-						'proud_teaser_display' => 'list',
-						'post_count'           => '3',
-						'link_title'           => 'More events',
-						'link_url'             => '/events',
-						'panels_info'          =>
-							array(
-								'class' => 'TeaserListWidget',
-								'raw'   => false,
-								'grid'  => 2,
-								'cell'  => 1,
-								'id'    => 3,
-								'style' =>
-									array(
-										'background_display' => 'tile',
-									),
-							),
-					),
-				4 =>
-					array(
-						'title'       => '',
-						'accounts'    => 'all',
-						'custom'      => '',
-						'services'    =>
-							array(
-								'facebook'  => 'facebook',
-								'twitter'   => 'twitter',
-								'youtube'   => 'youtube',
-								'instagram' => 'instagram',
-								'ical'      => 'ical',
-								'rss'       => 'rss',
-							),
-						'widget_type' => 'static',
-						'post_count'  => '20',
-						'panels_info' =>
-							array(
-								'class' => 'SocialFeed',
-								'raw'   => false,
-								'grid'  => 3,
-								'cell'  => 0,
-								'id'    => 4,
-							),
-					),
-				5 =>
-					array(
-						'title'         => '',
-						'active_layers' =>
-							array(
-								'all' => 'all',
-							),
-						'panels_info'   =>
-							array(
-								'class' => 'LocalMap',
-								'raw'   => false,
-								'grid'  => 4,
-								'cell'  => 0,
-								'id'    => 5,
-								'style' =>
-									array(
-										'background_display' => 'tile',
-									),
-							),
-					),
-			),
-			'grids'       =>
-				array(
-					0 =>
-						array(
-							'cells' => 1,
-							'style' =>
-								array(
-									'row_stretch'        => 'full',
-									'background_display' => 'tile',
-								),
-						),
-					1 =>
-						array(
-							'cells' => 1,
-							'style' =>
-								array(),
-						),
-					2 =>
-						array(
-							'cells' => 2,
-							'style' =>
-								array(),
-						),
-					3 =>
-						array(
-							'cells' => 1,
-							'style' =>
-								array(),
-						),
-					4 =>
-						array(
-							'cells' => 1,
-							'style' =>
-								array(
-									'row_stretch'        => 'full',
-									'background_display' => 'tile',
-								),
-						),
-				),
-			'grid_cells'  =>
-				array(
-					0 =>
-						array(
-							'grid'   => 0,
-							'weight' => 1,
-						),
-					1 =>
-						array(
-							'grid'   => 1,
-							'weight' => 1,
-						),
-					2 =>
-						array(
-							'grid'   => 2,
-							'weight' => 0.5,
-						),
-					3 =>
-						array(
-							'grid'   => 2,
-							'weight' => 0.5,
-						),
-					4 =>
-						array(
-							'grid'   => 3,
-							'weight' => 1,
-						),
-					5 =>
-						array(
-							'grid'   => 4,
-							'weight' => 1,
-						),
-				)
-        );
-        
 
-        $layouts['connect-page'] = array(
-			'name'        => __( 'Connect page', 'proud' ),
-			'description' => __( 'Links to Social networks and Facebook and Twitter embeds', 'proud' ),    // Optional
-            'widgets' => 
-            array (
-                0 => 
-                array (
-                'headertype' => 'simple',
-                'text' => '<h1>Connect</h1><p class="lead">Connect with us on social media.</p>',
-                'background' => 'none',
-                'pattern' => '',
-                'repeat' => 'full',
-                'featured_image' => 'no',
-                'image' => '',
-                'slideshow' => 
-                array (
-                    0 => 
-                    array (
-                    'slide_title' => '',
-                    'description' => '',
-                    'link_title' => '',
-                    'link_url' => '',
-                    'slide_image' => '',
-                    'weight' => '0',
-                    ),
-                ),
-                'random' => 
-                array (
-                    0 => 
-                    array (
-                    'random_image' => '',
-                    'weight' => '0',
-                    ),
-                ),
-                'image_vertical' => 'middle',
-                'box_position' => 'middle_left',
-                'make_inverse' => 'yes',
-                'so_sidebar_emulator_id' => 'proud_jumbotron_header-358410000',
-                'option_name' => 'widget_proud_jumbotron_header',
-                'panels_info' => 
-                array (
-                    'class' => 'JumbotronHeader',
-                    'raw' => false,
-                    'grid' => 0,
-                    'cell' => 0,
-                    'id' => 0,
-                    'widget_id' => 'c54afaeb-eedc-4853-8eae-60dbf1e6838a',
-                    'style' => 
-                    array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    ),
-                ),
-                ),
-                1 => 
-                array (
-                'title' => '',
-                'iconset' => 
-                array (
-                    0 => 
-                    array (
-                    'link_title' => 'Facebook',
-                    'link_url' => 'https://facebook.com/getproudcity',
-                    'fa_icon' => 'fab fa-facebook-f',
-                    'external' => '0',
-                    'weight' => '0',
-                    ),
-                    1 => 
-                    array (
-                    'link_title' => 'Twitter',
-                    'link_url' => 'https://twitter.com/getproudcity',
-                    'fa_icon' => 'fab fa-twitter',
-                    'external' => '0',
-                    'weight' => '1',
-                    ),
-                    2 => 
-                    array (
-                    'link_title' => 'LinkedIn',
-                    'link_url' => 'https://www.linkedin.com/company/7321596',
-                    'fa_icon' => 'fab fa-linkedin-in',
-                    'external' => '0',
-                    'weight' => '2',
-                    ),
-                    3 => 
-                    array (
-                    'link_title' => 'Instagram',
-                    'link_url' => 'https://www.instagram.com/getproudcity/',
-                    'fa_icon' => 'fab fa-instagram',
-                    'external' => '0',
-                    'weight' => '3',
-                    ),
-                    4 => 
-                    array (
-                    'link_title' => 'YouTube',
-                    'link_url' => 'https://www.youtube.com/channel/UCVnqaioIx4qPbr5JWE_m1yQ',
-                    'fa_icon' => 'fab fa-youtube',
-                    'external' => '0',
-                    'weight' => '4',
-                    ),
-                ),
-                'so_sidebar_emulator_id' => 'proud_icon_set-358410001',
-                'option_name' => 'widget_proud_icon_set',
-                'panels_info' => 
-                array (
-                    'class' => 'IconSet',
-                    'raw' => false,
-                    'grid' => 1,
-                    'cell' => 0,
-                    'id' => 1,
-                    'widget_id' => 'de8814b0-9e88-487d-8838-53786dc227dc',
-                    'style' => 
-                    array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    ),
-                ),
-                ),
-                2 => 
-                array (
-                'facebook_page_url' => 'https://www.facebook.com/getproudcity',
-                'tabs' => 
-                array (
-                    'timeline' => 'timeline',
-                ),
-                'height' => '2000',
-                'so_sidebar_emulator_id' => 'social_facebook-358410003',
-                'option_name' => 'widget_social_facebook',
-                'panels_info' => 
-                array (
-                    'class' => 'SocialFacebook',
-                    'raw' => false,
-                    'grid' => 2,
-                    'cell' => 0,
-                    'id' => 2,
-                    'widget_id' => '133ab78f-3b83-4d9d-b6fc-ed22a3cea748',
-                    'style' => 
-                    array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    ),
-                ),
-                ),
-                3 => 
-                array (
-                'handle' => '@getproudcity',
-                'height' => '2000',
-                'so_sidebar_emulator_id' => 'social_twitter-358410005',
-                'option_name' => 'widget_social_twitter',
-                'panels_info' => 
-                array (
-                    'class' => 'SocialTwitter',
-                    'raw' => false,
-                    'grid' => 2,
-                    'cell' => 1,
-                    'id' => 3,
-                    'widget_id' => 'ca38719a-5817-4fca-828f-991fd2427938',
-                    'style' => 
-                    array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    ),
-                ),
-                ),
-            ),
-            'grids' => 
-            array (
-                0 => 
-                array (
-                'cells' => 1,
-                'style' => 
-                array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    'row_stretch' => 'full',
-                    'cell_alignment' => 'flex-start',
-                ),
-                'ratio' => 1,
-                'ratio_direction' => 'right',
-                ),
-                1 => 
-                array (
-                'cells' => 1,
-                'style' => 
-                array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    'cell_alignment' => 'flex-start',
-                ),
-                'ratio' => 1,
-                'ratio_direction' => 'right',
-                ),
-                2 => 
-                array (
-                'cells' => 2,
-                'style' => 
-                array (
-                    'background_image_attachment' => false,
-                    'background_display' => 'tile',
-                    'cell_alignment' => 'flex-start',
-                ),
-                ),
-            ),
-            'grid_cells' => 
-            array (
-                0 => 
-                array (
-                'grid' => 0,
-                'index' => 0,
-                'weight' => 1,
-                'style' => 
-                array (
-                ),
-                ),
-                1 => 
-                array (
-                'grid' => 1,
-                'index' => 0,
-                'weight' => 1,
-                'style' => 
-                array (
-                ),
-                ),
-                2 => 
-                array (
-                'grid' => 2,
-                'index' => 0,
-                'weight' => 0.5,
-                'style' => 
-                array (
-                ),
-                ),
-                3 => 
-                array (
-                'grid' => 2,
-                'index' => 1,
-                'weight' => 0.5,
-                'style' => 
-                array (
-                ),
-                ),
-            ),
-		);
+
+
+
+            // 'agency' => [
+            //     'name'        => __( 'Department home page', 'proud' ),
+            //     'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
+            //     // 'screenshot' => 'https://siteorigin.com/wp-content/themes/siteorigin-theme/images/logo/logo-hover@2x.png',
+            // ],
+            // 'division' => [
+            //     'name'        => __( 'Division page', 'proud' ),
+            //     'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
+            // ],
+            
+            
+        ];
+
+        foreach ($layoutKeys as $key => $meta) {
+            include_once __DIR__ . "/layouts/{$key}.php";
+            $layouts[$key] = array_merge($out, $meta);
+        }
 
 		return $layouts;
 	}
