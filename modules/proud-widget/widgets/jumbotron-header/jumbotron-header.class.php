@@ -49,9 +49,39 @@ class JumbotronHeader extends Core\ProudWidget {
           'simple'    => __( 'Simple heading (good for landing pages)', 'wp-proud-core' )
         ],
       ],
+      'page_title'=> [
+        '#title' => __( 'Title', 'wp-proud-core' ),
+        // '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
+        '#type' => 'text',
+        '#default_value'  => '',
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['slideshow'],
+              'glue' => '&&'
+            ],
+          ],
+        ],
+      ],
+      'subtitle'=> [
+        '#title' => __( 'Subtitle', 'wp-proud-core' ),
+        // '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
+        '#type' => 'text',
+        '#default_value'  => '',
+        '#states' => [
+          'visible' => [
+            'headertype' => [
+              'operator' => '!=',
+              'value' => ['slideshow'],
+              'glue' => '&&'
+            ],
+          ],
+        ],
+      ],
       'text'=> [
-        '#title' => __( 'Jumbtron text', 'wp-proud-core' ),
-        '#description' => __( 'Enter some content for this textblock', 'wp-proud-core' ),
+        '#title' => __( 'Text', 'wp-proud-core' ),
+        '#description' => __( 'HTML code is allowed', 'wp-proud-core' ),
         '#type' => 'textarea',
         '#default_value'  => '',
         'rows' => 15,
@@ -452,7 +482,10 @@ class JumbotronHeader extends Core\ProudWidget {
     // init file location
     $file = plugin_dir_path( __FILE__ ) . 'templates/';
 
-    $content = Core\sanitize_input_text_output($instance['text']);
+    $content = '';
+    $content .= !empty($instance['page_title']) ? '<h1>' . Core\sanitize_input_text_output($instance['page_title']) . '</h1>' : '';
+    $content .= !empty($instance['subtitle']) ? '<p class="lead">' . Core\sanitize_input_text_output($instance['subtitle']) . '</p>' : '';
+    $content .= Core\sanitize_input_text_output($instance['text']);
   
     // normal header type
     if( $instance['headertype'] == 'header' ) {
