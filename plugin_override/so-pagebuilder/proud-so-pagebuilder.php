@@ -175,79 +175,98 @@ class ProudSOPagebuilder {
     //   <pre><?php var_export( get_post_meta(30746, 'panels_data', true));
 	function proud_prebuilt_layouts( $layouts ) {
 
+        $dir = '/wp-content/plugins/wp-proud-core/plugin_override/so-pagebuilder/assets/images';
         $layoutKeys = [
             'homepage' => [
                 'name'        => __( 'Homepage', 'proud' ),
-                'description' => __( 'The standard ProudCity homepage', 'proud' ),         
+                'description' => __( 'The standard ProudCity homepage', 'proud' ),   
+                'screenshot' => "$dir/homepage.png",
+      
             ],
             'landing' => [
                 'name'        => __( 'Landing page', 'proud' ),
-                'description' => __( 'Used on the homepage and other similar pages', 'proud' ),   
+                'description' => __( 'Used on the homepage and other similar pages', 'proud' ),
+                'screenshot' => "$dir/landing.png",
             ],
             'connect' => [
                 'name'        => __( 'Connect page', 'proud' ),
-                'description' => __( 'Links to Social networks and Facebook and Twitter embeds', 'proud' ),    
+                'description' => __( 'Links to Social networks and Facebook and Twitter embeds', 'proud' ),
+                'screenshot' => "$dir/connect.png",
             ],
             'directory' => [
                 'name'        => __( 'Directory page', 'proud' ),
-                'description' => __( 'A list of Department contact information', 'proud' ),   
+                'description' => __( 'A list of Department contact information', 'proud' ),
+                'screenshot' => "$dir/directory.png",
             ],
             'contact' => [
                 'name'        => __( 'Contact page', 'proud' ),
                 'description' => __( 'Contact links, form, phone number, address and hours', 'proud' ),
+                'screenshot' => "$dir/contact.png",
             ],
             'events' => [
                 'name'        => __( 'Events page', 'proud' ),
                 'description' => __( 'A searchable list of upcoming events', 'proud' ),
+                'screenshot' => "$dir/events.png",
             ],
             'news' => [
                 'name'        => __( 'News page', 'proud' ),
                 'description' => __( 'A searchable list recent news posts', 'proud' ),
+                'screenshot' => "$dir/news.png",
             ],
             'government' => [
                 'name'        => __( 'Government page', 'proud' ),
                 'description' => __( 'A list of officials, deparments, and documents', 'proud' ),
+                'screenshot' => "$dir/government.png",
             ],
             'services' => [
                 'name'        => __( 'Services page', 'proud' ),
                 'description' => __( 'A page dedicated to the ProudCity Service Center', 'proud' ),
+                'screenshot' => "$dir/services.png",
             ],
             'service' => [
                 'name'        => __( 'Service page', 'proud' ),
                 'description' => __( 'Details and FAQ for an individual service', 'proud' ), //@todo
+                'screenshot' => "$dir/service.png",
             ],
             'live' => [
                 'name'        => __( 'Watch live page', 'proud' ),
                 'description' => __( 'Stream your meetings live online', 'proud' ),
+                'screenshot' => "$dir/live.png",
             ],
             'department' => [
                 'name'        => __( 'Department home page', 'proud' ),
                 'description' => __( 'Department header and sidebar with contact info', 'proud' ),    // Optional
-                // 'screenshot' => 'https://siteorigin.com/wp-content/themes/siteorigin-theme/images/logo/logo-hover@2x.png',
+                'screenshot' => "$dir/department.png",
             ],
             'division' => [
                 'name'        => __( 'Division page', 'proud' ),
                 'description' => __( 'Display a Department page with custom contact information', 'proud' ),    // Optional
+                'screenshot' => "$dir/division.png",
             ],
             'department-documents' => [
                 'name'        => __( 'Department documents', 'proud' ),
                 'description' => __( 'A searchable list of documents for a specific department', 'proud' ),
+                'screenshot' => "$dir/department-documents.png",
             ],
             'department-faq' => [
                 'name'        => __( 'Department FAQ page', 'proud' ),
                 'description' => __( 'Frequently asked questions for a specific department', 'proud' ),
+                'screenshot' => "$dir/department-faq.png",
             ],
             'department-staff' => [
                 'name'        => __( 'Department staff page', 'proud' ),
                 'description' => __( 'A staff list for a specific department', 'proud' ),
+                'screenshot' => "$dir/department-staff.png",
             ],
             'meeting-category' => [
                 'name'        => __( 'Meeting category page', 'proud' ),
                 'description' => __( 'A list of meetings for a specific category', 'proud' ),
+                'screenshot' => "$dir/meeting-category.png",
             ],
             'meeting-archive' => [
                 'name'        => __( 'Meeting archive page', 'proud' ),
                 'description' => __( 'A list of meetings that is ideal for annual archives', 'proud' ),
+                'screenshot' => "$dir/meeting-archive.png",
             ],
             
         ];
