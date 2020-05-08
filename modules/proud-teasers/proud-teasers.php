@@ -14,6 +14,7 @@ if ( !class_exists( 'TeaserList' ) ) {
     const _TEMPLATE_PATH = 'templates/teaser-items/';
     private $post_type;
     private $display_type;
+    private $query_args;
     private $query;
     private $filters;
     private $form = []; // FormHelper
@@ -157,7 +158,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $args[ 'posts_per_page' ] = ( (int) $args[ 'posts_per_page' ] ) === 0 ? 100 : $args[ 'posts_per_page' ];
 
       // Build query
-      $this->query = new \WP_Query( apply_filters( 
+      $this->query_args = apply_filters( 
         'proud_teaser_query_args',
         $args,
         [
@@ -167,7 +168,9 @@ if ( !class_exists( 'TeaserList' ) ) {
           'form_id_base' => !empty( $this->form ) ? self::_FORM_ID : null,
           'form_instance' => $this->form_instance,
         ]
-      ) );
+      );
+
+      $this->query = new \WP_Query( $this->query_args );
 
       // Alter pagination links to deal with issues with documents, ext
       add_filter('get_pagenum_link', [$this, 'alter_pagination_path']);
@@ -574,13 +577,45 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
     }
 
+
+    /**
+     * Helper gets post type for display
+     *
+     * @return string
+     */
+    private function get_post_type() {
+        static $post_type = null;
+        
+        if ($post_type === null) {
+            $post_type = apply_filters( 'proud_teaser_post_type', $this->post_type, $this->query_args );
+        }
+
+        return $post_type;
+    }
+
+    /**
+     * Helper gets display type for display
+     *
+     * @return string
+     */
+    private function get_display_type() {
+        static $display_type = null;
+        
+        if ($display_type === null) {
+            $display_type = apply_filters( 'proud_teaser_display_type', $this->display_type, $this->query_args );
+        }
+
+        return $display_type;
+    }
+
+
     /**
      * Wraps teaser list: open
      */
     private function print_wrapper_open() {
       $class = '';
       $attrs = '';
-      switch( $this->display_type ) {
+      switch( $this->get_display_type() ) {
         case 'search':
         case 'list':
           $class = 'teaser-list';
@@ -604,15 +639,15 @@ if ( !class_exists( 'TeaserList' ) ) {
       }
 
       // Try for post type
-      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-header.php';
+      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_post_type() . '-' . $this->get_display_type() . '-header.php';
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic theme
-        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-header.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_display_type() . '-header.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic locally
-          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-header.php';
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->get_display_type() . '-header.php';
           if( !file_exists( $file ) ) {
             // Just load default
             $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-header.php';
@@ -627,21 +662,21 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_featured() {
       // Don't allow non standard featured
-      $allowed = ( $this->display_type === 'list' || $this->display_type === 'mini' );
+      $allowed = ( $this->get_display_type() === 'list' || $this->get_display_type() === 'mini' );
       if( !$allowed ) {
         return;
       }
       if( empty( $templates['featured'] ) ) {
         // Try for post type
-        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-featured.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_post_type() . '-' . $this->get_display_type() . '-featured.php';
         $file = "";
         // Try to load template from theme
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic theme
-          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-featured.php';
+          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_display_type() . '-featured.php';
           if( '' === ( $file = locate_template( $template ) ) ) {
             // Try for generic locally
-            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-featured.php';
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->get_display_type() . '-featured.php';
             if( !file_exists( $file ) ) {
               // Just load default
               $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-featured.php';
@@ -667,16 +702,16 @@ if ( !class_exists( 'TeaserList' ) ) {
     private function print_content( $post_count, $current ) {
       if( empty( $templates['content'] ) ) {
         // Try for post type
-        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_post_type() . '-' . $this->get_display_type() . '.php';
         $file = "";
 
         // Try to load template from theme
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic
-          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '.php';
+          $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_display_type() . '.php';
           if( '' === ( $file = locate_template( $template ) ) ) {
             // Just load from here
-            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '.php';
+            $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->get_display_type() . '.php';
           }
         }
         $templates['content'] = $file;
@@ -688,7 +723,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $meta = [];
       global $post;
       // Post type
-      switch( $this->post_type ) {
+      switch( $this->get_post_type() ) {
         case 'staff-member':
           $terms = wp_get_post_terms( $post->ID, 'staff-member-group', array("fields" => "all"));
           // Intentionally no break
@@ -725,7 +760,7 @@ if ( !class_exists( 'TeaserList' ) ) {
       $row_close = '';
       $column_classes = '';
       // Display type
-      switch( $this->display_type ) {
+      switch( $this->get_display_type() ) {
         case 'mini':
           if(in_the_loop()) {
             $header_tag = 'h3';
@@ -756,7 +791,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           break;
       }
       // Filter post
-      $post = apply_filters( 'proud_teaser_teaser_post', $post, $this->post_type, $meta );
+      $post = apply_filters( 'proud_teaser_teaser_post', $post, $this->get_post_type(), $meta );
       // Print 
       include( $templates['content'] );
     }
@@ -767,15 +802,15 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_wrapper_close() {
       // Try for post type
-      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->post_type . '-' . $this->display_type . '-footer.php';
+      $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_post_type() . '-' . $this->display_type . '-footer.php';
       $file = "";
       // Try to load template from theme
       if( '' === ( $file = locate_template( $template ) ) ) {
         // Try for generic theme
-        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->display_type . '-footer.php';
+        $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_display_type() . '-footer.php';
         if( '' === ( $file = locate_template( $template ) ) ) {
           // Try for generic local
-          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->display_type . '-footer.php';
+          $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-' . $this->get_display_type() . '-footer.php';
           if( !file_exists( $file ) ) {
             /// Just load default
             $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-footer.php';
@@ -790,12 +825,12 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function print_empty() {
       // Try for post type + display
-      $template = self::_TEMPLATE_PATH . 'teasers-empty-' . $this->post_type . '-' . $this->display_type . '.php';
+      $template = self::_TEMPLATE_PATH . 'teasers-empty-' . $this->get_post_type() . '-' . $this->get_display_type() . '.php';
       $file = "";
       // Try to load template from theme
       if( !( $file = locate_template( $template ) ) ) {
         // Try for generic post type
-        $template = self::_TEMPLATE_PATH .  'teasers-empty-' . $this->post_type . '.php';
+        $template = self::_TEMPLATE_PATH .  'teasers-empty-' . $this->get_post_type() . '.php';
         if( !( $file = locate_template( $template ) ) ) {
           // Just load from here
           $file = plugin_dir_path( __FILE__ ) . 'templates/teasers-empty.php';
@@ -815,7 +850,7 @@ if ( !class_exists( 'TeaserList' ) ) {
         // Just load from here
         $file = plugin_dir_path( __FILE__ ) . 'templates/pagination-default.php';
       }
-      switch( $this->post_type ) {
+      switch( $this->get_post_type() ) {
         case 'post':
           $prev_text = '&laquo; Older';
           $next_text = 'Newer &raquo;';
