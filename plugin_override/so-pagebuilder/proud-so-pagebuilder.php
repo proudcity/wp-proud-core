@@ -17,7 +17,8 @@ class ProudSOPagebuilder {
 		add_filter( 'siteorigin_panels_row_style_attributes', array( $this, 'so_row_style_attributes' ), 10, 2 );
 		add_filter( 'siteorigin_panels_row_classes', array( $this, 'so_row_style_classes' ), 10, 2 );
         add_filter( 'siteorigin_panels_css_row_gutter', array( $this, 'so_css_row_gutter' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
+        add_filter( 'siteorigin_panels_widget_args', array( $this, 'so_widget_titles' ) );
 	}
 
 	// Restrict widgets available
@@ -134,6 +135,17 @@ class ProudSOPagebuilder {
 		$path = plugins_url( 'assets/js/', __FILE__ ) . 'proud-sobuilder.js';
 		wp_register_script( 'proud-so-admin-js', $path );
         wp_enqueue_script( 'proud-so-admin-js' );
+    }
+
+    // Alter widget titles to be h2
+    function so_widget_titles($args) {
+        if (!empty($args['before_title'])) {
+            $args['before_title'] = str_replace('<h3', '<h2', $args['before_title']);
+        }
+        if (!empty($args['after_title'])) {
+            $args['after_title'] = str_replace('<h3', '<h2', $args['after_title']);
+        }
+        return $args;
     }
 
 	// Try to alter some of the css code that is outputted
