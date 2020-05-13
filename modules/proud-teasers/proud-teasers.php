@@ -584,11 +584,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      * @return string
      */
     private function get_post_type() {
-        static $post_type = null;
-        
-        if ($post_type === null) {
-            $post_type = apply_filters( 'proud_teaser_post_type', $this->post_type, $this->query_args );
-        }
+        $post_type = apply_filters( 'proud_teaser_post_type', $this->post_type, $this->query_args );
 
         return $post_type;
     }
@@ -599,11 +595,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      * @return string
      */
     private function get_display_type() {
-        static $display_type = null;
-        
-        if ($display_type === null) {
-            $display_type = apply_filters( 'proud_teaser_display_type', $this->display_type, $this->query_args );
-        }
+        $display_type = apply_filters( 'proud_teaser_display_type', $this->display_type, $this->query_args );
 
         return $display_type;
     }
