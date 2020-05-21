@@ -1,5 +1,5 @@
 <?php
-array (
+$out = array (
   'widgets' => 
   array (
     0 => 

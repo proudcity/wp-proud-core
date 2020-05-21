@@ -193,7 +193,6 @@ class ProudSOPagebuilder {
                 'name'        => __( 'Homepage', 'proud' ),
                 'description' => __( 'The standard ProudCity homepage', 'proud' ),   
                 'screenshot' => "$dir/homepage.png",
-      
             ],
             'landing' => [
                 'name'        => __( 'Landing page', 'proud' ),
