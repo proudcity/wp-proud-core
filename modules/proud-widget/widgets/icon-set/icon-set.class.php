@@ -64,7 +64,7 @@ class IconSet extends Core\ProudWidget {
             '#title' => 'Icon',
             '#type' => 'fa-icon',
             '#default_value' => '',
-            '#description' => 'The icon to use for the icon box.',
+            '#description' => 'Icon to display above the text. Leave empty if you do not want to use icons.',
             '#to_js_settings' => false,
           ],
           'external' => [
