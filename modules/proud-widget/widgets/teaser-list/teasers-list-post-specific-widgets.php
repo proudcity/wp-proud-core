@@ -256,6 +256,8 @@ class AgencyTeaserListWidget extends TeaserListWidget {
         '#type' => 'checkboxes',
         '#default_value' => [],
         '#options' => [
+          'phone' => __( 'Phone', 'proud-teaser' ),
+          'email' => __( 'Email', 'proud-teaser' ),
           'person' => __( 'Person', 'proud-teaser' ),
           'social' => __( 'Social', 'proud-teaser' ),
         ],
