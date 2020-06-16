@@ -277,8 +277,9 @@ function get_nav_button_options($display)
         $action_buttons['google_translate'] =  apply_filters('proud_nav_button_options', [
             'title' => 'Translate',
             'data_key' => 'google_translate',
+            'dropdown' => true,
             //   'href' => $report_service === 'link' ? $report_link : '#',
-            'classes' =>  'btn navbar-btn issue-button',
+            'classes' =>  'btn navbar-btn translate-button',
             //   'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
             'icon' => 'fa-globe',
         ], 'google_translate', $display);
@@ -288,8 +289,9 @@ function get_nav_button_options($display)
         $action_buttons['repfont_sizeort'] =  apply_filters('proud_nav_button_options', [
             'title' => 'Font Size',
             'data_key' => 'font_size',
+            'dropdown' => true,
             //   'href' => $report_service === 'link' ? $report_link : '#',
-            'classes' =>  'btn navbar-btn issue-button',
+            'classes' =>  'btn navbar-btn font-button',
             //   'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
             'icon' => 'fa-font',
         ], 'report', $display);

@@ -9,6 +9,8 @@ use Proud\Core;
 class GoogleTranslate extends Core\ProudWidget
 {
 
+    static $didRender = false;
+
     function __construct()
     {
         parent::__construct(
@@ -26,7 +28,7 @@ class GoogleTranslate extends Core\ProudWidget
                 '#default_value' => '',
                 '#to_js_settings' => false
             ],
-            'hide_link' => [
+            'navbar' => [
                 '#type' => 'hidden',
                 '#default_value' => '',
                 '#to_js_settings' => false
@@ -53,6 +55,13 @@ class GoogleTranslate extends Core\ProudWidget
      */
     public function hasContent($args, &$instance)
     {
+
+        if (GoogleTranslate::$didRender) {
+            return false;
+        }
+
+        GoogleTranslate::$didRender = true;
+
         return true;
     }
 
@@ -69,14 +78,21 @@ class GoogleTranslate extends Core\ProudWidget
         // var_dump($args);
         // var_dump($instance);
 
+
+
         $id = !empty($instance['id']) ? $instance['id'] : 'translate';
 ?>
         <!--<div class="dropdown translate">-->
 
+        <?php if (!empty($instance['navbar'])) : ?>
+            <a href="#" id="translate" title="Translate" data-proud-navbar class="btn navbar-btn translate-button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i aria-hidden="true" class="fa fa-fw fa-globe"></i>
+                Translate
+            </a>
+        <?php else : ?>
+            <a href="#" id="<?= $id ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i aria-hidden="true" class="fa fa-fw fa-globe"></i>Translate</a>
+        <?php endif; ?>
         <ul class="dropdown-menu nav nav-pills" aria-labelledby="<?= $id ?>">
-            <?php if (empty($instance['hide_link'])) : ?>
-                <a href="#" id="<?= $id ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i aria-hidden="true" class="fa fa-fw fa-globe"></i>Translate</a>
-            <?php endif; ?>
             <li>
                 <label id="google-<?= $id ?>-label"><span class="sr-only">Translate language select</span>
                     <div id="google_<?= $id ?>_element"></div>
