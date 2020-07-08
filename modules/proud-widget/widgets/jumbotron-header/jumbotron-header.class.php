@@ -489,7 +489,7 @@ class JumbotronHeader extends Core\ProudWidget {
   
     // normal header type
     if( $instance['headertype'] == 'header' ) {
-      $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-5 col-md-8 col-sm-8', 'header');
+      $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-7 col-md-8 col-sm-9', 'header');
 
       // Classes
       $classes[] = 'jumbotron';
