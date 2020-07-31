@@ -534,10 +534,18 @@ class JumbotronHeader extends Core\ProudWidget {
       $file .= 'jumbotron-full.php';
     }
     else if( $instance['headertype'] === 'slideshow' ) {
+      $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-7 col-md-8 col-sm-9', 'slideshow');
+
       $classes[] = 'jumbotron';
+      $classes[] = 'jumbotron-image';
       // Inverse?
       if ( $instance['make_inverse'] == 'yes' ) {
         $classes[] = 'jumbotron-inverse';
+      }
+      // Resp image classes
+      $resp_img_classes = ['jumbo-image-container'];
+      if( !empty( $instance['image_vertical'] ) && 'middle' !== $instance['image_vertical'] ) {
+        $resp_img_classes[] = 'image-vertical-' . $instance['image_vertical'];
       }
       $file .= 'jumbotron-slideshow.php';
     }
