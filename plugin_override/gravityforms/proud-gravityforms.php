@@ -5,10 +5,38 @@ namespace Proud\Gform;
 if ( class_exists( 'GFCommon' ) ) {
 
 	// Load our downloading class
-	require_once plugin_dir_path( __FILE__ ) . 'class-gc-gf-download.php';
+    require_once plugin_dir_path( __FILE__ ) . 'class-gc-gf-download.php';
+    
+    function proud_gravityforms_init() {
+        // Always alter:
 
-	// Add processing for download links
-	add_action( 'init', array( 'GC_GF_Download', 'maybe_process' ), 11 );
+        add_filter( 'gform_confirmation_anchor', __NAMESPACE__ . '\\gform_confirmation_anchor_alter' );
+        add_filter( "gform_init_scripts_footer", __NAMESPACE__ . '\\gform_force_footer_scripts' );
+        add_action( 'gform_enqueue_scripts', __NAMESPACE__ . '\\gform_css_dequeue', 100 );
+        add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\gform_admin_css_dequeue', 100 );
+        // Enable ability to controll label visibilit
+        add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );
+
+        // Only alter if gravityforms <> stateless not enabled
+        $statelessModuleActive = false;
+        try {
+            $statelessModuleActive = \wpCloud\StatelessMedia\Module::get_module('gravity-form')['is_plugin_active'];
+        } catch(\Exception $e) {
+            // don't care
+        }
+        
+        if ($statelessModuleActive) {
+            // Let stateless handle
+            return;
+        }
+
+        \GC_GF_Download::maybe_process();
+        add_filter( 'gform_secure_file_download_url', __NAMESPACE__ . '\\gform_secure_file_download_url', 100, 4 );
+        add_action( 'gform_save_field_value', __NAMESPACE__ . '\\gform_handle_file_upload', 100, 4 );
+    }
+    
+    add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
+    // Add Processing
 
 	function get_upload_root_url() {
 		// Get wordpress base;
@@ -63,8 +91,6 @@ if ( class_exists( 'GFCommon' ) ) {
 
 		return $file;
 	}
-
-	add_filter( 'gform_secure_file_download_url', __NAMESPACE__ . '\\gform_secure_file_download_url', 100, 4 );
 
 	function gform_get_gcloud_file( $value ) {
 
@@ -135,29 +161,21 @@ if ( class_exists( 'GFCommon' ) ) {
 		return $value;
 	}
 
-	add_action( 'gform_save_field_value', __NAMESPACE__ . '\\gform_handle_file_upload', 100, 4 );
-
 
 	// On ajax anchors, this adds a offset for the scroll
 	function gform_confirmation_anchor_alter() {
 		return 0;
 	}
 
-	add_filter( 'gform_confirmation_anchor', __NAMESPACE__ . '\\gform_confirmation_anchor_alter' );
-
 	function gform_force_footer_scripts() {
 		return true;
 	}
-
-	add_filter( "gform_init_scripts_footer", __NAMESPACE__ . '\\gform_force_footer_scripts' );
 
 
 	function gform_css_dequeue() {
 		wp_deregister_style( 'gforms_datepicker_css' );
 		wp_dequeue_style( 'gforms_datepicker_css' );
 	}
-
-	add_action( 'gform_enqueue_scripts', __NAMESPACE__ . '\\gform_css_dequeue', 100 );
 
 	function gform_admin_css_dequeue() {
 		wp_deregister_style( 'gform_font_awesome' );
@@ -167,10 +185,4 @@ if ( class_exists( 'GFCommon' ) ) {
 			$wp_styles->registered['gform_tooltip']->deps = [];
 		}
 	}
-
-	add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\gform_admin_css_dequeue', 100 );
-
-
-	// Enable ability to controll label visibility
-	add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );
 }
