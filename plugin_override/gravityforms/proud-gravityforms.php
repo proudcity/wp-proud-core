@@ -20,7 +20,7 @@ if ( class_exists( 'GFCommon' ) ) {
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
         try {
-            $statelessModuleActive = \wpCloud\StatelessMedia\Module::get_module('gravity-form')['is_plugin_active'];
+            $statelessModuleActive = filter_var(\wpCloud\StatelessMedia\Module::get_module('gravity-form')['enabled'], FILTER_VALIDATE_BOOLEAN);
         } catch(\Exception $e) {
             // don't care
         }
@@ -62,6 +62,7 @@ if ( class_exists( 'GFCommon' ) ) {
 
 	// Handle file field uploads to googlestorage
 	function gform_secure_file_download_url( $file, $form ) {
+
 		$bucketLink = trailingslashit( 'https://storage.googleapis.com/' . ud_get_stateless_media()->get( 'sm.bucket' ) );
 		if ( strpos( $file, $bucketLink ) !== false ) {
 			// Take out google storage
@@ -140,17 +141,16 @@ if ( class_exists( 'GFCommon' ) ) {
 		if ( ! empty( $value ) && $field->type === 'fileupload' ) {
 			if ( $field['multipleFiles'] ) {
 				try {
-					$values = json_decode( $value );
+                    $values = json_decode( $value );
 				} catch ( \Exception $exception ) {
-					// @TODO log this?
-					return $value;
+                    // @TODO log this?
+                    return $value;
 				}
 
 				if ( ! empty( $values ) ) {
 					foreach ( $values as $key => $v ) {
 						$values[ $key ] = gform_get_gcloud_file( $v );
 					}
-
 					return json_encode( $values );
 				}
 			} else {
