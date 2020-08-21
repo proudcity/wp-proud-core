@@ -132,7 +132,7 @@ class ProudSOPagebuilder {
 
 	// Load scripts
 	function scripts() {
-		$path = plugins_url( 'assets/js/', __FILE__ ) . 'proud-sobuilder.js';
+		$path = plugins_url( 'assets/js/', __FILE__ ) . 'proud-so-pagebuilder.js';
 		wp_register_script( 'proud-so-admin-js', $path );
         wp_enqueue_script( 'proud-so-admin-js' );
     }
