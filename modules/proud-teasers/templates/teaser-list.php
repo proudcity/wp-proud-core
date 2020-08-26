@@ -2,7 +2,7 @@
   <div class="row">
     <?php if( has_post_thumbnail() ): ?>
     <div class="col-md-3 pull-right">
-      <?php the_post_thumbnail(); ?>
+      <?php \Proud\Core\TeaserList::print_teaser_thumbnail(); ?>
     </div>
     <?php endif; ?>
     <div class="col-md-9 pull-left">
