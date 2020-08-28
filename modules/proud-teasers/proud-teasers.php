@@ -186,25 +186,31 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
      * Gets taxonomy for post type
      */
-    public function get_taxonomy( $post_type = false ) {
+    public static function taxonomy_name( $post_type ) {
+        switch( $post_type ) {
+            case 'event':
+              return 'event-categories';
+            case 'staff-member':
+              return 'staff-member-group';
+            case 'post':
+              return 'category';
+            case 'job_listing':
+              return 'job_listing_type';
+            case 'document':
+              return 'document_taxonomy';
+            case 'question':
+              return 'faq-topic';
+            case 'meeting':
+              return 'meeting-taxonomy';
+          }
+          return false;
+    }
 
-      switch( $post_type ? $post_type : $this->post_type ) {
-        case 'event':
-          return 'event-categories';
-        case 'staff-member':
-          return 'staff-member-group';
-        case 'post':
-          return 'category';
-        case 'job_listing':
-          return 'job_listing_type';
-        case 'document':
-          return 'document_taxonomy';
-        case 'question':
-          return 'faq-topic';
-        case 'meeting':
-          return 'meeting-taxonomy';
-      }
-      return false;
+    /**
+     * Gets taxonomy for post type
+     */
+    public function get_taxonomy( $post_type = false ) {
+      return self::taxonomy_name( $post_type ? $post_type : $this->post_type );
     }
 
 
@@ -599,6 +605,22 @@ if ( !class_exists( 'TeaserList' ) ) {
 
         return $display_type;
     }
+
+    /**
+     * Helper function prints thumbnail with opportunity for alter
+     *
+     * @param string $size
+     * @return void
+     */
+    public static function print_teaser_thumbnail($size = '') {
+        $thumbnail = apply_filters( 'proud_teaser_thumbnail', '', $size );
+
+        if ( empty( $thumbnail ) ) {
+            $thumbnail = get_the_post_thumbnail( null, $size );
+        }
+
+        echo $thumbnail;
+    }  
 
 
     /**

@@ -3,7 +3,7 @@
   <div class="media-left">
   <?php if( has_post_thumbnail() ): ?>
     <a href="<?php echo esc_url( get_permalink() ); ?>">
-      <?php the_post_thumbnail( array( 64, 64 ) ); ?>
+      <?php \Proud\Core\TeaserList::print_teaser_thumbnail( array( 64, 64 ) ); ?>
     </a>
   <?php endif; ?>
   </div>
