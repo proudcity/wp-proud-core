@@ -607,6 +607,16 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
+     * Helper function checks for thumbnail with opportunity for alter
+     *
+     * @param string $size
+     * @return void
+     */
+    public static function has_thumbnail() {
+        return apply_filters( 'proud_teaser_has_thumbnail', has_post_thumbnail() );
+    }
+
+    /**
      * Helper function prints thumbnail with opportunity for alter
      *
      * @param string $size

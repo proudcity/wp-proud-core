@@ -1,6 +1,6 @@
 <div <?php post_class( "card-wrap" ); ?>>
   <div class="card">
-    <?php if( has_post_thumbnail() ): ?>
+    <?php if( \Proud\Core\TeaserList::has_thumbnail() ): ?>
     <div class="card-img-top text-center">
       <a href="<?php echo esc_url( get_permalink() ); ?>"><?php \Proud\Core\TeaserList::print_teaser_thumbnail('card-thumb'); ?></a>
     </div>
