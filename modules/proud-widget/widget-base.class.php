@@ -254,7 +254,7 @@ abstract class ProudWidget extends \WP_Widget
                 $args['before_widget'] = sprintf('<section class="widget %s clearfix">', str_replace('_', '-', $this->option_name));
                 $args['after_widget']  = '</section>';
             }
-            $args['before_title']  = '<h2>';
+            $args['before_title']  = '<h2 class="proud-widget-title">';
             $args['after_title']   = '</h2>';
         }
 
