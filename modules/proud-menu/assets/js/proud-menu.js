@@ -11,6 +11,12 @@
         active = $slider.data('level-active');
         // Set height
         self.alterHeight(active, false);
+        // Slight timeout ot make sure we get height right
+        setTimeout(function () {
+          self.alterHeight(active, false);
+          // make visible
+          $slider.css({ 'opacity': 1 });
+        }, 500);
         // Init clicks
         // @TODO evaluate if the navigation forward is important
         $('[data-active-click]', $slider).on('click', self.sliderClick);
