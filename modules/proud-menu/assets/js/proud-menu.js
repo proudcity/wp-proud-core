@@ -19,7 +19,7 @@
         }, 500);
         // Init clicks
         // @TODO evaluate if the navigation forward is important
-        $('[data-active-click]', $slider).on('click', self.sliderClick);
+        // $('[data-active-click]', $slider).on('click', self.sliderClick);
         $('[data-back-click]', $slider).on('click', self.sliderClick);
         // Set watch on resize
         self.setWatch();
