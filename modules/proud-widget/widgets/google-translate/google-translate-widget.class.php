@@ -85,12 +85,12 @@ class GoogleTranslate extends Core\ProudWidget
         <!--<div class="dropdown translate">-->
 
         <?php if (!empty($instance['navbar'])) : ?>
-            <a href="#" id="<?= $id ?>" title="Translate" data-proud-navbar class="btn navbar-btn translate-button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a href="#" id="<?= $id ?>" title="Translate" data-proud-navbar class="btn navbar-btn translate-button" role="button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i aria-hidden="true" class="fa fa-fw fa-globe"></i>
                 Translate
             </a>
         <?php else : ?>
-            <a href="#" id="<?= $id ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i aria-hidden="true" class="fa fa-fw fa-globe"></i>Translate</a>
+            <a href="#" id="<?= $id ?>" title="Translate" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i aria-hidden="true" class="fa fa-fw fa-globe"></i>Translate</a>
         <?php endif; ?>
         <ul class="dropdown-menu nav nav-pills" aria-labelledby="<?= $id ?>">
             <li>

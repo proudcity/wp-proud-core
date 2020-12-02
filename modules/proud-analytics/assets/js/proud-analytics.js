@@ -34,6 +34,7 @@ jQuery(document).ready(function($) {
     anaylticsPhone($(this).attr('href').replace('tel:', ''));
   });
 
+  var originalText = '';
   // Widget click
   var anaylticsWidgetClick = function(e) {
     if (ga === undefined) {
@@ -54,6 +55,8 @@ jQuery(document).ready(function($) {
       if (ga === undefined) {
         return;
       }
+      originalText = $(this).find('.inner-text').text();
+      $(this).find('.inner-text').text('Marked helpful!');
       ga('send', {
         hitType: 'event',
         eventCategory: 'Heart',
@@ -61,6 +64,8 @@ jQuery(document).ready(function($) {
         eventAction: window.location.href,
         eventValue: 1
       });
+    } else {
+      $(this).find('.inner-text').text(originalText || 'Helpful');
     }
 
     $(this).toggleClass(activeClass);

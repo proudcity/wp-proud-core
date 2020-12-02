@@ -77,17 +77,28 @@ class FontSize extends Core\ProudWidget
 ?>
         <!--<div class="dropdown font-size">-->
         <?php if (!empty($instance['navbar'])) : ?>
-            <a href="#" id="<?= $id ?>" title="Translate" data-proud-navbar class="btn navbar-btn translate-button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a href="#" id="<?= $id ?>" title="Font size" role="button" data-proud-navbar class="btn navbar-btn translate-button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i aria-hidden="true" class="fa fa-fw fa-font"></i>
                 Size
             </a>
         <?php else : ?>
-            <a href="#" id="<?= $id ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-fw fa-font"></i>Size</a>
+            <a href="#" id="<?= $id ?>" data-toggle="dropdown"  role="button" aria-haspopup="true" aria-expanded="false">
+                <i aria-hidden="true"  class="fa fa-fw fa-font"></i>
+                Size
+            </a>
         <?php endif; ?>
         <ul class="dropdown-menu nav nav-pills" aria-labelledby="<?= $id ?>">
-            <li><a href="#" title="Increase Font Size" class="increaseFont"><i aria-hidden="true" class="fa fa-font"></i><sup>+</sup></a></li>
-            <li><a href="#" title="Reset Font Size" class="resetFont">Reset</a></li>
-            <li><a href="#" title="Decrease Font Size" class="decreaseFont">a<sup>-</sup></a></li>
+            <li><a href="#" title="Increase Font Size" role="button" class="increaseFont">
+                <i aria-hidden="true" class="fa fa-font"></i>
+                +
+            </a></li>
+            <li><a href="#" title="Reset Font Size" role="button" class="resetFont">
+                Reset
+            </a></li>
+            <li><a href="#" title="Decrease Font Size" role="button" class="decreaseFont">
+                <span aria-hidden="true">a</span>
+                &minus;
+            </a></li>
         </ul>
         <!--</div>-->
 <?php
