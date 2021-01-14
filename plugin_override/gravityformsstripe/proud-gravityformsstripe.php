@@ -11,7 +11,7 @@ class ProudGravityformsStripe {
         add_filter('gform_stripe_post_include_api', [ $this, 'gform_stripe_post_include_api' ], 10, 5);
         add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
 
-        
+        add_filter( 'gform_stripe_connect_enabled', [ $this, '__return_false' ] );
         // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
         // add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
         // add_filter('gform_stripe_get_plan', [$this, 'gform_stripe_get_plan'], 10, 1);
@@ -21,6 +21,11 @@ class ProudGravityformsStripe {
         // add_filter('gform_stripe_subscription_trial_period_days', [$this, 'gform_stripe_subscription_trial_period_days'], 10, 3);
         // add_filter('gform_stripe_post_create_subscription', [$this, 'gform_stripe_post_create_subscription'], 10, 2);
 
+    }
+
+    function __return_false() {
+        // $stripe_connect_enabled = false;
+        return false;
     }
 
     /**
