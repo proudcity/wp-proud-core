@@ -23,8 +23,8 @@ class ProudGravityformsStripe {
 
     }
 
-    function __return_false() {
-        // $stripe_connect_enabled = false;
+    function __return_false(&$stripe_connect_enabled) {
+        $stripe_connect_enabled = false;
         return false;
     }
 
