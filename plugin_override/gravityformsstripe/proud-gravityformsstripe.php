@@ -24,8 +24,9 @@ class ProudGravityformsStripe {
     }
 
     function __return_false(&$stripe_connect_enabled) {
-        $stripe_connect_enabled = false;
-        return false;
+        if (get_option('proudcity_payments_gravityformsstripe_legacy_settings', false)) {
+            $stripe_connect_enabled = false;
+        }
     }
 
     /**
