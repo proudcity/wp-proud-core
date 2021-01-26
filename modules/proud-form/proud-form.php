@@ -399,13 +399,19 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
         case 'checkboxes':
         case 'radios':
-          // Print label, add class
-          $this->printFormTextLabel( 
-            $field['#id'], 
-            $field['#title'], 
-            $this->form_id, 
-            array( 'class' => 'option-box-label' ) 
-          ); 
+          if( $field['#type'] == 'checkboxes' ) {
+            echo "<fieldset class=\"checkboxes\">";
+            echo "<legend class=\"option-box-label\">{$field['#title']}</legend>";
+          } else {
+            // Print label, add class
+            $this->printFormTextLabel( 
+                $field['#id'], 
+                $field['#title'], 
+                $this->form_id, 
+                array( 'class' => 'option-box-label' ) 
+            );
+          }
+           
           if( !empty( $field['#draggable'] ) ) {
             echo '<div data-draggable-checkboxes="true">';
           }
@@ -445,16 +451,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
           }
           if( !empty( $field['#description'] ) ) 
             $this->printDescription($field['#description']);
+          if( $field['#type'] == 'checkboxes' ) {
+            echo "</fieldset>";
+          }
           break;
 
         case 'checkbox':
-          if( !empty( $field['#label_above'] ) )
-            $this->printFormTextLabel(
-              ' ', 
-              $field['#title'], 
-              $this->form_id, 
-              array( 'class' => 'option-box-label' ) 
-            );
+          if( !empty( $field['#label_above'] ) ) {
+            echo "<fieldset class=\"checkboxes\">";
+            echo "<legend class=\"option-box-label\">{$field['#title']}</legend>";
+          }
           ?>
           <div class="<?php echo $field['#type'] ?>">
             <input value="0" name="<?php echo $field['#name'];?>" type="hidden">
@@ -473,6 +479,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
           ?>
           </div>
           <?php
+          if( !empty( $field['#label_above'] ) ) {
+            echo "</fieldset>";
+          }
         break;
 
         case 'hidden':
