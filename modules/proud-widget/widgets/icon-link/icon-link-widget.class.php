@@ -39,6 +39,15 @@ class IconLink extends Core\ProudWidget {
         '#to_js_settings' => false,
         '#admin_libraries' => ['fontawesome-iconpicker']
       ],
+      'classname' => [
+        '#type' => 'select',
+        '#title' => 'Style',
+        '#options' => [
+            '' => 'Standard: Dark text on light background',
+            'card-inverse' => 'Inverse: Light text on dark background',
+        ],
+        '#default_value' => ''
+      ],
       'external' => [
         '#type' => 'checkbox',
         '#title' => 'Open in new tab',
@@ -58,7 +67,7 @@ class IconLink extends Core\ProudWidget {
    */
   public function printWidget( $args, $instance ) {
     ?>
-    <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block" <?php if($instance['external']): ?>target="_blank"<?php endif;?> >
+    <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if($instance['external']): ?>target="_blank"<?php endif;?> >
       <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
       <div class="h4"><?php echo $instance['link_title']; ?></div>
     </a></div>

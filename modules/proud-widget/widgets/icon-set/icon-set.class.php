@@ -41,6 +41,15 @@ class IconSet extends Core\ProudWidget {
    */
   function initialize() {
     $this->settings += array(
+      'classname' => [
+        '#type' => 'select',
+        '#title' => 'Style',
+        '#options' => [
+          '' => 'Standard: Dark text on light background',
+          'card-inverse' => 'Inverse: Light text on dark background',
+        ],
+        '#default_value' => ''
+      ],
       'iconset' => array(
         '#title' => __( 'Icons', 'wp-proud-core' ),
         '#type' => 'group',
@@ -74,7 +83,8 @@ class IconSet extends Core\ProudWidget {
             '#default_value' => false
           ]
         ),
-      )
+      ),
+    
     );
   }
 
