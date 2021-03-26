@@ -2,7 +2,7 @@
   <?php foreach ( $iconset as $icon ) : ?>
     <?php if( !empty( $icon['link_title'] ) ): ?>
       <div class="card-wrap">
-      <?php if ( !empty( $icon['link_url'] ) ): ?><a href="<?php print $icon['link_url'] ?>"<?php else: ?><div<?php endif; ?> class="card text-center card-btn card-block" <?php if( !empty( $icon['external'] ) ): ?>target="_blank"<?php endif;?> >
+      <?php if ( !empty( $icon['link_url'] ) ): ?><a href="<?php print $icon['link_url'] ?>"<?php else: ?><div<?php endif; ?> class="card text-center card-btn card-block <?php echo $classname?>" <?php if( !empty( $icon['external'] ) ): ?>target="_blank"<?php endif;?> >
         <?php if (!empty( $icon['fa_icon'] )): ?><i aria-hidden="true" class="fa <?php print $icon['fa_icon'] ?> fa-3x"></i><?php endif; ?>
         <div class="h4"><?php print $icon['link_title'] ?></div>
         <?php if ( !empty( $icon['link_url'] ) ): ?></a><?php else: ?></div><?php endif; ?>
