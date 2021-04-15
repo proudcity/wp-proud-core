@@ -508,7 +508,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // For now, just does specificity == beginning of day
 	        $time = current_time( 'timestamp', 1 );
 	        $day_start = strtotime('midnight', $time );
-          $EM_DateTime = new \EM_DateTime($day_start, 'UTC');
+             
+            $EM_DateTime = new \EM_DateTime($day_start, wp_timezone());
 
           // Event
           if( $this->post_type === 'event' ) {
@@ -530,6 +531,9 @@ if ( !class_exists( 'TeaserList' ) ) {
                   'value' => $EM_DateTime->getDate()
               ),
             );
+
+            var_dump($args);
+            // exit;
 
           }
           // Meeting
@@ -754,6 +758,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'agency':
         case 'event':
           $meta = get_post_meta( $post->ID );
+          var_dump($meta);
+          exit;
           break;
         case 'search':
           global $proudsearch;
