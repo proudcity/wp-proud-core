@@ -532,9 +532,6 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
             );
 
-            var_dump($args);
-            // exit;
-
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
@@ -758,8 +755,6 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'agency':
         case 'event':
           $meta = get_post_meta( $post->ID );
-          var_dump($meta);
-          exit;
           break;
         case 'search':
           global $proudsearch;
