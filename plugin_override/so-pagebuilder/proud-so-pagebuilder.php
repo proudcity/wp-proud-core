@@ -19,6 +19,8 @@ class ProudSOPagebuilder {
         add_filter( 'siteorigin_panels_css_row_gutter', array( $this, 'so_css_row_gutter' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
         add_filter( 'siteorigin_panels_widget_args', array( $this, 'so_widget_titles' ) );
+
+        add_action('siteorigin_panels_after_render', array( $this, 'so_after_render' ), 10, 2);
 	}
 
 	// Restrict widgets available
@@ -146,6 +148,16 @@ class ProudSOPagebuilder {
             $args['after_title'] = str_replace('<h3', '<h2', $args['after_title']);
         }
         return $args;
+    }
+
+    // Add lightbox2 JS and CSS
+    // 
+    function so_after_render($panels_data, $post_id) {
+        $path = plugins_url( 'assets/lightbox2/', __FILE__ );
+        wp_register_script( 'proud-so-lightbox2-js', $path . 'js/lightbox.min.js' );
+        wp_enqueue_script( 'proud-so-lightbox2-js' );
+        wp_register_style( 'proud-so-lightbox2-css', $path . 'css/lightbox.min.css' );
+        wp_enqueue_style( 'proud-so-lightbox2-css' );
     }
 
 	// Try to alter some of the css code that is outputted
