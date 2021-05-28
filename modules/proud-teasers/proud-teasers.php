@@ -506,10 +506,8 @@ if ( !class_exists( 'TeaserList' ) ) {
           // 1. All day
           // 2. ENd time greater than now
           // For now, just does specificity == beginning of day
-	        $time = current_time( 'timestamp', 1 );
-	        $day_start = strtotime('midnight', $time );
-             
-            $EM_DateTime = new \EM_DateTime($day_start, wp_timezone());
+          $datetime = new \DateTime('now', wp_timezone());
+          $datetime->setTime(0,0);
 
           // Event
           if( $this->post_type === 'event' ) {
@@ -528,7 +526,7 @@ if ( !class_exists( 'TeaserList' ) ) {
                   'key' => $query_key,
                   'type' => 'DATE',
                   'compare' => '>=',
-                  'value' => $EM_DateTime->getDate()
+                  'value' => $datetime->format('Y-m-d')
               ),
             );
 
@@ -553,7 +551,7 @@ if ( !class_exists( 'TeaserList' ) ) {
                   'key' => $query_key,
 	                'type' => 'DATE',
                   'compare' => '>=',
-                  'value' => $EM_DateTime->getDate()
+                  'value' => $datetime->format('Y-m-d')
               ),
             );
           }
@@ -755,6 +753,8 @@ if ( !class_exists( 'TeaserList' ) ) {
         case 'agency':
         case 'event':
           $meta = get_post_meta( $post->ID );
+          // Uncomment to test event times
+        //   echo '<script>console.log('.json_encode($meta).');</script>';
           break;
         case 'search':
           global $proudsearch;
