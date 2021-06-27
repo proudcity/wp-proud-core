@@ -450,18 +450,40 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     private function add_sort( &$args, $options ) {
 
+      // @ TODO figure out optimized query that allows 
+      // 1. All day
+      // 2. ENd time greater than now
+      // For now, just does specificity == beginning of day
+      $datetime = new \DateTime('now', wp_timezone());
+      $datetime->setTime(0,0);
+
       // Have user defined sort?
       if( !empty( $options['sort_by'] ) && !empty( $options['sort_order'] ) ) {
         $this->apply_user_sort( $args, $options );
 
         if ($this->post_type === 'meeting' && $options['sort_by'] === 'datetime') {
-          $args['meta_type'] = 'DATE';
+          $args['meta_type'] = 'DATETIME';
           $args['meta_key'] = 'datetime';
+
+          if ($options['sort_order'] === 'ASC') {
+            $args['meta_query'] = array(
+              'relation' => 'AND',
+              array(
+                  'key' => $args['meta_key'],
+                  'compare' => 'EXISTS'
+              ),
+              array(
+                  'key' => $args['meta_key'],
+                  'type' => 'DATE',
+                  'compare' => '>=',
+                  'value' => $datetime->format('Y-m-d')
+              ),
+            );
+          }
         }
 
         return;
       }
-
 
       switch( $this->post_type ) {
         case 'post':
@@ -502,12 +524,6 @@ if ( !class_exists( 'TeaserList' ) ) {
 
           // http://www.billerickson.net/wp-query-sort-by-meta/
           $query_key =  '_event_start_local';
-          // @ TODO figure out optimized query that allows 
-          // 1. All day
-          // 2. ENd time greater than now
-          // For now, just does specificity == beginning of day
-          $datetime = new \DateTime('now', wp_timezone());
-          $datetime->setTime(0,0);
 
           // Event
           if( $this->post_type === 'event' ) {
@@ -533,11 +549,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
-//
-//            $args['orderby'] = 'meta_value';
-//            $args['meta_type'] = 'DATE';
-//            $args['meta_key'] = 'datetime';
-//            $args['order'] = 'ASC';
+            // Note: this is set
           }
           // Search
           else {

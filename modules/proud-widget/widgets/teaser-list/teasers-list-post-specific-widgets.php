@@ -310,7 +310,7 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_meeting_teaser_list', // Base ID
       __( 'Meetings list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of upcoming Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
+      array( 'description' => __( 'List of upcoming Meetings in a category with a display style.', 'wp-proud-core' ), ), // Args
       get_class($this)
     );
 
@@ -318,6 +318,10 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     $this->display_modes = [ 'list', 'mini', 'table' ];
 
     $this->settings += [
+      'sort_description' => [
+        '#type' => 'html',
+        '#html' => __('Sort By Meeting Date and use the Ascending Sort Order to to show upcoming meetings. Use the Descending option to display recently completed meetings.', 'proud-teaser'),
+      ],
       'proud_teaser_hide' => [
       '#title' => __('Hide Columns', 'proud-teaser'),
       '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
@@ -347,6 +351,5 @@ class MeetingTeaserListWidget extends TeaserListWidget {
   ];
   $this->sort_by_default = 'datetime'; // Sort by
   $this->sort_order_default = 'DESC'; // Sort direction
-
   }
 }
