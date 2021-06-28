@@ -468,10 +468,10 @@ if ( !class_exists( 'TeaserList' ) ) {
           if ($options['sort_order'] === 'ASC') {
             $args['meta_query'] = array(
               'relation' => 'AND',
-              array(
-                  'key' => $args['meta_key'],
-                  'compare' => 'EXISTS'
-              ),
+              // array(
+              //     'key' => $args['meta_key'],
+              //     'compare' => 'EXISTS'
+              // ),
               array(
                   'key' => $args['meta_key'],
                   'type' => 'DATE',
@@ -549,7 +549,7 @@ if ( !class_exists( 'TeaserList' ) ) {
           }
           // Meeting
           elseif( $this->post_type === 'meeting' ) {
-            // Note: this is set
+            // Note: this is set at the top of this function
           }
           // Search
           else {
