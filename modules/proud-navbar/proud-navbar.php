@@ -235,6 +235,7 @@ function get_nav_button_options($display)
         'payments' => 'payments',
         'report' => 'report'
     ]);
+    $button_class = get_option('toolbar_button_class', '');
 
     $action_buttons = [];
 
@@ -243,7 +244,7 @@ function get_nav_button_options($display)
             'title' => 'Answers',
             'data_key' => 'answers',
             'href' => '#',
-            'classes' => 'btn navbar-btn answers-button',
+            'classes' => 'btn navbar-btn answers-button ' . $button_class,
             'data_attrs' => '',
             'icon' => 'fa-question-circle',
         ], 'answers', $display);
@@ -254,7 +255,7 @@ function get_nav_button_options($display)
             'title' => get_option('payments_label', 'Payment') . 's',
             'data_key' => 'payments',
             'href' => '#',
-            'classes' => 'btn navbar-btn payments-button',
+            'classes' => 'btn navbar-btn payments-button ' . $button_class,
             'data_attrs' => '',
             'icon' => 'fa-credit-card',
         ], 'payments', $display);
@@ -264,10 +265,10 @@ function get_nav_button_options($display)
         $report_service = get_option('311_service', 'link');
         $report_link = get_option('311_link_create');
         $action_buttons['report'] =  apply_filters('proud_nav_button_options', [
-            'title' => 'Report Issues',
+            'title' => 'Report Issue',
             'data_key' => 'report',
             'href' => $report_service === 'link' ? $report_link : '#',
-            'classes' =>  'btn navbar-btn issue-button',
+            'classes' =>  'btn navbar-btn issue-button ' . $button_class,
             'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
             'icon' => 'fa-exclamation-triangle',
         ], 'report', $display);
@@ -279,7 +280,7 @@ function get_nav_button_options($display)
             'data_key' => 'google_translate',
             'dropdown' => true,
             //   'href' => $report_service === 'link' ? $report_link : '#',
-            'classes' =>  'btn navbar-btn translate-button',
+            'classes' =>  'btn navbar-btn translate-button ' . $button_class,
             //   'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
             'icon' => 'fa-globe',
         ], 'google_translate', $display);
@@ -291,7 +292,7 @@ function get_nav_button_options($display)
             'data_key' => 'font_size',
             'dropdown' => true,
             //   'href' => $report_service === 'link' ? $report_link : '#',
-            'classes' =>  'btn navbar-btn font-button',
+            'classes' =>  'btn navbar-btn font-button ' . $button_class,
             //   'data_attrs' => $report_service === 'link' ? ' data-click-external="true"' : '',
             'icon' => 'fa-font',
         ], 'report', $display);
@@ -305,11 +306,12 @@ function get_nav_button_options($display)
  */
 function get_nav_search_options($display)
 {
+    $button_class = get_option('toolbar_button_class', '');
     $search_button = apply_filters('proud_nav_button_options', [
         'title' => 'Search',
         'data_key' => 'search',
         'href' => '#',
-        'classes' => 'btn navbar-btn search-button',
+        'classes' => 'btn navbar-btn search-button ' . $button_class,
         'data_attrs' => '',
         'icon' => 'fa-search',
     ], 'search', $display);
