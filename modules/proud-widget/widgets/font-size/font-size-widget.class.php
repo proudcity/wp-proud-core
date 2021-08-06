@@ -77,7 +77,7 @@ class FontSize extends Core\ProudWidget
 ?>
         <!--<div class="dropdown font-size">-->
         <?php if (!empty($instance['navbar'])) : ?>
-            <a href="#" id="<?= $id ?>" title="Font size" role="button" data-proud-navbar class="btn navbar-btn translate-button" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a href="#" id="<?= $id ?>" title="Font size" role="button" data-proud-navbar class="btn navbar-btn font-size" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i aria-hidden="true" class="fa fa-fw fa-font"></i>
                 Size
             </a>
