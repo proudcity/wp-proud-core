@@ -459,8 +459,12 @@ if ( !class_exists( 'TeaserList' ) ) {
 
       // Have user defined sort?
       if( !empty( $options['sort_by'] ) && !empty( $options['sort_order'] ) ) {
+        $this->apply_user_sort( $args, $options );
 
         if ($this->post_type === 'meeting' && strpos($options['sort_by'], 'datetime') !== false) {
+          $args['meta_type'] = 'DATETIME';
+          $args['meta_key'] = 'datetime';
+          $args['orderby'] = 'datetime';
 
           if ($options['sort_by'] === 'datetime_upcoming') {
             $args['meta_query'] = array(
@@ -494,11 +498,7 @@ if ( !class_exists( 'TeaserList' ) ) {
             );
           }
 
-          $args['meta_type'] = 'DATETIME';
-          $args['meta_key'] = 'datetime';
         }
-
-        $this->apply_user_sort( $args, $options );
 
         return;
       }
