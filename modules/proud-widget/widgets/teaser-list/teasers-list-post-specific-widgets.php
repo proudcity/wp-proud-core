@@ -310,7 +310,7 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     parent::__construct(
       'proud_meeting_teaser_list', // Base ID
       __( 'Meetings list', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'List of upcoming Meetings in a category with a display style', 'wp-proud-core' ), ), // Args
+      array( 'description' => __( 'List of upcoming Meetings in a category with a display style.', 'wp-proud-core' ), ), // Args
       get_class($this)
     );
 
@@ -318,6 +318,10 @@ class MeetingTeaserListWidget extends TeaserListWidget {
     $this->display_modes = [ 'list', 'mini', 'table' ];
 
     $this->settings += [
+      'sort_description' => [
+        '#type' => 'html',
+        '#html' => __('The default is to show upcoming meetings by sorting by "Only Upcoming Meetings by Date" with the Ascending Sort Order. To show recently completed meetings, sort by "Only Completed Meetings by Date" with the Descending Sort Order.  To show an annual archive of meetings, sort by "All Meetings by Date" and use whichever sort order you prefer.', 'proud-teaser'),
+      ],
       'proud_teaser_hide' => [
       '#title' => __('Hide Columns', 'proud-teaser'),
       '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
@@ -343,10 +347,11 @@ class MeetingTeaserListWidget extends TeaserListWidget {
   // Sort options
   $this->display_sort = true;
   $this->sort_by_options += [
-    'datetime' => 'Meeting Date',
+    'datetime_upcoming' => 'Only Upcoming Meetings by Date',
+    'datetime_completed' => 'Only Completed Meetings by Date',
+    'datetime' => 'All Meetings by Date',
   ];
-  $this->sort_by_default = 'datetime'; // Sort by
-  $this->sort_order_default = 'DESC'; // Sort direction
-
+  $this->sort_by_default = 'datetime_upcoming'; // Sort by
+  $this->sort_order_default = 'ASC'; // Sort direction
   }
 }
