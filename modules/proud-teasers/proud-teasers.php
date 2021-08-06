@@ -452,7 +452,7 @@ if ( !class_exists( 'TeaserList' ) ) {
 
       // @ TODO figure out optimized query that allows 
       // 1. All day
-      // 2. ENd time greater than now
+      // 2. End time greater than now
       // For now, just does specificity == beginning of day
       $datetime = new \DateTime('now', wp_timezone());
       $datetime->setTime(0,0);
@@ -461,11 +461,11 @@ if ( !class_exists( 'TeaserList' ) ) {
       if( !empty( $options['sort_by'] ) && !empty( $options['sort_order'] ) ) {
         $this->apply_user_sort( $args, $options );
 
-        if ($this->post_type === 'meeting' && $options['sort_by'] === 'datetime') {
+        if ($this->post_type === 'meeting' && strpos($options['sort_by'], 'datetime') !== false) {
           $args['meta_type'] = 'DATETIME';
           $args['meta_key'] = 'datetime';
 
-          if ($options['sort_order'] === 'ASC') {
+          if ($options['sort_by'] === 'datetime_upcoming') {
             $args['meta_query'] = array(
               'relation' => 'AND',
               // array(
@@ -480,6 +480,23 @@ if ( !class_exists( 'TeaserList' ) ) {
               ),
             );
           }
+
+          if ($options['sort_by'] === 'datetime_completed') {
+            $args['meta_query'] = array(
+              'relation' => 'AND',
+              // array(
+              //     'key' => $args['meta_key'],
+              //     'compare' => 'EXISTS'
+              // ),
+              array(
+                  'key' => $args['meta_key'],
+                  'type' => 'DATE',
+                  'compare' => '<=',
+                  'value' => $datetime->format('Y-m-d')
+              ),
+            );
+          }
+
         }
 
         return;
