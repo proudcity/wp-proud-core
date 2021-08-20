@@ -215,6 +215,7 @@ function get_topbar_logo_area()
     $topbar_logo = get_topbar_logo();
     $topbar_title = get_theme_mod('proud_topbar_title');
     $topbar_link = get_theme_mod('proud_topbar_link') ?? get_logo_link_url();
+    $topbar_official = get_theme_mod('proud_topbar_official', false);
 
     ob_start();
     include plugin_dir_path(__FILE__) . 'templates/nav-topbar-logo-area.php';
@@ -446,6 +447,7 @@ function print_proud_navbar()
     // No plugin overtaking, print template
     if (!$navbar) {
         $topbar_active = get_theme_mod('proud_topbar_enable', false);
+        $topbar_official = get_theme_mod('proud_topbar_official', false);
         $topbar_has_action_toolbar = $topbar_active && get_theme_mod('proud_topbar_action_icons', false);
         ob_start();
         include plugin_dir_path(__FILE__) . 'templates/navbar.php';

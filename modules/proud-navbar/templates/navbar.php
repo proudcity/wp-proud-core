@@ -1,12 +1,14 @@
 <header role="banner">
   <?php if( $topbar_active ): ?>
-    <div id="navbar-topbar" class="navbar navbar-default navbar-topbar">
+    <div id="navbar-topbar" class="navbar navbar-default navbar-topbar<?php if( !empty($topbar_official) ): echo ' navbar-topbar-official-active'; endif; ?>">
       <?php print get_topbar_logo_area(); ?>
-      <?php print get_nav_topbar_menu(); ?>
-      <?php if ( $topbar_has_action_toolbar ): ?>
-        <div class="container-fluid menu-box">
-            <?php print get_nav_action_toolbar(); ?>
-        </div>
+      <?php if( empty($topbar_official) ): ?>
+        <?php print get_nav_topbar_menu(); ?>
+        <?php if ( $topbar_has_action_toolbar ): ?>
+            <div class="container-fluid menu-box">
+                <?php print get_nav_action_toolbar(); ?>
+            </div>
+        <?php endif; ?>
       <?php endif; ?>
     </div>
   <?php endif; ?>
