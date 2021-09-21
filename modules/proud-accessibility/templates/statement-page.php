@@ -3,7 +3,7 @@
     <p><?php echo $entity_name; ?> is committed to access for all.</p>
     <p>Guided by Web Content Accessibility Guidelines (WCAG) standards, our objective is to be:</p>
     <ol>
-      <li>Fully compliant with Section 508 and WCAG Level AA.</li>
+      <li>Fully compliant with Section 508 and WCAG 2.0 Level AA.</li>
       <li>Open and transparent about our process.</li>
       <li>Attentive to community feedback surrounding usability of our website.</li>
     </ol>
