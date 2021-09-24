@@ -215,6 +215,7 @@ function get_topbar_logo_area()
     $topbar_logo = get_topbar_logo();
     $topbar_title = get_theme_mod('proud_topbar_title');
     $topbar_link = get_theme_mod('proud_topbar_link') ?? get_logo_link_url();
+    $topbar_title_attr = get_theme_mod('proud_topbar_title_attr') ?? 'Home';
 
     ob_start();
     include plugin_dir_path(__FILE__) . 'templates/nav-topbar-logo-area.php';
