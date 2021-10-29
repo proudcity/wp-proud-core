@@ -141,12 +141,17 @@ function build_responsive_image_metadata( $media_id ) {
   $media_post = get_post($media_id);
   $title  = !empty( $media_post->post_title ) ? $media_post->post_title : $media_post->post_name;
   $alt = get_post_meta( $media_id, '_wp_attachment_image_alt', true );
-  return [
+  $metadata =[
     'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
     //'class' => @todo
-    'title' => $title,
-    'alt' => $alt ? $alt : $title,
   ];
+  if (!empty($alt)) {
+    $metadata['alt'] = $alt;
+  } else {
+    $metadata['title'] = $title;
+  }
+
+  return $metadata;
 }
 
 
