@@ -53,6 +53,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/e-signature/proud-e-si
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityformsstripe/proud-gravityformsstripe.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/buddydrive/proud-buddydrive.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-seo/proud-wordpress-seo.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/general.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
@@ -157,7 +158,7 @@ class Proudcore extends \ProudPlugin {
     wp_enqueue_script('proud');
     self::$libraries->loadLibraries();
   }
- 
+
   // Load common libraries
   public function loadAdminLibraries( $hook ) {
     $path = plugins_url('assets/js/',__FILE__);
@@ -217,7 +218,7 @@ class Proudcore extends \ProudPlugin {
   public function restPostOrder( $wp_query ) {
     global $wp;
     $q = add_query_arg(array(),$wp->request);
-    if ( 
+    if (
       $q === 'wp-json/wp/v2/issues' ||
       $q === 'wp-json/wp/v2/questions' ||
       $q === 'wp-json/wp/v2/payments'
@@ -296,27 +297,27 @@ class Proudcore extends \ProudPlugin {
         $sources[$source_size]['url'] = $image_src;
         $media_meta_full = wp_get_attachment_metadata( $attachment_id );
       }
-      // image base name  
+      // image base name
       $image_basename = wp_basename( $image_meta['file'] );
       // upload directory info array
       $upload_dir_info_arr = wp_get_upload_dir();
       // base url of upload directory
       $baseurl = $upload_dir_info_arr['baseurl'];
-      
+
       // Uploads are (or have been) in year/month sub-directories.
       if ( $image_basename !== $image_meta['file'] ) {
         $dirname = dirname( $image_meta['file'] );
-        
+
         if ( $dirname !== '.' ) {
-          $image_baseurl = trailingslashit( trailingslashit( $baseurl ) . $dirname ); 
+          $image_baseurl = trailingslashit( trailingslashit( $baseurl ) . $dirname );
         }
       }
       // Full meta information
       foreach ( $sizes as $size ) {
-        // check whether our custom image size exists in image meta 
+        // check whether our custom image size exists in image meta
         if ( !empty( $image_meta['sizes'][$size] ) ){
           $url = '';
-          
+
           // We have WP stateless option
           if ( isset($media_meta_full) && !empty( $media_meta_full['sizes'][$size]['gs_link'] ) ) {
             $url = $media_meta_full['sizes'][$size]['gs_link'];
@@ -353,7 +354,7 @@ class Proudcore extends \ProudPlugin {
           LEFT JOIN wp_terms t ON r.term_taxonomy_id = t.term_id
           WHERE slug IS NOT NULL
           AND pm.meta_key = %s
-          AND pm.meta_value = %d;', 
+          AND pm.meta_value = %d;',
         '_menu_item_object_id', get_the_ID() ) );
 
         if( !empty($row) ) {
