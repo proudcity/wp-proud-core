@@ -23,3 +23,37 @@ function events_manager_script_dequeue() {
   }
 }
 add_action( 'wp_print_scripts', __NAMESPACE__ . '\\events_manager_script_dequeue', 100 );
+
+/**
+ * Detects if we have an event spanning 2 days and modifies the data
+ * so it shows up twice
+ *
+ */
+function proud_events_filter( $events ){
+
+	$new_events_array = array();
+	foreach( $events as $event ){
+
+		$start = get_post_meta( absint( $event->post_id ), '_start_ts', true );
+		$end = get_post_meta( absint( $event->post_id ), '_end_ts', true );
+
+		$new_events_array[] = $event;
+echo '<pre>';
+print_r( $new_events_array );
+echo '</pre>';
+		// if event exceets 24 hours (86400 seconds) we'll need to duplicate it
+		if ( ( $end - $start ) > 86400 ){
+			$new_event = $event;
+			// adjust start date time
+			$start_date = $new_event->start_date;
+			$new_event->start_date = date( 'Y-m-d', strtotime( $start_date . '+1 day' ) );
+
+			// duplicate event
+			$new_events_array[] = $new_event;
+		}
+
+	}
+
+	return $new_events_array;
+}
+add_filter( 'proud_events_duplicator', 'proud_events_filter' );
