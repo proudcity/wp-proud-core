@@ -38,12 +38,12 @@ function proud_events_filter( $events ){
 		$end = get_post_meta( absint( $event->post_id ), '_end_ts', true );
 
 		$new_events_array[] = $event;
-echo '<pre>';
-print_r( $new_events_array );
-echo '</pre>';
+
 		// if event exceets 24 hours (86400 seconds) we'll need to duplicate it
 		if ( ( $end - $start ) > 86400 ){
-			$new_event = $event;
+
+			$new_event = clone $event;
+
 			// adjust start date time
 			$start_date = $new_event->start_date;
 			$new_event->start_date = date( 'Y-m-d', strtotime( $start_date . '+1 day' ) );
