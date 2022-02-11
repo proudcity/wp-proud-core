@@ -1,8 +1,16 @@
 <div id="<?php print $random_id ?>" class="carousel slide" data-ride="carousel">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+        <?php foreach ($instance['slideshow'] as $key => $slide) : ?>
+            <li data-target="#<?php print $random_id ?>" data-slide-to="<?php echo $key ?>" class="<?php echo $key === 0 ? ' active' : '' ?>"></li>
+        <?php endforeach; ?>
+    </ol>
+
+    
     <!-- Wrapper for slides -->
     <div class="carousel-inner" role="listbox">
         <?php foreach ($instance['slideshow'] as $key => $slide) : ?>
-            <div class="item<?php echo $key === 0 ? ' active' : '' ?>">
+            <div id="<?php print $random_id ?>-<?php echo $key ?>" class="item<?php echo $key === 0 ? ' active' : '' ?>">
                 <div class="jumbo-header jumbotron-header-container">
                     <div class="<?php print implode(' ', $classes) ?>" style="<?php print implode('', $arr_styles) ?>">
                         <?php if (!empty($slide['resp_img'])) {
