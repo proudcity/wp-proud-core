@@ -112,9 +112,24 @@ class ProudAccessibilityPage {
 		}
 	}
 
-	public function accessibility_content() {
+	/**
+  	 * Adds shortcode for the accessibility statement
+	 *
+	 * @since 2022.02.08
+	 * @author Curtis
+	 *
+	 * @param           array           $atts               Any arugements that the shortcode supports
+	 * @param           string          $content            Content passed in the shortcode
+	 */
+	public function accessibility_content( $atts, $content ) {
 		$entity_name = apply_filters( 'proud_accessibility_entity_name', get_bloginfo('name') );
+
+		ob_start();
 		include apply_filters('proud_accessibility_page_template', plugin_dir_path(__FILE__) . '../templates/statement-page.php');
+		$content = ob_get_contents();
+		ob_clean();
+
+		return $content;
 	}
 }
 
