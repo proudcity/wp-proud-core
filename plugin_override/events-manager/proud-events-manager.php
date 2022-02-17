@@ -28,6 +28,13 @@ add_action( 'wp_print_scripts', __NAMESPACE__ . '\\events_manager_script_dequeue
  * Detects if we have an event spanning 2 days and modifies the data
  * so it shows up twice
  *
+ * @since 2022.02.17
+ * @author Curtis
+ *
+ * @param       array|Object            $events             required                    The array of event objects that we are checking
+ * @uses        get_post_meta()                                                         returns post meta given post_id and key
+ * @uses        proud_how_many_days()                                                   divides the seconds between start and end by 86400 to get number of days ot repeat
+ * @return      $new_events_array()                                                     modified array with duplicated events
  */
 function proud_events_filter( $events ){
 
@@ -46,16 +53,14 @@ function proud_events_filter( $events ){
 		if ( ( $end_stamp - $start_stamp ) >= 86400 ){
 
 			$how_many_days = proud_how_many_days( $end_stamp, $start_stamp );
-			echo 'how_many '. $how_many_days;
-			$counter = 0;
+			$counter = 1;
 
 			while( $counter <= $how_many_days ){
 				$new_event = clone $event;
 
 				// adjust start date time
 				$start_date = $new_event->start_date;
-				$date_adjust = $counter + 1;
-				$new_event->start_date = date( 'Y-m-d', strtotime( $start_date . '+'.$date_adjust.' day' ) );
+				$new_event->start_date = date( 'Y-m-d', strtotime( $start_date . '+'.$counter.' day' ) );
 
 				// duplicate event
 				$new_events_array[] = $new_event;
