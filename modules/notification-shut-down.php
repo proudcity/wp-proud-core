@@ -33,9 +33,11 @@ add_filter('pre_site_transient_update_themes',	'proud_remove_core_updates'); //h
  * @author Curtis McHale
  */
 function proud_remove_extra_notices(){
-	remove_all_actions( 'admin_notices' );
-	remove_all_actions( 'disable_comments_notice', 10 );
+
+	if ( wp_get_environment_type() == 'production' ){
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'disable_comments_notice', 10 );
+	}
+
 }
 add_action( 'wp_loaded', 'proud_remove_extra_notices', 99 );
-
-
