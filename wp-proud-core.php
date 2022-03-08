@@ -41,6 +41,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-pagetitle/proud-pagetitl
 //require_once plugin_dir_path(__FILE__) . 'modules/wr-pagebuilder/proud-addons.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytics.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-sitemap/proud-sitemap.php';
+require_once plugin_dir_path(__FILE__) . 'modules/notification-shut-down.php';
 
 
 // Override plugins
