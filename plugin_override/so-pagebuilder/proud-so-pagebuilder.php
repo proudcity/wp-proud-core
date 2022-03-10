@@ -145,7 +145,7 @@ class ProudSOPagebuilder {
             $args['before_title'] = str_replace('<h3', '<h2', $args['before_title']);
         }
         if (!empty($args['after_title'])) {
-            $args['after_title'] = str_replace('<h3', '<h2', $args['after_title']);
+            $args['after_title'] = str_replace('</h3', '</h2', $args['after_title']);
         }
         return $args;
     }
