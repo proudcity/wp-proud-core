@@ -55,6 +55,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityformsstripe/pro
 require_once plugin_dir_path(__FILE__) . 'plugin_override/buddydrive/proud-buddydrive.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-seo/proud-wordpress-seo.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/general.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/simple-staff-list/simple-staff-list.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
