@@ -41,6 +41,10 @@ class Proud_Simple_Staff_List{
      * @author Curtis McHale
      * 
      * @param       $post_id        int             required                    The ID of the post we're adding fields to
+     * @uses        get_post_meta()                                             Returns post_meta given post_id and key
+     * @uses        absint()                                                    no negative numbers
+     * @uses        esc_url()                                                   escapes URL
+     * @uses        wp_kses_post()                                              escapes and sanitizes post type content
      */
     public static function proud_staff_fields( $post_id ){
 
@@ -48,20 +52,20 @@ class Proud_Simple_Staff_List{
         ?>
             <label for="_proud_linkedin_link">
                 Linkedin Link:
-                <input type="url" name="_proud_linkedin_link" id="_proud_linkedin_link" placeholder="Linkedin Profile Link" value="<?php echo $linkedin_link; ?>" />
+                <input type="url" name="_proud_linkedin_link" id="_proud_linkedin_link" placeholder="Linkedin Profile Link" value="<?php echo esc_url( $linkedin_link ); ?>" />
             </label>
         <?php
         $contact_link = get_post_meta( absint( $post_id ), '_proud_contact_link', true );
         ?>
             <label for="_proud_contact_link">
                 Contact Link:
-                <input type="url" name="_proud_contact_link" id="_proud_contact_link" placeholder="Contact Link" value="<?php echo $contact_link; ?>" />
+                <input type="url" name="_proud_contact_link" id="_proud_contact_link" placeholder="Contact Link" value="<?php echo esc_url( $contact_link ); ?>" />
             </label>
         <?php
             $address = get_post_meta( absint( $post_id ), '_proud_address', true );
         ?>
             <label for="_proud_address">Address:</label>
-                <textarea name="_proud_address" id="_proud_address" placeholder="Contact Address"><? echo $address; ?></textarea>
+                <textarea name="_proud_address" id="_proud_address" placeholder="Contact Address"><? echo wp_kses_post( $address ); ?></textarea>
     <?php
     } // proud_staff_fields
 
@@ -74,6 +78,10 @@ class Proud_Simple_Staff_List{
      * 
      * @param       $post_id        int             required                The ID of the post we're saving content for
      * @param       $post_fields    array           required                This is the passed $_POST value from the save screen
+     * @uses        update_post_meta()                                      updates the post_meta given post_id and key
+     * @uses        absint()                                                makes sure we don't have negative numbers
+     * @uses        sanitize_url()                                          makes this text safe as a URL
+     * @uses        wp_kses_post()                                          makes this content safe as post content
      */
     public static function proud_save_extra_staff_fields( $post_id, $post_fields ){
 
