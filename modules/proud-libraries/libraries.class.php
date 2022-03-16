@@ -65,18 +65,6 @@ class ProudLibaries {
       'deps' => ['proud']
     ];
     
-    self::$libraries['fontawesome-iconpicker'] = [
-      'title' => 'Fontawesome Icon-picker',
-      'js' => [
-        'fontawesome-iconpicker' => $path . 'fontawesome-iconpicker/dist/js/fontawesome-iconpicker.js',
-      ],
-      'css' => [
-        'fontawesome-iconpicker.css' => $path . 'fontawesome-iconpicker/dist/css/fontawesome-iconpicker.css',
-      ],
-      'js_footer' => true,
-      'deps' => ['jquery-core','proud']
-    ];
-
     self::$libraries['iframe-resizer'] = [
       'title' => 'Iframe Resizer',
       'js' => [

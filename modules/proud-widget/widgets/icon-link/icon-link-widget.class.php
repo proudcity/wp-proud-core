@@ -31,14 +31,6 @@ class IconLink extends Core\ProudWidget {
         '#description' => 'Url for the link',
         '#to_js_settings' => false
       ],
-      'fa_icon' => [
-        '#title' => 'Icon',
-        '#type' => 'fa-icon',
-        '#default_value' => '',
-        '#description' => 'The icon to use for the icon box.',
-        '#to_js_settings' => false,
-        '#admin_libraries' => ['fontawesome-iconpicker']
-      ],
       'classname' => [
         '#type' => 'select',
         '#title' => 'Style',
