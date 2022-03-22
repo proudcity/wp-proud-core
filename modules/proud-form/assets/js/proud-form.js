@@ -9,7 +9,7 @@
     $body.on('click', 'input.iconpicker', function(e) {
       $(e.target).once('fontIconPicker', function() {
         $(this).fontIconPicker({
-          source: icons
+          source: ProudFA.icons
         });
         console.log('fonticonpicker');
       })

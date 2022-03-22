@@ -801,10 +801,28 @@ if ( ! class_exists( 'FormHelper' ) ) {
   }
 }
 
+/**
+ * Lists the fonts from Font Awesome
+ */
+function proud_list_fonts(){
+
+  $fonts = array(
+    'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon',
+  );
+
+  return $fonts;
+
+}
+
 
 // register Foo_Widget widget
 function proud_form_load_js() {
   wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
+  wp_localize_script( 'proud-form', 'ProudFA', array(
+    'icons' => proud_list_fonts(),
+
+  ) );
+
 }
     // Load admin scripts from libraries
 add_action('admin_enqueue_scripts',  __NAMESPACE__ . '\\proud_form_load_js');
