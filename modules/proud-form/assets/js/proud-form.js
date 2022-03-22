@@ -3,9 +3,14 @@
   var $body = $('body');
 
   Proud.behaviors.iconpicker = { attach: function(context, settings) {
+
+    var icons = [ 'fa-regular fa-address-card', 'fa-brands fa-airbnb'];
+
     $body.on('click', 'input.iconpicker', function(e) {
       $(e.target).once('fontIconPicker', function() {
-        $(this).fontIconPicker();
+        $(this).fontIconPicker({
+          source: icons
+        });
         console.log('fonticonpicker');
       })
     });

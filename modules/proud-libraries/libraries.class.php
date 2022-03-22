@@ -64,7 +64,7 @@ class ProudLibaries {
       'js_footer' => true,
       'deps' => ['proud']
     ];
-
+/*
     self::$libraries['fonticonpicker'] = [
       'title' => 'Icon Picker',
       'js' => [
@@ -77,7 +77,7 @@ class ProudLibaries {
       'js_footer' => true,
       'deps' => [ 'jquery-core', 'proud' ]
     ];
-    
+ */   
     self::$libraries['iframe-resizer'] = [
       'title' => 'Iframe Resizer',
       'js' => [
