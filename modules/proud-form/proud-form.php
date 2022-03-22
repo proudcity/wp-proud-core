@@ -801,20 +801,6 @@ if ( ! class_exists( 'FormHelper' ) ) {
   }
 }
 
-
-/**
- * Lists the fonts from Font Awesome
- */
-function proud_list_fonts(){
-
-  $fonts = array(
-    'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon',
-  );
-
-  return $fonts;
-
-}
-
 // Getting our Proud_FA class
 use Proud\Core\Proud_FA\Proud_FA as Proud_FAProud_FA;
 
