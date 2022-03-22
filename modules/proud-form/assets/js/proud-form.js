@@ -5,7 +5,7 @@
   Proud.behaviors.iconpicker = { attach: function(context, settings) {
     $body.on('click', 'input.iconpicker', function(e) {
       $(e.target).once('fontIconPicker', function() {
-        //$(this).fontIconPicker(iconSettings).data('iconpicker').show();
+        $(this).fontIconPicker();
         console.log('fonticonpicker');
       })
     });

@@ -71,7 +71,8 @@ class ProudLibaries {
         'fa-iconpicker' => $path . 'fonticonpicker/js/jquery.fonticonpicker.min.js'
       ],
       'css' => [
-        'fa-iconpicker-styles' => $path . 'fonticonpicker/css/base/jquery.fonticonpicker.min.css'
+        'fa-iconpicker-styles' => $path . 'fonticonpicker/css/base/jquery.fonticonpicker.min.css',
+        'fa-icon-theme' => $path . 'fonticonpicker/css/themes/grey-theme/jquery.fonticonpicker.grey.min.css'
       ],
       'js_footer' => true,
       'deps' => [ 'jquery-core', 'proud' ]
