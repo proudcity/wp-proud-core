@@ -801,6 +801,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
   }
 }
 
+
 /**
  * Lists the fonts from Font Awesome
  */
@@ -814,13 +815,17 @@ function proud_list_fonts(){
 
 }
 
+// Getting our Proud_FA class
+use Proud\Core\Proud_FA\Proud_FA as Proud_FAProud_FA;
 
 // register Foo_Widget widget
 function proud_form_load_js() {
+
+  $fa = new Proud_FAProud_FA;
+
   wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
   wp_localize_script( 'proud-form', 'ProudFA', array(
-    'icons' => proud_list_fonts(),
-
+    'icons' => $fa::list_fonts(),
   ) );
 
 }
