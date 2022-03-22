@@ -3,28 +3,13 @@
   var $body = $('body');
 
   Proud.behaviors.iconpicker = { attach: function(context, settings) {
-    var iconSettings = [];
-    // We have custom icons ?
-    if(settings.proud_form
-    && settings.proud_form.iconpicker 
-    && settings.proud_form.iconpicker.icons 
-    && settings.proud_form.iconpicker['icon-prefix']) {
-      iconSettings['icons'] = $.merge(settings.proud_form.iconpicker.icons, $.iconpicker.defaultOptions.icons);
-      iconSettings['fullClassFormatter'] = function(val) {
-        if(val.match(/^fa-/)){
-            return 'fa '+val;
-        }else{
-            return settings.proud_form.iconpicker['icon-prefix'] + ' ' +val;
-        }
-      };
-    }
     $body.on('click', 'input.iconpicker', function(e) {
-      $(e.target).once('iconpicker', function() {
-        $(this).iconpicker(iconSettings).data('iconpicker').show();
+      $(e.target).once('fontIconPicker', function() {
+        //$(this).fontIconPicker(iconSettings).data('iconpicker').show();
+        console.log('fonticonpicker');
       })
     });
-  }};
-
+  }}; 
 
   Proud.behaviors.draggableCheckboxes = {
     reRunAjax: true,  

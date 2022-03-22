@@ -196,6 +196,13 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $options = apply_filters( 'proud_form_icon_picker_options', [
             $key => $key
           ] );
+          $proudcore->addJsSettings([
+            'proud_form' => [
+              'iconpicker' => $options
+            ]
+          ]);
+
+          $proudcore::$libraries->addBundleToLoad('fonticonpicker', true );
         }
         // Media upload
         else if( $field['#type'] === 'select_media' ) {

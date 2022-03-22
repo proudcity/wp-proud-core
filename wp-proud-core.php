@@ -165,6 +165,12 @@ class Proudcore extends \ProudPlugin {
     $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
+
+    // fonticonpicker
+   //wp_enqueue_script( 'fonticonpicker_js', plugins_url( 'assets/js/fonticonpicker/js/jquery.fonticonpicker.min.js', __FILE__ ), array( 'jquery' ), '3.1.1' );
+   //wp_enqueue_style( 'fonticonpicker_styles', plugins_url( 'assets/js/fonticonpicker/css/base/jquery.fonticonpicker.min.css', __FILE__ ), '', '3.1.1' );
+   //wp_enqueue_style( 'fonticonpicker_styles', plugins_url( 'assets/js/fonticonpicker/css/themes/bootstrap-theme/jquery.fonticonpicker.bootstrap.min.css', __FILE__ ), array( 'fonticonpicker_styles' ), '3.1.1' );
+
     self::$libraries->loadLibraries('true');
   }
 
