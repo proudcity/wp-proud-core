@@ -802,14 +802,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
 }
 
 // Getting our Proud_FA class
-
-use FortAwesome\FontAwesome;
 use Proud\Core\Proud_FA as Proud_FA;
 
 // register Foo_Widget widget
 function proud_form_load_js() {
 
-  $fa = new Proud_FA;
+  $fa = new Proud_FA();
 
   wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
   wp_localize_script( 'proud-form', 'ProudFA', array(
