@@ -2,8 +2,6 @@
 
 namespace Proud\Core;
 
-use FortAwesome\FontAwesome as FA;
-
 class Proud_FA extends \ProudPlugin{
 
 	private static $instance;
