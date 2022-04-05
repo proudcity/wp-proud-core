@@ -814,6 +814,6 @@ function proud_form_load_js() {
     'icons' => $fa::list_fonts(),
   ) );
 
-}
+} // proud_form_load_js
     // Load admin scripts from libraries
 add_action('admin_enqueue_scripts',  __NAMESPACE__ . '\\proud_form_load_js');
