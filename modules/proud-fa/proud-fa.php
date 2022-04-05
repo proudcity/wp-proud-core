@@ -33,13 +33,26 @@ class Proud_FA extends \ProudPlugin{
 	 */
 	public function init(){
         add_action( 'font_awesome_enqueued', array( $this, 'get_fa_fonts' ) );
+		add_action( 'font_awesome_preferences', array( $this, 'fa_prefs' ) );
 	} // init
 
-    public static function list_fonts(){
+	/**
+	 * Registers the plugin as something that is using FA in the FA plugin troubleshooting tab
+	 * 
+	 * @since 2022.04.05
+	 * @author Curtis McHale
+	 * @access public
+	 * @link: https://github.com/FortAwesome/wordpress-fontawesome#adding-as-a-composer-package
+	 */
+	public static function fa_prefs(){
 
-        //$fonts = self::get_fa_fonts();
+		\FortAwesome\fa()->register(
+			array(
+				'name' => 'Proud Core',
+			)
+		);
 
-       $fa = new FA();
+	} // fa_prefs
 
         $fonts = array(
             'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon', 'fa-brands fa-amazon',
