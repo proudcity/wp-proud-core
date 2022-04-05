@@ -52,22 +52,31 @@ class Proud_FA extends \ProudPlugin{
 
 	} // fa_prefs
 
-        $fonts = array(
-            'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon', 'fa-brands fa-amazon',
-        );
-        
+    public static function list_fonts(){
+
+        $fonts = self::get_fa_fonts();
 
         return $fonts;
 
     } // list_fonts
 
     public static function get_fa_fonts(){
+		
+		$fonts = array(
+			'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon', 'fa-brands fa-amazon',
+		);
 
-        $fa = new \FortAwesome\FontAwesome();
+		if ( true === \FortAwesome\fa()->pro() ){
+			$thing = 'propro';
+			// need to do a pro query here
+		} else {
+			$thing = 'nopro';
+			// non pro query
+		}
 
-        $thing = $fa->pro();
+		update_option( 'sfn_test', $thing );
 
-        update_option( 'sfn_test', $thing );
+		return $fonts;
 
     } // get_fa_fonts
 
