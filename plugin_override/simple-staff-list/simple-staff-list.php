@@ -65,7 +65,7 @@ class Proud_Simple_Staff_List{
             $address = get_post_meta( absint( $post_id ), '_proud_address', true );
         ?>
             <label for="_proud_address">Address:</label>
-                <textarea name="_proud_address" id="_proud_address" placeholder="Contact Address"><? echo wp_kses_post( $address ); ?></textarea>
+                <textarea name="_proud_address" id="_proud_address" placeholder="Contact Address"><?php echo wp_kses_post( $address ); ?></textarea>
     <?php
     } // proud_staff_fields
 
