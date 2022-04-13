@@ -2,18 +2,20 @@
 
   var $body = $('body');
 
-  Proud.behaviors.iconpicker = { attach: function(context, settings) {
+  Proud.behaviors.iconpicker = { 
+    reRunAjax: true, // runs the code below after a panel loads
+    attach: function(context, settings) {
 
+    /* testing var for icons
     var icons = [ 'fa-regular fa-address-card', 'fa-brands fa-airbnb'];
+    */
 
-    $body.on('click', 'input.iconpicker', function(e) {
-      $(e.target).once('fontIconPicker', function() {
-        $(this).fontIconPicker({
+    $('input.iconpicker').once('fontIconPicker', function(){
+         $(this).fontIconPicker({
           source: ProudFA.icons
-        });
-        console.log('fonticonpicker');
-      })
+        });     
     });
+
   }}; 
 
   Proud.behaviors.draggableCheckboxes = {
