@@ -65,18 +65,20 @@ class Proud_FA extends \ProudPlugin{
 	 */
     public static function get_fa_fonts(){
 		
-		$fonts = array(
-			'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon', 'fa-brands fa-amazon',
-		);
-
+		$fonts = array();
 
 		if ( true === \FortAwesome\fa()->pro() ){
 			//$thing = 'propro';
 			// need to do a pro query here
 		} else {
-			//$thing = 'nopro';
-			// non pro query
-			$fonts = get_option( 'fa_basic_icons' );
+
+			$fa_trans = get_transient( 'fa_basic_icons_trans' );
+
+			if ( false === $fa_trans ){
+				$fa_trans = get_option( 'fa_basic_icons' );
+			}
+
+			$fonts = $fa_trans;
 		}
 
 		return $fonts;
