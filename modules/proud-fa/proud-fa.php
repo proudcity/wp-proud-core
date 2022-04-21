@@ -60,25 +60,15 @@ class Proud_FA extends \ProudPlugin{
 
     } // list_fonts
 
+	/**
+	 * Returns the array of available icons
+	 */
     public static function get_fa_fonts(){
 		
 		$fonts = array(
 			'fa-regular fa-address-card', 'fa-brands fa-airbnb', 'fa-brands fa-accessible-icon', 'fa-brands fa-amazon',
 		);
 
-		$fa_query = 'query {
-			release(version:"6.0.0") {
-				icons {
-				id
-				label
-				membership {
-					free
-				}
-				}
-			}
-		}';
-
-		$thing = \FortAwesome\fa()->query( $fa_query );
 
 		if ( true === \FortAwesome\fa()->pro() ){
 			//$thing = 'propro';
@@ -86,9 +76,8 @@ class Proud_FA extends \ProudPlugin{
 		} else {
 			//$thing = 'nopro';
 			// non pro query
+			$fonts = get_option( 'fa_basic_icons' );
 		}
-
-		update_option( 'sfn_tests', $thing );
 
 		return $fonts;
 
