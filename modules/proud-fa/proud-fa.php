@@ -68,10 +68,24 @@ class Proud_FA extends \ProudPlugin{
 		$fonts = array();
 
 		if ( true === \FortAwesome\fa()->pro() ){
-			//$thing = 'propro';
-			// need to do a pro query here
+			$fa_pro = get_transient( 'fa_pro_icon_trans' );
+
+			if ( false === $fa_pro ){
+				$fa_pro = get_option( 'fa_pro_icons' );
+			}
+
+			// check the transient first because it should be faster
+			$fa_basic = get_transient( 'fa_basic_icons_trans' );
+
+			if ( false === $fa_basic ){
+				$fa_basic = get_option( 'fa_basic_icons' );
+			}
+			
+			// merging pro and basic icons together for pro users
+			$fonts = array_merge( $fa_pro, $fa_basic );
 		} else {
 
+			// check the transient first because it should be faster
 			$fa_trans = get_transient( 'fa_basic_icons_trans' );
 
 			if ( false === $fa_trans ){
