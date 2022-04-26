@@ -30,6 +30,8 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-libraries/libraries.clas
 require_once plugin_dir_path(__FILE__) . 'modules/proud-authentication/proud-authentication.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-accessibility/proud-accessibility.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/proud-patternlibrary/proud-patternlibrary.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-fa/proud-fa.php';
+
 
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-menu/proud-menu.php';
@@ -166,6 +168,12 @@ class Proudcore extends \ProudPlugin {
     $path = plugins_url('assets/js/',__FILE__);
     wp_register_script('proud', $path . 'proud.js', ['jquery']);
     wp_enqueue_script('proud');
+
+    // fonticonpicker
+   wp_enqueue_script( 'fonticonpicker_js', plugins_url( 'assets/js/fonticonpicker/js/jquery.fonticonpicker.min.js', __FILE__ ), array( 'jquery' ), '3.1.1' );
+   wp_enqueue_style( 'fonticonpicker_styles', plugins_url( 'assets/js/fonticonpicker/css/base/jquery.fonticonpicker.min.css', __FILE__ ), '', '3.1.1' );
+   wp_enqueue_style( 'fonticonpicker_grey', plugins_url( 'assets/js/fonticonpicker/css/themes/grey-theme/jquery.fonticonpicker.grey.min.css', __FILE__ ), array( 'fonticonpicker_styles' ), '3.1.1' );
+
     self::$libraries->loadLibraries('true');
   }
 

@@ -201,7 +201,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
               'iconpicker' => $options
             ]
           ]);
-          $proudcore::$libraries->addBundleToLoad('fontawesome-iconpicker', true);
+
+          $proudcore::$libraries->addBundleToLoad('fonticonpicker', true );
         }
         // Media upload
         else if( $field['#type'] === 'select_media' ) {
@@ -800,10 +801,19 @@ if ( ! class_exists( 'FormHelper' ) ) {
   }
 }
 
+// Getting our Proud_FA class
+use Proud\Core\Proud_FA as Proud_FA;
 
 // register Foo_Widget widget
 function proud_form_load_js() {
+
+  $fa = new Proud_FA();
+
   wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
-}
+  wp_localize_script( 'proud-form', 'ProudFA', array(
+    'icons' => $fa::get_fa_fonts(),
+  ) );
+
+} // proud_form_load_js
     // Load admin scripts from libraries
 add_action('admin_enqueue_scripts',  __NAMESPACE__ . '\\proud_form_load_js');
