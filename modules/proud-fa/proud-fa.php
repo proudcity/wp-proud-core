@@ -52,16 +52,15 @@ class Proud_FA extends \ProudPlugin{
 
 	} // fa_prefs
 
-    public static function list_fonts(){
-
-        $fonts = self::get_fa_fonts();
-
-        return $fonts;
-
-    } // list_fonts
-
 	/**
 	 * Returns the array of available icons
+	 * 
+	 * @since 2022.04.21
+	 * @author Curtis
+	 * 
+	 * @uses 	get_transient() 				Returns the transient value. false if nothing
+	 * @uses 	get_option() 					Returns value from database
+	 * @return 	array() 		$fonts 			The font array we needed
 	 */
     public static function get_fa_fonts(){
 		

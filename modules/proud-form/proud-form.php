@@ -811,7 +811,7 @@ function proud_form_load_js() {
 
   wp_enqueue_script( 'proud-form', plugins_url( 'assets/js/',__FILE__) . 'proud-form.js' , ['proud'], false, true );
   wp_localize_script( 'proud-form', 'ProudFA', array(
-    'icons' => $fa::list_fonts(),
+    'icons' => $fa::get_fa_fonts(),
   ) );
 
 } // proud_form_load_js
