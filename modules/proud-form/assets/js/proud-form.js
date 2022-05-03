@@ -12,6 +12,7 @@
 
     $('input.iconpicker').once('fontIconPicker', function(){
          $(this).fontIconPicker({
+          theme: 'proudcity-iconpicker',
           source: ProudFA.icons
         });     
     });
