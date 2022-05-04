@@ -6,6 +6,15 @@ class Proud_FA extends \ProudPlugin{
 
 	private static $instance;
 
+	public function __construct(){
+
+		parent::__construct( array(
+			'textdomain'     => 'proud_fa',
+			'plugin_path'    => __FILE__,
+		) );
+
+	}
+
 	/**
 	 * Spins up the instance of the plugin so that we don't get many instances running at once
 	 *

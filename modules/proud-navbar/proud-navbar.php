@@ -149,6 +149,9 @@ function build_logo_meta($logo, $title_name)
  */
 function get_logo_markup($logo, $title_name, $pc_default = true)
 {
+    // defining an empty var so we at least return something
+    $logo_markup = '';
+
     $logo_meta = build_logo_meta($logo, $title_name);
     // @TODO does this do anything?
     //    $custom_width = $logo_meta['custom_width'];
