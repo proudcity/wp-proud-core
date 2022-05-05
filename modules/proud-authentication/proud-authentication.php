@@ -19,7 +19,46 @@ class ProudAuthentication extends \ProudPlugin {
   function __construct() {
 
     $this->hook('init',  'checkAuthentication');
+
+    add_action( 'init', array( $this, 'login_redirect' ) );
+    apply_filters( 'login_url', array( $this, 'pc_dashboard_login_url' ), 10, 3 );
   }
+
+  /**
+   * Filters any calls to wp_login_url() so they go to our dashboard
+   *
+   * @since 2022.05.05
+   * @author Curtis McHale
+   * @access public
+   *
+   * @todo could improve this by adding $redirect value that is parsed by the dashboard so the user goes back to where they were
+   *
+   * @param   $login_url      string        required              Existing login_url
+   * @param   $redirect       string        optional              Path to redirect to after successful login
+   * @param   $force_reauth   bool          optional              TRUE to force reauthorization even if login cookie is present
+   */
+  public static function pc_dashboard_login_url( $login_url, $redirect, $force_reauth ){
+    return 'my.proudcity.com';
+  }
+
+  /**
+   * Takes requests for wp-login.php and sends users to the PC Dashboard and my.proudcity.com
+   *
+   * Sends any type of request to wp-login.php to PC Dashboard. This includes any password reset
+   * any logout...it's all going to PC Dashboard.
+   *
+   * @since 2022.05.05
+   * @author Curtis McHale
+   */
+  public static function login_redirect(){
+
+    global $pagenow;
+
+    if ( 'production' === wp_get_environment_type() && 'wp-login.php' === $pagenow ){
+      wp_redirect( 'https://my.proudcity.com' );
+    } // if wp-login.php
+
+  } // login_redirect
 
   // Do we need to put this behind an HTTP-auth wall, or redirect them to login to WordPress?
   public function checkAuthentication() {
