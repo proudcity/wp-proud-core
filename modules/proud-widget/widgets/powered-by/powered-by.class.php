@@ -21,7 +21,7 @@ class PoweredByWidget extends Core\ProudWidget {
   }
 
   /**
-   * Determines if content empty, show widget, title ect?  
+   * Determines if content empty, show widget, title ect?
    *
    * @see self::widget()
    *
@@ -46,7 +46,7 @@ class PoweredByWidget extends Core\ProudWidget {
     ?>
       <div class="powered-by">
         <p>
-          Powered by <a href="https://proudcity.com" title="<?php echo $text ?>" alt="<?php echo $text ?>"><?php echo Core\print_proud_logo( 'logo-white') ?></a>
+          Powered by <a href="https://proudcity.com" title="<?php echo esc_attr( $text ); ?>" alt="<?php echo esc_attr( $text ); ?>"><?php echo Core\print_proud_logo( 'logo-white') ?></a>
         </p>
       </div>
     <?php
