@@ -1,23 +1,23 @@
 <?php include_once('../functions.php'); ?>
-<?php 
+<?php
 $project_name = "ProudCity Pattern Library";
 $version = !empty($_GET['v']) ? sanitize_text_field( $_GET['v'] ) : FALSE;
 if ($version == 'local') {
   $css = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css">
           <link rel="stylesheet" href="http://localhost:9000/css/app.css">
           <link rel="stylesheet" href="http://localhost:9000/css/patternlibrary.css">
-          <link rel="stylesheet" href="http://localhost:9000/css/proud-toolbar.css">'; 
+          <link rel="stylesheet" href="http://localhost:9000/css/proud-toolbar.css">';
 }
 elseif ($version) {
   $css = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css">
           <link rel="stylesheet" href="http://'.$version.'.getproudcity.com/css/libraries.min.css">
           <link rel="stylesheet" href="http://'.$version.'.getproudcity.com/css/app.min.css">
           <link rel="stylesheet" href="http://'.$version.'.getproudcity.com/css/patternlibrary.min.css">
-          <link rel="stylesheet" href="http://'.$version.'.getproudcity.com/css/proud-toolbar.min.css">'; 
+          <link rel="stylesheet" href="http://'.$version.'.getproudcity.com/css/proud-toolbar.min.css">';
 }
 else {
   $css = '<link rel="stylesheet" href="css/custom.css">
-          <link rel="stylesheet" href="css/patternlibrary.css">'; 
+          <link rel="stylesheet" href="css/patternlibrary.css">';
 }
 ?>
 <div class="row-offcanvas row-offcanvas-left">
@@ -44,7 +44,7 @@ else {
   <!-- Fixed navbar -->
   <div class="navbar navbar-default navbar-fixed-top navbar-patternlibrary" role="navigation">
     <div class="navbar-form pull-right">
-      <button type="button" class="btn btn-primary" data-toggle="offcanvas"><i class="fa fa-bars"></i></button>
+      <button type="button" class="btn btn-primary" data-toggle="offcanvas"><i aria-hidden="true" class="fa fa-bars"></i></button>
     </div>
     <div class="navbar-header">
       <a class="navbar-brand" href=""><img class="logo" src="/images/logo-white.png" alt="Home" style="height: 30px;"></a>
@@ -52,13 +52,13 @@ else {
     </div>
   </div>
   <!--/.sg-header-->
-  
+
   <?php if (empty($_GET['page'])): ?>
 
     <div class="jumbotron"><div class="container">
       <h1><?php print $project_name ?></h1>
     </div></div>
-    
+
 
     <div class="sg-body sg-container container">
       <?php showDocs(); ?>
@@ -87,7 +87,7 @@ else {
     </div>
 
   <?php else: ?>
-    <?php 
+    <?php
 
       //Admin pages
       $pageReq = $_GET['page'];
@@ -95,7 +95,7 @@ else {
         showMarkupItem('patterns', 'navbar');
         showMarkupItem('patterns', 'navbar-header');
       }
-      
+
       showMarkupPage('layouts', $pageReq);
 
       if(strpos($pageReq, 'admin') === false) {
@@ -116,18 +116,18 @@ else {
     <div class="input-group">
       <input id="search-input" class="form-control input-lg" type="text" placeholder="How may we help you?" ng-focus="searchFocus()" ng-keypress="searchAutocomplete()" />
       <span class="input-group-btn">
-        <button type="submit" value="Go" class="btn btn-primary btn-lg" ng-click="modal();"><i class="fa fa-search"></i></button>
+        <button type="submit" value="Go" class="btn btn-primary btn-lg" ng-click="modal();"><i aria-hidden="true" class="fa fa-search"></i></button>
       </span>
     </div>
-    <ul class="search-autosuggest ng-scope" ng-if="searchActive"><!-- ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i class="fa fa-usd"></i> Pay my water bill</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i class="fa fa-question-circle"></i> How do I get a marriage license?</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i class="fa fa-usd"></i> Pay a parking ticket</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i class="fa fa-question-circle"></i> How do I get a copy of a birth certificate?</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i class="fa fa-exclamation-triangle"></i> File a complaint</a></li><!-- end ngRepeat: item in autocomplete --></ul>
+    <ul class="search-autosuggest ng-scope" ng-if="searchActive"><!-- ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i aria-hidden="true" class="fa fa-usd"></i> Pay my water bill</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i aria-hidden="true" class="fa fa-question-circle"></i> How do I get a marriage license?</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i aria-hidden="true" class="fa fa-usd"></i> Pay a parking ticket</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i aria-hidden="true" class="fa fa-question-circle"></i> How do I get a copy of a birth certificate?</a></li><!-- end ngRepeat: item in autocomplete --><li class="ng-scope" ng-repeat="item in autocomplete"><a href="" ng-click="searchAutocompleteClick(item)" class="ng-binding"><i aria-hidden="true" class="fa fa-exclamation-triangle"></i> File a complaint</a></li><!-- end ngRepeat: item in autocomplete --></ul>
   </form>
-  <a href="" ng-click="searchClose()" class="search-close" ng-if="searchActive"><i class="fa fa-times fa-2x"></i></a>
+  <a href="" ng-click="searchClose()" class="search-close" ng-if="searchActive"><i aria-hidden="true" class="fa fa-times fa-2x"></i></a>
 </div>
 <div id="search-311" ng-if="searchActive" ng-click="searchClose()">
   <div class="app">
     <img src="/images/imagedemo.jpg" />
   </div>
-  <a href="" ng-click="searchClose()" class="search-close" ng-if="searchActive"><i class="fa fa-times fa-2x"></i></a>
+  <a href="" ng-click="searchClose()" class="search-close" ng-if="searchActive"><i aria-hidden="true" class="fa fa-times fa-2x"></i></a>
 </div>
 
 <!-- END fake search / answers sections -->
