@@ -188,10 +188,3 @@ $(function () {
 });
 
 })(jQuery);
-
-jQuery(document).ready(function($) {
-
-  // fonticonpicker
-  $('.iconpicker').addClass('works');
-
-});
