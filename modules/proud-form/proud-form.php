@@ -26,7 +26,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
      * @param array $fields
      * @param string $number is form number : can be left out
      * @param string $field_base is form base : can be left out
-     * 
+     *
      * For site origin panels, we don't know $number yet, so it can be null
      */
     function __construct($form_id_base, $fields, $number = null, $field_base = null) {
@@ -42,7 +42,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
     }
 
     /**
-     * Before printing any fields, first we must construct the basis for 
+     * Before printing any fields, first we must construct the basis for
      * field ids, names
      */
     public function registerIds( $number = 1, $field_base = 'form' ) {
@@ -265,7 +265,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
     public function printFormItem($field) {
       // @todo: Should we set #name to #id if it isn't set?
       // Extra class for field group
-      $extra_group_class = !empty( $field['#extra_group_class'] ) 
+      $extra_group_class = !empty( $field['#extra_group_class'] )
                          ? ' ' . $field['#extra_group_class']
                          : '';
       ob_start();
@@ -276,7 +276,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         case 'fa-icon':
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
           $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, ['class' => 'iconpicker']);
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           break;
 
@@ -289,9 +289,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
             }
             $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
             $this->printSelectList($field['#id'], $field['#name'], $field['#value'], $options);
-            if( !empty( $field['#description'] ) ) 
+            if( !empty( $field['#description'] ) )
               $this->printDescription($field['#description']);
-          }           
+          }
           break;
 
         case 'select_media':
@@ -301,7 +301,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
         // add extra class
           $extra_group_class .= ' clearfix';
           $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id);
-          // Image should be a media['ID'], but due to 
+          // Image should be a media['ID'], but due to
           // https://github.com/proudcity/wp-proudcity/issues/436
           // old values could be a URL
           $media_id = '';
@@ -328,7 +328,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
               // Don't set the URL unless we have a value
               if( !empty( $media_id ) ) {
                 $url = esc_url_raw( $field['#value'] );
-              } 
+              }
             }
             // Have media ID but not URL, so query
             if( !empty( $media_id ) && is_numeric ( $media_id ) && empty( $url ) ) {
@@ -343,7 +343,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           else {
             $this->printImageUpload($media_id, $url, $this->form_id);
           }
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           break;
 
@@ -355,33 +355,33 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // Input args, placeholder, after
           $input_args = !empty( $field['#args'] ) ? $field['#args'] : array();
           $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $input_args );
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           break;
 
         case 'select':
           $this->printFormTextLabel( $field['#id'], $field['#title'], $this->form_id );
           $this->printSelectList(
-            $field['#id'], 
-            $field['#name'], 
-            $field['#value'], 
-            $field['#options'], 
+            $field['#id'],
+            $field['#name'],
+            $field['#value'],
+            $field['#options'],
             $this->form_id
           );
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           break;
 
         case 'textarea':
           $this->printFormTextLabel( $field['#id'], $field['#title'], $this->form_id );
           $this->printTextArea(
-            $field['#id'], 
-            $field['#name'], 
-            $field['#value'], 
-            !empty( $field['#rows'] ) ? $field['#rows'] : 3, 
+            $field['#id'],
+            $field['#name'],
+            $field['#value'],
+            !empty( $field['#rows'] ) ? $field['#rows'] : 3,
             $this->form_id
           );
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription( $field['#description'] );
           break;
 
@@ -391,10 +391,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
             $field['#id'],
             $field['#name'],
             $field['#value'],
-            !empty($field['#rows']) ? $field['#rows'] : 10, 
+            !empty($field['#rows']) ? $field['#rows'] : 10,
             $this->form_id
           );
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           break;
 
@@ -405,14 +405,14 @@ if ( ! class_exists( 'FormHelper' ) ) {
             echo "<legend class=\"option-box-label\">{$field['#title']}</legend>";
           } else {
             // Print label, add class
-            $this->printFormTextLabel( 
-                $field['#id'], 
-                $field['#title'], 
-                $this->form_id, 
-                array( 'class' => 'option-box-label' ) 
+            $this->printFormTextLabel(
+                $field['#id'],
+                $field['#title'],
+                $this->form_id,
+                array( 'class' => 'option-box-label' )
             );
           }
-           
+
           if( !empty( $field['#draggable'] ) ) {
             echo '<div data-draggable-checkboxes="true">';
           }
@@ -433,24 +433,24 @@ if ( ! class_exists( 'FormHelper' ) ) {
             ?>
             <div class="<?php echo $type ?>">
               <?php if( !empty( $field['#draggable'] ) ): ?>
-                <div class="pull-left" style="cursor: move;cursor: grab;cursor: -moz-grab;cursor: -webkit-grab;"><i class="fa fa-arrows handle"></i></div>
+                <div class="pull-left" style="cursor: move;cursor: grab;cursor: -moz-grab;cursor: -webkit-grab;"><i aria-hidden="true" class="fa fa-arrows handle"></i></div>
               <?php endif; ?>
               <?php $this->printOptionBox(
-                $type, 
-                $field['#id'] . '-' . $value, 
-                $name, 
-                $title, 
+                $type,
+                $field['#id'] . '-' . $value,
+                $name,
+                $title,
                 $value,
-                $active, 
+                $active,
                 $this->form_id
               ); ?>
             </div>
-            <?php 
+            <?php
           }
           if( !empty( $field['#draggable'] ) ) {
             echo '</div>';
           }
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           if( $field['#type'] == 'checkboxes' ) {
             echo "</fieldset>";
@@ -467,15 +467,15 @@ if ( ! class_exists( 'FormHelper' ) ) {
             <input value="0" name="<?php echo $field['#name'];?>" type="hidden">
           <?php
           $this->printOptionBox(
-            $field['#type'], 
-            $field['#id'], 
-            $field['#name'], 
-            !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'], 
+            $field['#type'],
+            $field['#id'],
+            $field['#name'],
+            !empty($field['#replace_title']) ? $field['#replace_title'] : $field['#title'],
             $field['#return_value'],
-            $field['#value'], 
+            $field['#value'],
             $this->form_id
           );
-          if( !empty( $field['#description'] ) ) 
+          if( !empty( $field['#description'] ) )
             $this->printDescription($field['#description']);
           ?>
           </div>
@@ -507,7 +507,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       </div>
       <?php
     }
-    
+
     /**
      * Attaches group sub fields from template values
      */
@@ -521,10 +521,10 @@ if ( ! class_exists( 'FormHelper' ) ) {
         $sub_item['#name'] = $this->get_field_name( $local_id );
         $sub_item['#description'] = !empty( $sub_item['#description'] ) ? $sub_item['#description'] : false;
         // Set default value
-        $sub_item['#value'] = isset( $instance[$id][$i][$sub_id] ) 
+        $sub_item['#value'] = isset( $instance[$id][$i][$sub_id] )
           ? $instance[$id][$i][$sub_id]
           : $sub_item['#default_value'];
-        
+
         if($field['#group_title_field'] === $sub_id) {
           $field['#group_titles'][$i] = $sub_item['#value'];
         }
@@ -551,12 +551,12 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // Init field collection
           $field['#items'] = [];
           // Init group titles
-          $field['#group_titles'] = []; 
+          $field['#group_titles'] = [];
           // How many of these do we have saved ?
           if( empty( $instance[$id] ) ) {
             $instance[$id][] = [];
-          } 
-          $count =  count( $instance[$id] ); 
+          }
+          $count =  count( $instance[$id] );
           // Run through any saved field items
           $i = 1;
           foreach( $instance[$id] as $key => $value ) {
@@ -573,7 +573,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // Set default value
           if( isset( $instance[$id] ) ) {
             $field['#value'] = $instance[$id];
-          } 
+          }
           else if( isset( $field['#default_value'] ) ) {
             $field['#value'] = $field['#default_value'];
           }
@@ -607,7 +607,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       ob_start(); // turn on output buffering
       include($this->template( 'repeating-fields-template' ));
       $json = json_encode(ob_get_contents()); // get the contents of the output buffer
-      ob_end_clean(); //  clean (erase) the output buffer and turn off output buffering 
+      ob_end_clean(); //  clean (erase) the output buffer and turn off output buffering
       // Include path
       $field['#template'] = 'repeating-fields-template.php';
       include $this->template( 'repeating-fields' );
@@ -625,7 +625,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
          $fields = $this->fields;
       }
       // Attach values, filter field values id
-      $filled_fields = apply_filters( 
+      $filled_fields = apply_filters(
         'proud-form-filled-fields',
         $this->buildFieldConfig( $instance, $fields ),
         $instance,
@@ -667,14 +667,14 @@ if ( ! class_exists( 'FormHelper' ) ) {
 
       // Build fields
       ob_start(); // turn on output buffering
-      $this->printFields( 
+      $this->printFields(
         !empty( $args['instance'] ) ? $args['instance'] : [],
         !empty( $args['fields'] ) ? $args['fields'] : [],
         !empty( $args['number'] ) ? $args['number'] : 1,
         !empty( $args['field_base'] ) ? $args['field_base'] : 'form'
       );
       $field_output = ob_get_contents(); // get the contents of the output buffer
-      ob_end_clean(); 
+      ob_end_clean();
       ?>
       <form class="proud-settings" id="<?php echo $this->form_id ?>" name="<?php echo $this->form_id ?>" method="<?php echo $args['method']; ?>" action="<?php echo $args['action']; ?>">
         <?php wp_nonce_field( $this->form_id_base ); ?>
@@ -759,7 +759,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
                 $value_criteria = '.length';
                 $watch_vals['value'][0] = 1;
                 break;
- 
+
               case 'select':
                 $watches[] = $group_id . ' select';
                 $selector = $group_id . ' select';
@@ -773,9 +773,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
             // Build if criteria
             $criteria = [];
             foreach ( $watch_vals['value'] as $val ) {
-              $criteria[] = 'jQuery("' . $selector . '")' . $value_criteria . $watch_vals['operator'] . '"' . $val . '"'; 
+              $criteria[] = 'jQuery("' . $selector . '")' . $value_criteria . $watch_vals['operator'] . '"' . $val . '"';
             }
-            $rule_if[] = $type == 'visible' 
+            $rule_if[] = $type == 'visible'
                        ? '('  . implode( $watch_vals['glue'], $criteria ) . ')'
                        : '!(' . implode( $watch_vals['glue'], $criteria ) . ')';
           }
