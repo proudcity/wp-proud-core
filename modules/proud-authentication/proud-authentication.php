@@ -54,7 +54,9 @@ class ProudAuthentication extends \ProudPlugin {
 
     global $pagenow;
 
-    if ( 'production' === wp_get_environment_type() && 'wp-login.php' === $pagenow ){
+    $excluded = array( 'https:www.colma.ca.gov' );
+
+    if ( 'production' === wp_get_environment_type() && 'wp-login.php' === $pagenow && ! in_array( site_url(), $excluded ) ){
       wp_redirect( 'https://my.proudcity.com' );
     } // if wp-login.php
 
