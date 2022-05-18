@@ -2,7 +2,7 @@
 
   var $body = $('body');
 
-  Proud.behaviors.iconpicker = { 
+  Proud.behaviors.iconpicker = {
     reRunAjax: true, // runs the code below after a panel loads
     attach: function(context, settings) {
 
@@ -10,17 +10,28 @@
     var icons = [ 'fa-regular fa-address-card', 'fa-brands fa-airbnb'];
     */
 
+    // runs the iconpicker on pageload
     $('input.iconpicker').once('fontIconPicker', function(){
-         $(this).fontIconPicker({
+        $(this).fontIconPicker({
           theme: 'proudcity-iconpicker',
           source: ProudFA.icons
-        });     
+        });
     });
 
-  }}; 
+    // attaches to a trigger to run iconpicker once we add a row
+    $body.on('proudGroupAddRow', function(){
+      $('input.iconpicker').once('fontIconPicker', function(){
+          $(this).fontIconPicker({
+            theme: 'proudcity-iconpicker',
+            source: ProudFA.icons
+          });
+      });
+    });
+
+  }};
 
   Proud.behaviors.draggableCheckboxes = {
-    reRunAjax: true,  
+    reRunAjax: true,
     attach: function(context, settings) {
       // Init Dragula
       $('[data-draggable-checkboxes]').once('drag-checkbox', function() {
@@ -37,7 +48,7 @@
     reRunAjax: true,
     attach: function(context, settings) {
       // Init drag
-      $('[data-draggable-group]').once('panelsopen', function() { 
+      $('[data-draggable-group]').once('panelsopen', function() {
         var that = this;
         dragula([that], {
           moves: function (el, container, handle) {
@@ -53,7 +64,7 @@
   Proud.behaviors.groups = {
     attach: function(context, settings) {
       // Add row button
-      $body.on('click', '.group-add-row', function(e) { 
+      $body.on('click', '.group-add-row', function(e) {
         e.preventDefault();
         var draggable = $(e.target).siblings('[data-draggable-group]'),
             count = draggable.children().length,
@@ -61,6 +72,10 @@
                         .replace(/GROUP\_REPLACE\_KEY/g, count)
                         .replace(/GROUP\_REPLACE\_TITLE/g, count + 1);
         draggable.append(template);
+
+        // adding a trigger so we can run JS as soon as a new row is added
+        $body.trigger('proudGroupAddRow');
+
       });
 
       // Delete row button
@@ -71,7 +86,7 @@
         item.remove();
         // Recaculate weights
         Proud.behaviors.groups.recalulateWeight(item.parent());
-      }); 
+      });
     }
   };
 
