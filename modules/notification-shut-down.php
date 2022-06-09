@@ -21,7 +21,7 @@ function proud_remove_core_updates( $transient ){
 
 	return(object) $transient;
 }
-add_filter('pre_site_transient_update_core',	'proud_remove_core_updates'); //hide updates for WordPress itself
+add_filter('pre_site_transient_update_core',	'__return_null' ); //hide updates for WordPress itself
 add_filter('pre_site_transient_update_plugins',	'proud_remove_core_updates'); //hide updates for all plugins
 add_filter('pre_site_transient_update_themes',	'proud_remove_core_updates'); //hide updates for all themes
 
