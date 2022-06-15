@@ -6,7 +6,7 @@ if ( class_exists( 'GFCommon' ) ) {
 
 	// Load our downloading class
     require_once plugin_dir_path( __FILE__ ) . 'class-gc-gf-download.php';
-    
+
     function proud_gravityforms_init() {
         // Always alter:
 
@@ -21,10 +21,10 @@ if ( class_exists( 'GFCommon' ) ) {
         $statelessModuleActive = false;
         try {
             $statelessModuleActive = filter_var(\wpCloud\StatelessMedia\Module::get_module('gravity-form')['enabled'], FILTER_VALIDATE_BOOLEAN);
-        } catch(\Exception $e) {
+        } catch(\Throwable $t) {
             // don't care
         }
-        
+
         if ($statelessModuleActive) {
             // Let stateless handle
             return;
@@ -34,7 +34,7 @@ if ( class_exists( 'GFCommon' ) ) {
         add_filter( 'gform_secure_file_download_url', __NAMESPACE__ . '\\gform_secure_file_download_url', 100, 4 );
         add_action( 'gform_save_field_value', __NAMESPACE__ . '\\gform_handle_file_upload', 100, 4 );
     }
-    
+
     add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
     // Add Processing
 
