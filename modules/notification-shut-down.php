@@ -16,10 +16,9 @@ function proud_remove_core_updates( $transient ){
 
 	if ( wp_get_environment_type() === 'production' ){
 		$transient = array('last_checked'=> time(),'version_checked'=> $wp_version,);
-
 	}
 
-	return(object) $transient;
+	return $transient;
 }
 add_filter('pre_site_transient_update_core',	'__return_null' ); //hide updates for WordPress itself
 add_filter('pre_site_transient_update_plugins',	'proud_remove_core_updates'); //hide updates for all plugins
