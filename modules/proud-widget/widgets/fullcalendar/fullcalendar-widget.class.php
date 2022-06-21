@@ -25,14 +25,14 @@ class FullcalendarWidget extends Core\ProudWidget {
         $options = [];
 
         $categories = get_categories( [
-          'type' => $this->post_type, 
-          'taxonomy' => 'event-categories', 
+          'type' => $this->post_type,
+          'taxonomy' => 'event-categories',
           'hide_empty' => 0,
           'depth' => 0,
         ]);
         if( !empty( $categories ) && empty( $categories['errors'] ) ) {
           foreach ($categories as $cat) {
-            $options[$cat->term_id] = $cat->name;
+            $options[ absint( $cat->term_id ) ] = esc_attr( $cat->name );
           };
         }
         $default = count($options) > 20 ? array() : array_keys($options);
@@ -61,7 +61,7 @@ class FullcalendarWidget extends Core\ProudWidget {
     }
 
     /**
-     * Determines if content empty, show widget, title ect?  
+     * Determines if content empty, show widget, title ect?
      *
      * @see self::widget()
      *
@@ -103,10 +103,10 @@ class FullcalendarWidget extends Core\ProudWidget {
         wp_enqueue_style('wp-fullcalendar', plugins_url('includes/css/main.css',$path), array(), WPFC_VERSION);
         //Load custom style or jQuery UI Theme
         //$wpfc_theme = '';//get_option('wpfc_theme_css');
-        
+
       //}
   }
-    
+
 }
 
 // register Foo_Widget widget
@@ -114,6 +114,6 @@ function register_fullcalendar_widget() {
   include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
   if ( is_plugin_active( 'wp-fullcalendar/wp-fullcalendar.php' ) ) {
     register_widget( 'FullcalendarWidget' );
-  }  
+  }
 }
 add_action( 'widgets_init', 'register_fullcalendar_widget' );
