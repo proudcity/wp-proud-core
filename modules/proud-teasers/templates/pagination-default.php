@@ -2,7 +2,7 @@
 
   <?php if ( 'document' == get_post_type() ){ ?>
     <!-- @todo use a var so we can see what type of navigation this is -->
-    <nav aria-label="Page Navigation">
+    <nav aria-label="Page Navigation" class="paged-navigation">
       <?php
         $big = 9999999999;
         $args = array(
