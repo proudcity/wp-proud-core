@@ -38,15 +38,15 @@
       <ul class="pager prev-next-posts">
 
         <?php if( !empty( $prev ) ): ?>
-          <li class="previous"><?php echo esc_attr( $prev ); ?></li>
+          <li class="previous"><?php echo wp_kses_post( $prev ); ?></li>
         <?php else: ?>
-          <li class="previous disabled"><a href='#'><?php echo esc_attr( $prev_text ); ?></a></li>
+          <li class="previous disabled"><a href='#'><?php echo wp_kses_post( $prev_text ); ?></a></li>
         <?php endif; ?>
 
         <?php if( !empty( $next ) ): ?>
-          <li class="next"><?php echo esc_attr( $next ); ?></li>
+          <li class="next"><?php echo wp_kses_post( $next ); ?></li>
         <?php else: ?>
-          <li class="next disabled"><a href='#'><?php echo esc_attr( $next_text ); ?></a></li>
+          <li class="next disabled"><a href='#'><?php echo wp_kses_post( $next_text ); ?></a></li>
         <?php endif; ?>
 
       </ul>
