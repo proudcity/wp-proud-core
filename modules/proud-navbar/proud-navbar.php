@@ -365,7 +365,7 @@ function get_nav_topbar_menu()
             'container_id'      => '',
             'menu_class'        => 'nav navbar-nav',
             'menu_id'           => 'topbar-menu',
-            'echo'              => true,
+            'echo'              => false,
             'fallback_cb'       => 'wp_page_menu',
             'before'            => '',
             'after'             => '',
@@ -375,10 +375,15 @@ function get_nav_topbar_menu()
             'depth'             => 1,
             'walker'            => ''
         ];
+
+        $menu = wp_nav_menu( $menu_args );
+
+        /* @todo this can likely just be deleted
         ob_start();
         wp_nav_menu($menu_args);
         $menu = ob_get_contents();
         ob_end_clean();
+        */
     }
     // Allow altering
     $menu = apply_filters('proud_nav_topbar_menu_alter', $menu);
@@ -407,7 +412,7 @@ function get_nav_primary_menu()
             'container_id'      => '',
             'menu_class'        => 'nav navbar-nav',
             'menu_id'           => 'main-menu',
-            'echo'              => true,
+            'echo'              => false,
             'fallback_cb'       => 'wp_page_menu',
             'before'            => '',
             'after'             => '',
@@ -428,10 +433,15 @@ function get_nav_primary_menu()
             $menu_args['menu_class'] .= ' navbar-depth';
             $menu_args['depth'] = '2';
         }
+
+        $menu = wp_nav_menu( $menu_args );
+
+        /* @todo this can likely be removed
         ob_start();
         wp_nav_menu($menu_args);
         $menu = ob_get_contents();
         ob_end_clean();
+        */
     }
     // Allow altering
     $menu = apply_filters('proud_nav_primary_menu_alter', $menu);
