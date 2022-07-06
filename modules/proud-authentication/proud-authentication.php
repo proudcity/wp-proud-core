@@ -81,8 +81,12 @@ class ProudAuthentication extends \ProudPlugin {
 
     $excluded = array( 'https://www.colma.ca.gov' );
 
-    if ( 'production' === wp_get_environment_type() && 'wp-login.php' === $pagenow && ! in_array( site_url(), $excluded ) ){
+    /**
+     * $_GET['connection_id'] corresponds to Auth0 so that we don't have fatal site errors
+     */
+    if ( ! isset( $_GET['connection_id'] ) && 'production' === wp_get_environment_type() && 'wp-login.php' === $pagenow && ! in_array( site_url(), $excluded ) ){
       wp_redirect( 'https://my.proudcity.com' );
+      exit;
     } // if wp-login.php
 
   } // login_redirect
