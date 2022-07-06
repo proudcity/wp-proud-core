@@ -21,7 +21,7 @@ class ProudAuthentication extends \ProudPlugin {
     $this->hook('init',  'checkAuthentication');
 
     add_action( 'init', array( $this, 'login_redirect' ) );
-    apply_filters( 'login_url', array( $this, 'pc_dashboard_login_url' ), 10, 3 );
+    //apply_filters( 'login_url', array( $this, 'pc_dashboard_login_url' ), 10, 3 );
 
     add_filter( 'wp_redirect', array( $this, 'redirect_to_url' ), 999, 2 );
 
