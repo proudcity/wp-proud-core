@@ -23,30 +23,6 @@ class ProudAuthentication extends \ProudPlugin {
     add_action( 'init', array( $this, 'login_redirect' ) );
     //apply_filters( 'login_url', array( $this, 'pc_dashboard_login_url' ), 10, 3 );
 
-    add_filter( 'wp_redirect', array( $this, 'redirect_to_url' ), 999, 2 );
-
-  }
-
-  /**
-   * Catches our `state` value and makes sure that we send users to the expected spot in the dashboard
-   *
-   * @since 2022.07.06
-   * @author Curtis McHale
-   * @access public
-   *
-   * @param   string    $url        required            Existing URL to redirect to
-   * @param   string    $status     optional            Existing HTTP status
-   * @uses    esc_url()                                 making sure our URL is safe
-   * @return  string    $url                            the url we want to send users to, maybe the value of `state`
-   */
-  public static function redirect_to_url( $url, $status ){
-
-    if ( isset( $_GET['state'] ) && ! empty( $_GET['state'] ) ){
-      $url = urldecode( $_GET['state'] );
-    }
-
-    return esc_url( $url );
-
   }
 
   /**
