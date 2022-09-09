@@ -54,7 +54,7 @@ function wp_trim_excerpt( $text = '', $more_link = false, $use_yoast = false, $w
 }
 
 
-/** 
+/**
  * Sanitize text input
  */
 function sanitize_input_text_output($text, $shortcode = true) {
@@ -70,7 +70,7 @@ function sanitize_input_text_output($text, $shortcode = true) {
   return $text;
 }
 
-// Recusive array merging from 
+// Recusive array merging from
 // https://api.drupal.org/api/drupal/assets%21bootstrap.inc/function/drupal_array_merge_deep_array/7
 function array_merge_deep_array($arrays) {
   $result = array();
@@ -94,7 +94,7 @@ function array_merge_deep_array($arrays) {
 
 /**
  * Gets  logo
- * As of 
+ * As of
  */
 function get_proud_logo($use_theme = true, $logo_file = 'icon-white-1x.png') {
   if($use_theme) {
@@ -133,13 +133,13 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
   print_retina_image( $image_meta, false, true );
 }
 
-/** 
+/**
  * Build responsive image meta data from the post information.
  * This is a replacement for wp_get_attachment_metadata(), which was returning no data.
  */
 function build_responsive_image_metadata( $media_id ) {
   $media_post = get_post($media_id);
-  $title  = !empty( $media_post->post_title ) ? $media_post->post_title : $media_post->post_name;
+  $title  = is_object( $media_post ) && !empty( $media_post->post_title ) ? $media_post->post_title : '';
   $alt = get_post_meta( $media_id, '_wp_attachment_image_alt', true );
   $metadata =[
     'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
@@ -155,7 +155,7 @@ function build_responsive_image_metadata( $media_id ) {
 }
 
 
-/** 
+/**
  * Build responsive image meta
  */
 function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $size_small = 'medium' ) {
@@ -169,15 +169,15 @@ function build_responsive_image_meta( $media_id, $size_max = 'full-screen', $siz
 }
 
 
-/** 
+/**
  * Print responsive image html
  */
 function print_responsive_image( $resp_img, $classes = [], $skip_media = false ) {
   $classes[] = 'media';
   $image_meta = !empty( $resp_img['meta'] ) ? $resp_img['meta'] : [];
-  ?> 
-  <?php if( !empty( $resp_img['src'] ) ): ?> 
-    <?php if( !$skip_media && !empty( $classes ) ): ?> 
+  ?>
+  <?php if( !empty( $resp_img['src'] ) ): ?>
+    <?php if( !$skip_media && !empty( $classes ) ): ?>
     <div class="<?php echo implode(' ', $classes) ?>">
     <?php endif; ?>
       <img src="<?php echo esc_url( $resp_img['src'][0] ); ?>"
@@ -196,7 +196,7 @@ function print_responsive_image( $resp_img, $classes = [], $skip_media = false )
   <?php
 }
 
-/** 
+/**
  * Build retina image meta
  */
 function build_retina_image_meta( $media_id, $normal = 'medium', $retina = 'medium_large' ) {
@@ -214,7 +214,7 @@ function build_retina_image_meta( $media_id, $normal = 'medium', $retina = 'medi
   ];
 }
 
-/** 
+/**
  * Print retina image
  */
 function print_retina_image( $resp_img, $classes = [], $skip_media = false ) {
@@ -224,9 +224,9 @@ function print_retina_image( $resp_img, $classes = [], $skip_media = false ) {
   foreach ( $resp_img['srcset'] as $key => $image ) {
     $resp_img['srcset'][$key] = esc_url($image) . ' ' . $key;
   }
-  ?> 
-  <?php if( !empty( $resp_img['src'] ) ): ?> 
-    <?php if( !$skip_media && !empty( $classes ) ): ?> 
+  ?>
+  <?php if( !empty( $resp_img['src'] ) ): ?>
+    <?php if( !$skip_media && !empty( $classes ) ): ?>
     <div class="<?php echo implode(' ', $classes) ?>">
     <?php endif; ?>
       <img src="<?php echo esc_url( $resp_img['src'] ); ?>"
@@ -300,33 +300,33 @@ function getSocialData() {
  * @return string valid PHP timezone string
  */
 function wpGetTimezoneString() {
- 
+
     // if site timezone string exists, return it
     if ( $timezone = get_option( 'timezone_string' ) )
         return $timezone;
- 
+
     // get UTC offset, if it isn't set then return UTC
     if ( 0 === ( $utc_offset = get_option( 'gmt_offset', 0 ) ) )
         return 'UTC';
- 
+
     // adjust UTC offset from hours to seconds
     $utc_offset *= 3600;
- 
+
     // attempt to guess the timezone string from the UTC offset
     if ( $timezone = timezone_name_from_abbr( '', $utc_offset, 0 ) ) {
         return $timezone;
     }
- 
+
     // last try, guess timezone string manually
     $is_dst = date( 'I' );
- 
+
     foreach ( timezone_abbreviations_list() as $abbr ) {
         foreach ( $abbr as $city ) {
             if ( $city['dst'] == $is_dst && $city['offset'] == $utc_offset )
                 return $city['timezone_id'];
         }
     }
-     
+
     // fallback to UTC
     return 'UTC';
 }
@@ -345,7 +345,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
   $nums = array( 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 );
 
   // Get the current site time
-  $blogtime = current_time( 'mysql' ); 
+  $blogtime = current_time( 'mysql' );
   list( $today_year, $today_month, $today_day, $hour, $minute, $second ) = preg_split( '([^0-9])', $blogtime );
   $timestamp = current_time( 'timestamp' );
   $week_day = date('N', $timestamp);
@@ -387,7 +387,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
       'index' => 0,
     ));
   }
-  
+
   $pattern = "/(^|\n)([a-zA-Z\ \-\.]+?)\:\s+?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))\s?\-\s?((\d+?)\:(\d+?)\s?(am|a\.m\.|pm|p\.m\.|AM|A\.M\.|PM|P\.M\.))/";
   $matches = array();
   $result = preg_match_all($pattern, $string, $matches, PREG_OFFSET_CAPTURE);
@@ -459,7 +459,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
     }
 
   } // for
-  
+
   // Clean up the return
   foreach ($labels as $key => $label) {
     $labels[$key]['class'] = $classes[ $label['value'] ];
@@ -473,7 +473,7 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
 
 
 // Returns a text string of Federal Holidays.
-// Form: https://www.redcort.com/us-federal-bank-holidays/ 
+// Form: https://www.redcort.com/us-federal-bank-holidays/
 function federalHolidays() {
   return 'New Year\'s Day: Friday, January 1 2020
 Martin Luther King, Jr. Day: Monday, January 18 2020
