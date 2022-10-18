@@ -219,7 +219,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     public function load_resources() {
 
-      /* left as an example of what this function is for
+      /* left as an example of what this function is for we do not use atcb 1.5 here anymore
       switch( $this->post_type ) {
         case 'event':
           wp_enqueue_style('addtocalendar','//addtocalendar.com/atc/1.5/atc-style-blue.css');
