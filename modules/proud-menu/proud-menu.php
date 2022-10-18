@@ -28,15 +28,15 @@ class ProudMenuUtil {
     return false;
   }
 
-  /** 
+  /**
    * Helper attaches children onto menu
    * http://stackoverflow.com/a/2447631/1327637
    */
   private static function insert_deep(&$array, array $keys, &$value, &$active_trail) {
-    $last = array_pop($keys);       
+    $last = array_pop($keys);
     if( !empty($keys) ) {
       foreach( $keys as $key ) {
-        if(!array_key_exists( $key, $array ) || 
+        if(!array_key_exists( $key, $array ) ||
             array_key_exists( $key, $array ) && !is_array( $array[$key] )) {
           $array[$key] = array();
           $array[$key]['children'] = array();
@@ -51,7 +51,7 @@ class ProudMenuUtil {
     $array[$last] = $value;
   }
 
-  /** 
+  /**
    * Helper attaches children onto menu
    */
   private static function attach_link( &$menu_structure, $menu_depth_stack, $link_obj, &$active_trail) {
@@ -60,7 +60,7 @@ class ProudMenuUtil {
     $menu_structure = array_merge_deep_array([$menu_structure, $merge_arr]);
   }
 
-  /** 
+  /**
    * Takes WP flat menu and makes nested
    */
   public static function get_nested_menu( $menu_id ) {
@@ -79,7 +79,7 @@ class ProudMenuUtil {
 
       // How deep we are into children
       $menu_depth_stack = [];
-       
+
       foreach( $menu_items as $menu_item ) {
         $link_obj = [
           'url' => $menu_item->url,
@@ -164,18 +164,18 @@ class ProudMenu {
       else {
         self::$link_template = plugin_dir_path( __FILE__ ) . 'templates/menu-item.php';
         self::$wrapper_template = plugin_dir_path( __FILE__ ) . 'templates/menu-wrapper.php';
-        self::$back_template = plugin_dir_path( __FILE__ ) . 'templates/back-link.php';      
+        self::$back_template = plugin_dir_path( __FILE__ ) . 'templates/back-link.php';
         self::$show_level = true;
 
       }
       global $proud_menu_util;
       self::$menu_structure = $proud_menu_util::get_nested_menu($menu_id);
     }
-    // Just utility    
-    self::$warning_template = plugin_dir_path( __FILE__ ) . 'templates/warning.php'; 
+    // Just utility
+    self::$warning_template = plugin_dir_path( __FILE__ ) . 'templates/warning.php';
   }
 
-  /** 
+  /**
    * Builds submenu markup
    */
   static function build_recursive( $current_menu, &$menus, &$active, $parent = FALSE) {
@@ -196,7 +196,7 @@ class ProudMenu {
     foreach( $current_menu as $key => $item ) {
       $children = !empty( $item['children'] );
 
-      // We active? 
+      // We active?
       if( !empty( $item['active'] ) ) {
         $active = ($children) ? count( $menus ) + 1 : $count;
       }
@@ -207,10 +207,10 @@ class ProudMenu {
         if( !empty( $item['active'] ) || !empty( $item['active_trail'] ) ) {
           $item['active_click_level'] = count( $menus ) + 1;
           // self::
-        } 
+        }
 
         self::build_recursive( $item['children'], $menus, $active, [
-          'count' => $count, 
+          'count' => $count,
           'title' => $item['title'],
           'url' => $item['url']
         ]);
@@ -226,7 +226,7 @@ class ProudMenu {
     $menus[$menu_level] .= !empty(self::$show_level) ? '</div>' : '';
   }
 
-  /** 
+  /**
    * Prints submenu
    * See comments https://developer.wordpress.org/reference/functions/wp_get_nav_menu_items/
    */
