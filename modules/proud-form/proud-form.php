@@ -616,7 +616,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
     /**
      * Prints out form fields
      */
-    public function printFields ( $instance, $fields = null, $number, $field_base ) {
+    public function printFields ( $instance, $fields = null, $number = null, $field_base = null ) {
       if( ! isset( $this->field_id ) || ! isset( $this->number ) ) {
         $this->registerIds( $number, $field_base );
       }
