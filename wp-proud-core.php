@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2022.11.23.1301
+Version:            2022.11.24.0722
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -31,6 +31,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-authentication/proud-aut
 require_once plugin_dir_path(__FILE__) . 'modules/proud-accessibility/proud-accessibility.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/proud-patternlibrary/proud-patternlibrary.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-fa/proud-fa.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-customizer.php';
 
 
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
