@@ -31,7 +31,10 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-authentication/proud-aut
 require_once plugin_dir_path(__FILE__) . 'modules/proud-accessibility/proud-accessibility.php';
 //require_once plugin_dir_path(__FILE__) . 'modules/proud-patternlibrary/proud-patternlibrary.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-fa/proud-fa.php';
+
+// customizer updates
 require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-customizer.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-default-social-image-customizer.php';
 
 
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
