@@ -1,5 +1,5 @@
 <div <?php post_class( "teaser search-teaser" ); ?>>
-  <div class="row">
+  <div class="row"><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-search.php -->
     <div class="col-md-12">
       <div class="search-title">
         <h3 class="h4 entry-title margin-top-large"><?php echo $proudsearch->get_post_link($post) ?></h3>
