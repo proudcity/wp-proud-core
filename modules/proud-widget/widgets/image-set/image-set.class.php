@@ -45,9 +45,9 @@ class ImageSet extends Core\ProudWidget {
         '#title' => __( 'Display type', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'cards',
-        '#options' => [ 
+        '#options' => [
           'cards' => __( 'Image cards', 'wp-proud-core' ),
-          'list' => __( 'Media list', 'wp-proud-core' ), 
+          'list' => __( 'Media list', 'wp-proud-core' ),
         ],
         '#description' => __( 'How to display the set', 'wp-proud-core' )
       ],
@@ -55,9 +55,9 @@ class ImageSet extends Core\ProudWidget {
         '#title' => __( 'Columns across', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => '3',
-        '#options' => [ 
+        '#options' => [
           '2' => __( 'Two', 'wp-proud-core' ),
-          '3' => __( 'Three', 'wp-proud-core' ), 
+          '3' => __( 'Three', 'wp-proud-core' ),
         ],
         '#description' => __( 'How many columns to display', 'wp-proud-core' )
       ],
@@ -101,7 +101,7 @@ class ImageSet extends Core\ProudWidget {
    */
   public static function row_open( $current, $columns  ){
      return $current%$columns === 0
-          ? '<div class="row">' 
+          ? '<div class="row">'
           : '';
   }
 

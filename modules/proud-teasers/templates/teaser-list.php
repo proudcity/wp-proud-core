@@ -1,4 +1,4 @@
-<div <?php post_class("teaser"); ?>>
+<div <?php post_class("teaser"); ?>><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-list.php -->
     <div class="row">
         <?php if (\Proud\Core\TeaserList::has_thumbnail()) : ?>
             <div class="col-md-3 pull-right">

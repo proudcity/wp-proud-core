@@ -1,18 +1,18 @@
-<?php 
+<?php
   use Proud\Core;
 
   if( !empty($imageset) ):
   $class = ((int) $across === 3) ? 'card-columns-md-3' : 'card-columns-md-2';
 ?>
-<div class="card-columns card-columns-xs-2 card-columns-sm-2 <?php echo $class ?> card-columns-equalize">
+<div class="card-columns card-columns-xs-2 card-columns-sm-2 <?php echo $class ?> card-columns-equalize"><!-- template-file: wp-proud-core/modules/proud-teasers/templates/image-cards.php -->
   <?php foreach ( $imageset as $image ) : ?>
     <?php if( !empty( $image['link_title'] ) && !empty( $image['link_url'] ) && !empty( $image['image'] ) ): ?>
       <div class="card-wrap"><div class="card">
         <?php if( !empty( $image['image'] ) && is_numeric( $image['image'] ) ): ?>
         <div class="card-img-top text-center">
           <a href="<?php print $image['link_url'] ?>">
-            <?php 
-              $meta = Core\build_responsive_image_meta( $image['image'], 'card-thumb', 'card-thumb' ); 
+            <?php
+              $meta = Core\build_responsive_image_meta( $image['image'], 'card-thumb', 'card-thumb' );
               Core\print_responsive_image( $meta, [], true );
             ?>
           </a>

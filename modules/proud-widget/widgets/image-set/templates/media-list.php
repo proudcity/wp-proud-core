@@ -1,4 +1,4 @@
-<?php 
+<?php
   use Proud\Core;
 
   if( !empty($imageset) ):
@@ -8,7 +8,7 @@
   $class = $columns === 3 ? 'col-sm-4' : 'col-sm-6';
 ?>
 
-<div class="media-list">
+<div class="media-list"><!-- template-file: wp-proud-core/proud-widget/widgets/image-set/templates/media-list.php -->
   <?php for ( $i = 0; $i < $post_count; $i++ ) : ?>
   <?php echo ImageSet::row_open( $i, $columns ); $image = $imageset[$i]; ?>
     <div class="media <?php echo $class ?>">
@@ -16,8 +16,8 @@
       <div class="media-left">
         <?php if( !empty( $image['image'] ) && is_numeric( $image['image'] ) ): ?>
           <a href="<?php print $image['link_url'] ?>">
-            <?php 
-              $meta = Core\build_responsive_image_meta( $image['image'], array( 64, 64 ), array( 64, 64 ) ); 
+            <?php
+              $meta = Core\build_responsive_image_meta( $image['image'], array( 64, 64 ), array( 64, 64 ) );
               Core\print_responsive_image( $meta, [], true );
             ?>
           </a>
