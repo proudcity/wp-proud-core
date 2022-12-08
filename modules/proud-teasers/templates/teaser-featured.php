@@ -1,4 +1,4 @@
-<div <?php post_class("featured"); ?>>
+<div <?php post_class("featured"); ?>><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-featured.php -->
     <?php if (\Proud\Core\TeaserList::has_thumbnail()) : ?>
         <div class="image image image-aspect ratio-2-1">
             <a href="<?php echo esc_url(get_permalink()); ?>"><?php \Proud\Core\TeaserList::print_teaser_thumbnail('large'); ?></a>

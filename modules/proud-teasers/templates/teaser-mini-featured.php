@@ -1,4 +1,4 @@
-<li <?php post_class("featured teaser-mini"); ?>>
+<li <?php post_class("featured teaser-mini"); ?>><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-mini-featured.php -->
     <?php if (\Proud\Core\TeaserList::has_thumbnail()) : ?>
         <div class="image image-aspect ratio-2-1">
             <a href="<?php echo esc_url(get_permalink()); ?>"><?php \Proud\Core\TeaserList::print_teaser_thumbnail('featured-teaser'); ?></a>

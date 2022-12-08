@@ -2,7 +2,7 @@
 
   <?php if ( 'document' == get_post_type() ){ ?>
     <!-- @todo use a var so we can see what type of navigation this is -->
-    <nav aria-label="Page Navigation" class="paged-navigation">
+    <nav aria-label="Page Navigation" class="paged-navigation"><!-- template-file: wp-proud-core/modules/proud-teasers/templates/pagination-default.php -->
       <?php
         $big = 9999999999;
         $args = array(
