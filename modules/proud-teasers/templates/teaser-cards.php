@@ -1,4 +1,4 @@
-<div <?php post_class( "card-wrap" ); ?><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-cards.php -->>
+<div <?php post_class( "card-wrap" ); ?>><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-cards.php -->
   <div class="card">
     <?php if( \Proud\Core\TeaserList::has_thumbnail() ): ?>
     <div class="card-img-top text-center">
