@@ -70,6 +70,14 @@ class TeaserListWidget extends Core\ProudWidget {
     return $modes;
   }
 
+	/**
+	 * Initializes the widget
+	 *
+	 * To add a new option you need to add it to the array below
+	 * and then to the build_teasers function inside the apply_filters
+	 * array so that it will save. If you only add it below then it
+	 * will show up but not save.
+	 */
   function initialize() {
     $settings = $this->settings;
     if (!$this->post_type) {
@@ -141,7 +149,7 @@ class TeaserListWidget extends Core\ProudWidget {
     }
     // Should we display featured checkbox?
     if( !empty( $this->display_featured ) ) {
-      $settings += [  
+      $settings += [
         'featured' => [
           '#type' => 'checkbox',
           '#title' => 'Featured',
@@ -161,7 +169,7 @@ class TeaserListWidget extends Core\ProudWidget {
         ]
       ];
     }
-    $settings += [  
+    $settings += [
       'columns' => [
         '#type' => 'checkbox',
         '#title' => 'Columns',
@@ -186,6 +194,23 @@ class TeaserListWidget extends Core\ProudWidget {
         '#label_above' => true,
         '#replace_title' => 'Add pager (Only one pager per page can be active)',
         '#default_value' => false
+      ],
+      'show_teaser_text' => [
+        '#type' => 'checkbox',
+        '#title' => 'Show Teaser Text',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Show teaser text under title',
+        '#default_value' => false,
+        '#states' => [
+          'visible' => [
+            'proud_teaser_display' => [
+              'operator' => '==',
+              'value' => ['media'],
+              'glue' => '||'
+            ],
+          ],
+        ],
       ],
       'more_link' => [
         '#type' => 'checkbox',
@@ -232,7 +257,7 @@ class TeaserListWidget extends Core\ProudWidget {
         '#title' => 'Filters',
         '#return_value' => '1',
         '#description' => 'You must place the "Content list filters" widget somewhere on the page, and only one filter + list combination is allowed',
-        '#replace_title' => __( 'Filters will be included on this page', 'wp-proud-core' ), 
+        '#replace_title' => __( 'Filters will be included on this page', 'wp-proud-core' ),
         '#default_value' => false
       ],
     ];
@@ -267,8 +292,11 @@ class TeaserListWidget extends Core\ProudWidget {
     return false;
   }
 
-  /** 
+  /**
    * Builds the teaser list
+   *
+   * To save a new option it must be added to the class creation below. Specifically
+   * you need to add it to the `proud_teasers_extra_options` below.
    */
   public function build_teasers( $instance ) {
     $terms = [];
@@ -279,8 +307,8 @@ class TeaserListWidget extends Core\ProudWidget {
     }
 
     $instance['teaser_list'] = new Core\TeaserList(
-      $this->post_type ? $this->post_type : $instance['proud_teaser_content'], 
-      $instance['proud_teaser_display'], 
+      $this->post_type ? $this->post_type : $instance['proud_teaser_content'],
+      $instance['proud_teaser_display'],
       array(
         'posts_per_page' => $instance[ 'post_count' ],
       ),
@@ -294,6 +322,7 @@ class TeaserListWidget extends Core\ProudWidget {
         'hide' => ( !empty( $instance['proud_teaser_hide'] ) ? $instance['proud_teaser_hide'] : null ),
         'columns' => ( !empty( $instance['columns'] ) ? $instance['columns'] : null ),
         'use_specific' => ( !empty( $instance['use_specific'] ) ? $instance['use_specific'] : null ),
+        'show_teaser_text' => ( !empty( $instance['show_teaser_text'] ) ? $instance['show_teaser_text'] : null ),
         'specific_ids' => ( !empty( $instance['specific_ids'] ) ? $instance['specific_ids'] : null )
       ), $instance )
     );
@@ -303,8 +332,8 @@ class TeaserListWidget extends Core\ProudWidget {
     return $instance;
   }
 
-  /** 
-   * Makes sure teaser content is built before filters 
+  /**
+   * Makes sure teaser content is built before filters
    */
   public function pre_build_teasers( $content, $panels_data ) {
     if( empty( $this->built_instance ) ) {

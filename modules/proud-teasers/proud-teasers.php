@@ -206,6 +206,24 @@ if ( !class_exists( 'TeaserList' ) ) {
           return false;
     }
 
+	/**
+	 * Returns true if the user has chosen to show teaser text
+	 *
+	 * @since 2022.12.14
+	 * @author Curtis
+	 *
+	 */
+	public function show_excerpt(){
+
+		$show_teaser_text = false;
+
+		if ( $this->options['show_teaser_text'] ){
+			$show_teaser_text = true;
+		}
+
+		return (bool) $show_teaser_text;
+	}
+
     /**
      * Gets taxonomy for post type
      */
