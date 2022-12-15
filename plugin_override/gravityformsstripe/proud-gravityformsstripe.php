@@ -9,7 +9,7 @@ class ProudGravityformsStripe {
      */
     public function __construct() {
         add_filter('gform_stripe_post_include_api', [ $this, 'gform_stripe_post_include_api' ], 10, 5);
-        add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
+        //add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
 
         add_filter( 'gform_stripe_connect_enabled', [ $this, '__return_false' ] );
         // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
