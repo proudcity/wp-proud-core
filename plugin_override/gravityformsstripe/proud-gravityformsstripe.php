@@ -10,6 +10,9 @@ class ProudGravityformsStripe {
     public function __construct() {
         add_filter('gform_stripe_post_include_api', [ $this, 'gform_stripe_post_include_api' ], 10, 5);
         //add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
+		//
+
+		add_filter( 'gform_stripe_payment_intent_pre_create', [ $this, 'add_transfer_meta' ], 10, 2 );
 
         add_filter( 'gform_stripe_connect_enabled', [ $this, '__return_false' ] );
         // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
@@ -22,6 +25,95 @@ class ProudGravityformsStripe {
         // add_filter('gform_stripe_post_create_subscription', [$this, 'gform_stripe_post_create_subscription'], 10, 2);
 
     }
+
+	/**
+	 * Adds our transfer metadata to the Stripe payment intent
+	 *
+	 * @since 2023.01.04
+	 * @author Curtis
+	 *
+	 * @param       array           $data               required                The payment information
+	 *      - payment_method => some long key
+	 *      - amount => the payment amount for original payment
+	 *      - currency => USD
+	 *      - capture_method => manual
+	 *      - confirmation_method => manual
+	 *      - confirm => (nothing here)
+	 * @param       array           $feed               required                Feed information
+	 *      - docs here: https://github.com/proudcity/developers/blob/main/Github%20Issue%20Notes/2153%20-%20Gravity%20Forms%20and%20Stripe%20issue.md
+	 */
+	public static function add_transfer_meta( $data, $feed ){
+
+		// Stripe connect destination so payments are sent to customers directly
+		$transfer_account = get_option( 'proudcity_payments_account', false );
+
+		if ( $transfer_account ){
+
+			$fee_amount = $this->get_fee_ammount( $data['amount'] );
+			$suffix = $this->get_form_suffix();
+
+			$data['statement_descriptor_suffix'] = (string) $suffix;
+			$data['application_fee_amount'] = (int) $fee_amount;
+			$data['transfer_data']['destination'] = (string) $transfer_account;
+			$data['transfer_group'] = (string) $this->get_form_title( absint( $feed['form_id'] ) );
+
+		} // if $transfer_account
+
+		return $data;
+
+	}
+
+	/**
+	 * Returns the form title given the form_id
+	 *
+	 * @since 2023.01.04
+	 * @author Curtis
+	 *
+	 * @param   int         $form_id            required            ID of the form we want a title for
+	 * @uses    GFAPI                                               Gravity Forms API: https://docs.gravityforms.com/getting-forms-with-the-gfapi/#get-form
+	 * @return  stirng      $form_title                             Form Title
+	 */
+	private static function get_form_title( $form_id ){
+
+		$form = GFAPI::get_form( absint( $form_id ) );
+		$form_title = $form['form_title'];
+
+		return esc_attr( $form_title );
+
+	}
+
+	/*
+	 * Add the statement descriptor suffix
+	 * Will be in the form `ProudCity * $descriptor` (can be 22 characters total)
+	 * Example: `ProudCity * San Rafael` (22 chars)
+	 * https://stripe.com/docs/statement-descriptors
+	 *
+	 * @uses        get_option()                    Returns option from the database. Second item is default value
+	 * @uses        get_bloginfo()                  Returns information about the site
+	 * @return      string          $suffix         Form suffix
+	 */
+	private static function get_form_suffix(){
+
+		$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
+
+		return (string) $suffix;
+
+	}
+
+	/**
+	 *  Returns the fee amount
+	 *
+	 * @param   int         $payment_amount         required        The amount of the payment
+	 * @return  int         $fee_amount                             Stripe expects $1.23 to be formatted as 123 as a return value
+	 */
+	private static function get_fee_amount( $payment_amount ){
+
+		$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
+		$fee_amount = round(30 + (int) $payment_amount * $percent); // In cents
+
+		return (int) $fee_amount;
+
+	}
 
     function __return_false($stripe_connect_enabled) {
         if (get_option('proudcity_payments_gravityformsstripe_legacy_settings', false)) {
@@ -51,6 +143,13 @@ class ProudGravityformsStripe {
             $charge_meta['application_fee_amount'] = round(30 + $submission_data['payment_amount'] * $percent); // In cents
 
             // Set up Stripe Connect destination
+			// destination is the connect account ID for the customer. It's set as the option 'proudcity_payments_account
+			// percent is set as environment variable or defaults to 3%
+			// connected accounts in the test Stripe account is NOT a stripe "connected" account - confirm that our test account can be used in Connect and that we have a valid connect parameter set for 'destination'
+			// is Gravity Forms doing something with Stripe connect to make some extra money?? (curtis doesn't think this feels right)
+			// payment here: https://dashboard.stripe.com/payments/ch_3MGoYRK3yBBQrr5C0jeITQTp
+			//  - it all looks good but it says 'uncaptured' so why is that
+			//  - our fee didn't get added probably as well1
             $charge_meta['transfer_data']['destination'] = $account;
             $charge_meta['transfer_group'] = $form['title'];
 
