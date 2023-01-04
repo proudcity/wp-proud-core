@@ -57,8 +57,8 @@ class ProudGravityformsStripe {
 			$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
 
 			// getting form title
-			$form = GFAPI::get_form( absint( $feed['form_id'] ) );
-			$form_title = $form['form_title'];
+			$form = \GFAPI::get_form( absint( $feed['form_id'] ) );
+			$form_title = $form['title'];
 
 			$data['statement_descriptor_suffix'] = (string) $suffix;
 			$data['application_fee_amount'] = (int) $fee_amount;
@@ -68,58 +68,6 @@ class ProudGravityformsStripe {
 		} // if $transfer_account
 
 		return $data;
-
-	}
-
-	/**
-	 * Returns the form title given the form_id
-	 *
-	 * @since 2023.01.04
-	 * @author Curtis
-	 *
-	 * @param   int         $form_id            required            ID of the form we want a title for
-	 * @uses    GFAPI                                               Gravity Forms API: https://docs.gravityforms.com/getting-forms-with-the-gfapi/#get-form
-	 * @return  stirng      $form_title                             Form Title
-	 */
-	private static function get_form_title( $form_id ){
-
-		$form = GFAPI::get_form( absint( $form_id ) );
-		$form_title = $form['form_title'];
-
-		return esc_attr( $form_title );
-
-	}
-
-	/*
-	 * Add the statement descriptor suffix
-	 * Will be in the form `ProudCity * $descriptor` (can be 22 characters total)
-	 * Example: `ProudCity * San Rafael` (22 chars)
-	 * https://stripe.com/docs/statement-descriptors
-	 *
-	 * @uses        get_option()                    Returns option from the database. Second item is default value
-	 * @uses        get_bloginfo()                  Returns information about the site
-	 * @return      string          $suffix         Form suffix
-	 */
-	private static function get_form_suffix(){
-
-		$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
-
-		return (string) $suffix;
-
-	}
-
-	/**
-	 *  Returns the fee amount
-	 *
-	 * @param   int         $payment_amount         required        The amount of the payment
-	 * @return  int         $fee_amount                             Stripe expects $1.23 to be formatted as 123 as a return value
-	 */
-	private static function get_fee_amount( $payment_amount ){
-
-		$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
-		$fee_amount = round(30 + (int) $payment_amount * $percent); // In cents
-
-		return (int) $fee_amount;
 
 	}
 
