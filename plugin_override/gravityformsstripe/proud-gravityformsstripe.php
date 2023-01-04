@@ -49,13 +49,21 @@ class ProudGravityformsStripe {
 
 		if ( $transfer_account ){
 
-			$fee_amount = $this->get_fee_ammount( $data['amount'] );
-			$suffix = $this->get_form_suffix();
+			// getting fee amount
+			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
+			$fee_amount = round(30 + (int) $data['amount'] * $percent); // In cents
+
+			// getting form suffix
+			$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
+
+			// getting form title
+			$form = GFAPI::get_form( absint( $feed['form_id'] ) );
+			$form_title = $form['form_title'];
 
 			$data['statement_descriptor_suffix'] = (string) $suffix;
 			$data['application_fee_amount'] = (int) $fee_amount;
 			$data['transfer_data']['destination'] = (string) $transfer_account;
-			$data['transfer_group'] = (string) $this->get_form_title( absint( $feed['form_id'] ) );
+			$data['transfer_group'] = (string) $form_title;
 
 		} // if $transfer_account
 
@@ -314,6 +322,7 @@ class ProudGravityformsStripe {
     //     return $single_payment_amount;
 
     // }
+
 
 
 
