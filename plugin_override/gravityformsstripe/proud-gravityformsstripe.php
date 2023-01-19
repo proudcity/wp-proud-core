@@ -67,7 +67,7 @@ class ProudGravityformsStripe {
 		if ( $transfer_account ){
 
 			// getting percentage fee for a customer
-			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
+			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3.05;
 
 			// converting int to decimal value
 			$percent_dec = $percent / 100;
