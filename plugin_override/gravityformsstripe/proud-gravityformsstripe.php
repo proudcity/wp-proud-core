@@ -11,6 +11,7 @@ class ProudGravityformsStripe {
         add_filter('gform_stripe_post_include_api', [ $this, 'gform_stripe_post_include_api' ], 10, 5);
         //add_filter('gform_stripe_charge_pre_create', [ $this, 'gform_stripe_charge_pre_create' ], 10, 5);
 		//
+		add_filter( 'gform_stripe_enable_rate_limits', [ $this, 'rate_limits' ] );
 
 		add_filter( 'gform_stripe_payment_intent_pre_create', [ $this, 'add_transfer_meta' ], 10, 2 );
 
@@ -25,6 +26,22 @@ class ProudGravityformsStripe {
         // add_filter('gform_stripe_post_create_subscription', [$this, 'gform_stripe_post_create_subscription'], 10, 2);
 
     }
+
+	/**
+	 *  Turning off rate limits for local development
+	 *
+	 *  @author Curtis
+	 *  @since 2023.01.19
+	 */
+	public static function rate_limits(){
+
+		if ( 'local' === wp_get_environment_type() ){
+			return false;
+		}
+
+		return true;
+
+	} // rate_limits
 
 	/**
 	 * Adds our transfer metadata to the Stripe payment intent
