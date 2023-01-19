@@ -67,10 +67,13 @@ class ProudGravityformsStripe {
 		if ( $transfer_account ){
 
 			// getting percentage fee for a customer
-			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : .03;
+			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
+
+			// converting int to decimal value
+			$percent_dec = $percent / 100;
 
 			// figuring out what the value is less the fee
-			$fee_amount_percent = round( (int) $data['amount'] / ( 1 + $percent) ); // In cents
+			$fee_amount_percent = round( (int) $data['amount'] / ( 1 + $percent_dec ) ); // In cents
 			$fee_minus_thirty = $fee_amount_percent - 30;
 
 			// subtracting the value without the fee from the incoming
@@ -79,6 +82,7 @@ class ProudGravityformsStripe {
 
 			/*
 			error_log( 'amount before fee ' . $data['amount'] );
+			error_log( 'percent dec ' . $percent_dec );
 			error_log( 'fee amount ' . $fee_amount_percent );
 			error_log( 'fee minus thirty ' . $fee_minus_thirty );
 			error_log( 'pc fee ' . $pc_fee );
@@ -97,6 +101,8 @@ class ProudGravityformsStripe {
 			$data['transfer_group'] = (string) $form_title;
 
 		} // if $transfer_account
+
+		//error_log( print_r( $data, true ) );
 
 		return $data;
 
