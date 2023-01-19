@@ -66,9 +66,23 @@ class ProudGravityformsStripe {
 
 		if ( $transfer_account ){
 
-			// getting fee amount
-			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3;
-			$fee_amount = round(30 + (int) $data['amount'] * $percent); // In cents
+			// getting percentage fee for a customer
+			$percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : .03;
+
+			// figuring out what the value is less the fee
+			$fee_amount_percent = round( (int) $data['amount'] / ( 1 + $percent) ); // In cents
+			$fee_minus_thirty = $fee_amount_percent - 30;
+
+			// subtracting the value without the fee from the incoming
+			// value to get the fee we should be charging via stripe
+			$pc_fee = $data['amount'] - $fee_minus_thirty;
+
+			/*
+			error_log( 'amount before fee ' . $data['amount'] );
+			error_log( 'fee amount ' . $fee_amount_percent );
+			error_log( 'fee minus thirty ' . $fee_minus_thirty );
+			error_log( 'pc fee ' . $pc_fee );
+			*/
 
 			// getting form suffix
 			$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
@@ -78,7 +92,7 @@ class ProudGravityformsStripe {
 			$form_title = $form['title'];
 
 			$data['statement_descriptor_suffix'] = (string) $suffix;
-			$data['application_fee_amount'] = (int) $fee_amount;
+			$data['application_fee_amount'] = (int) $pc_fee;
 			$data['transfer_data']['destination'] = (string) $transfer_account;
 			$data['transfer_group'] = (string) $form_title;
 
