@@ -18,7 +18,7 @@
         </a>
       </li>
       <li class="nav-text site-name">
-        <a title="Home" rel="home" href="<?php echo get_site_name_link_url(); ?>"><strong><?php bloginfo('name'); ?></strong></a>
+        <a title="Home" rel="home" href="<?php echo get_site_name_link_url(); ?>"><?php bloginfo('name'); ?></a>
       </li>
     </ul>
     <a title="Toggle mobile menu" id="menu-button" href="#" class="btn navbar-btn menu-button">
