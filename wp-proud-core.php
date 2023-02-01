@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2023.02.01.1124
+Version:            2023.02.01.1328
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -116,6 +116,9 @@ class Proudcore extends \ProudPlugin {
     $this->hook('init',  'restPostSupport');
     $this->hook('init',  'restTaxonomySupport');
 
+	add_filter( 'get_terms_orderby', array( $this, 'pc_test_terms_orderby' ), 10, 3 );
+
+
     // reorder post types
     add_action( 'pre_get_posts', array( $this, 'restPostOrder' ) );
   }
@@ -158,6 +161,21 @@ class Proudcore extends \ProudPlugin {
     remove_action( 'wp_print_styles', 'print_emoji_styles' );
     add_filter( 'login_message', array( $this, 'login_message' ) );
   }
+
+	/**
+	 * Quick hack to get our REST API endpoint for Service Center answers
+	 * to use `term_order` as the `orderby` parameter
+	 *
+	 * @since 2023.01.02.1328
+	 * @author Curtis
+	 */
+	public function pc_test_terms_orderby( $orderby, $args, $taxonomies ){
+	  if ( in_array( 'faq-topic', $taxonomies ) ){
+		return 't.term_order';
+	  } else {
+		return $orderby;
+	  }
+	}
 
   // Load common libraries
   public function loadLibraries() {
