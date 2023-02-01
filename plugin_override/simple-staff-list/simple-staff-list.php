@@ -31,15 +31,27 @@ class Proud_Simple_Staff_List{
 
         add_action( 'sslp_after_staff_member_admin_fields', array( $this, 'proud_staff_fields' ) );
         add_action( 'sslp_save_staff_member_details', array( $this, 'proud_save_extra_staff_fields' ), 10, 2 );
+		add_action( 'init', array( $this, 'add_support' ) );
 
 	} // init
+
+	/**
+	 *  Adding support for different items in simple staff list
+	 *
+	 *  @since 2023.02.01
+	 *  @author Curtis
+	 */
+	public static function add_support(){
+		// adding support for menu_order functions
+		add_post_type_support( 'staff-member', 'page-attributes' );
+	}
 
     /**
      * Adds extra fields to Simple Staff List Metabox
      *
      * @since 2022.03.10
      * @author Curtis McHale
-     * 
+     *
      * @param       $post_id        int             required                    The ID of the post we're adding fields to
      * @uses        get_post_meta()                                             Returns post_meta given post_id and key
      * @uses        absint()                                                    no negative numbers
@@ -72,10 +84,10 @@ class Proud_Simple_Staff_List{
     /**
      * Allows us to save fields added above
      * REMEMBER: we are responsible for sanitizing fields here as we save them
-     * 
+     *
      * @since 2022.03.10
      * @author Curtis McHale
-     * 
+     *
      * @param       $post_id        int             required                The ID of the post we're saving content for
      * @param       $post_fields    array           required                This is the passed $_POST value from the save screen
      * @uses        update_post_meta()                                      updates the post_meta given post_id and key
