@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2023.02.01.1411
+Version:            2023.02.06.1301
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -170,7 +170,7 @@ class Proudcore extends \ProudPlugin {
 	 * @author Curtis
 	 */
 	public function pc_test_terms_orderby( $orderby, $args, $taxonomies ){
-	  if ( in_array( 'faq-topic', $taxonomies ) ){
+	  if ( is_array( $taxonomies ) && in_array( 'faq-topic', $taxonomies ) ){
 		return 't.term_order';
 	  } else {
 		return $orderby;
