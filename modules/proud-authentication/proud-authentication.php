@@ -55,7 +55,7 @@ class ProudAuthentication extends \ProudPlugin {
 
     global $pagenow;
 
-    $excluded = array( 'https://www.colma.ca.gov' );
+    $excluded = array( 'https://www.colma.ca.gov', 'https://proudcity.com', 'https://beta.proudcity.com' );
 
     /**
      * $_GET['connection_id'] corresponds to Auth0 so that we don't have fatal site errors
@@ -64,7 +64,7 @@ class ProudAuthentication extends \ProudPlugin {
       wp_redirect( 'https://my.proudcity.com' );
       exit;
     } // if wp-login.php
- 
+
   } // login_redirect
 
   // Do we need to put this behind an HTTP-auth wall, or redirect them to login to WordPress?
