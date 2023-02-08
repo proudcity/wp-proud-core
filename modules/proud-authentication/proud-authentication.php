@@ -20,7 +20,7 @@ class ProudAuthentication extends \ProudPlugin {
 
     $this->hook('init',  'checkAuthentication');
 
-    add_action( 'init', array( $this, 'login_redirect' ) );
+    //add_action( 'init', array( $this, 'login_redirect' ) );
     //apply_filters( 'login_url', array( $this, 'pc_dashboard_login_url' ), 10, 3 );
 
   }
@@ -55,7 +55,7 @@ class ProudAuthentication extends \ProudPlugin {
 
     global $pagenow;
 
-    $excluded = array( 'https://www.colma.ca.gov', 'https://proudcity.com', 'https://beta.proudcity.com' );
+    $excluded = array( 'https://www.colma.ca.gov' );
 
     /**
      * $_GET['connection_id'] corresponds to Auth0 so that we don't have fatal site errors
