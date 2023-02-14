@@ -84,7 +84,7 @@ class IconSet extends Core\ProudWidget {
           ]
         ),
       ),
-    
+
     );
   }
 
@@ -94,10 +94,14 @@ class IconSet extends Core\ProudWidget {
   function printWidget( $args, $instance ) {
     extract($instance);
     $md_col = 4;
-    $col_count = count( $iconset );
-    if( $col_count < 4 || ( $col_count === 6 ) ) {
-      $md_col = 3;
-    }
+
+	if ( isset( $iconset ) && ! empty( $iconset ) ){
+		$col_count = count( $iconset );
+		if( $col_count < 4 || ( $col_count === 6 ) ) {
+		  $md_col = 3;
+		}
+	} // isset !empty iconset
+
     $file = plugin_dir_path( __FILE__ ) . 'templates/icon-set.php';
     include( $file );
   }
