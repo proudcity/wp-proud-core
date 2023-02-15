@@ -55,17 +55,19 @@ if ( ! class_exists( 'SiteMap' ) ) {
 						}
 					}
 				}
+
 				// Build menus
 				$menus = '';
 				foreach ( $menu_items as $menu ) {
+
 					$menu_header = !empty( $menu->ageny_link )
-						? "<a href=\"$menu->ageny_link\" rel=\"bookmark\">$menu->name</a>"
+						? '<a href="'. esc_url( $menu->ageny_link ) .'" rel="bookmark">' . esc_attr( $menu->name ) .'</a>'
 						: esc_html( $menu->name );
 					$menus       .= '<h2 class="h3">' . $menu_header . '</h2>';
 					// Menu has children so print them
-					if ($menu->count) {
+					if ( 0 != $menu->count) {
 						$children = wp_nav_menu( array(
-							'menu'       => $menu->term_id,
+							'menu'       => absint( $menu->term_id ),
 							'container'  => 'false',
 							'items_wrap' => '%3$s',
 							'echo'       => '0'
