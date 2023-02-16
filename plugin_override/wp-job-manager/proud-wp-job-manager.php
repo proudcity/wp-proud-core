@@ -2,7 +2,7 @@
 
 namespace Proud\WP_Job_Manager;
 
-/** 
+/**
  * @TODO find out how to remove CSS from pagebuilder
  */
 function proud_wp_job_manger_css_dequeue() {
@@ -20,17 +20,17 @@ function proud_wp_job_manager_print_types($post) {
     global $post;
   }
   if(job_manager_multi_job_type()): ?>
-    <?php 
+    <?php
       $types = wp_get_post_terms( $post->ID, 'job_listing_type' );
       foreach ($types as $type) {
         ?>
-          <span class="label job-type <?php echo sanitize_title( $type->slug ) ?>">
-            <?php echo $type->name ?>
+          <span class="label job-type <?php echo sanitize_html_class( $type->slug ); ?>">
+            <?php echo esc_attr( $type->name ) ?>
           </span>
         <?php
       }
     ?>
   <?php else: ?>
-    <span class="label job-type <?php echo get_the_job_type() ? sanitize_title( get_the_job_type()->slug ) : ''; ?>"><?php the_job_type(); ?></span>
+    <span class="label job-type <?php echo wpjm_get_the_job_types() ? sanitize_html_class( wpjm_get_the_job_types()[0]->slug ) : ''; ?>"><?php wpjm_the_job_types(); ?></span>
   <?php endif;
 }
