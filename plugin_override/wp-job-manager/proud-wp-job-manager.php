@@ -34,3 +34,29 @@ function proud_wp_job_manager_print_types($post) {
     <span class="label job-type <?php echo wpjm_get_the_job_types() ? sanitize_html_class( wpjm_get_the_job_types()[0]->slug ) : ''; ?>"><?php wpjm_the_job_types(); ?></span>
   <?php endif;
 }
+
+/**
+ * Adds extra fields to job listings for contact phone number and contact position
+ *
+ * @since 2023.02.16
+ * @author Curtis McHale
+ *
+ * @param   int         $post_id            required                The ID of the post we're working with
+ *
+ * @todo save the data that is input
+ * @todo show any data that is saved
+ * @todo look at HTML 5 phone field for better keyboards
+ */
+function add_job_data( $post_id ){ ?>
+	<p class="form-field">
+		<label for="job_contact_phone">Contact Phone</label>
+		<input type="text" name="job_contact_phone" id="job_contact_phone" placeholder="555.555.5555" />
+	</p>
+
+	<p class="form-field">
+		<label for="position_name">Contact Position Name</label>
+		<input type="text" name="position_name" id="position_name" placeholder="" />
+	</p>
+<?php
+}
+add_action( 'job_manager_job_listing_data_end', __NAMESPACE__ . '\\add_job_data' );
