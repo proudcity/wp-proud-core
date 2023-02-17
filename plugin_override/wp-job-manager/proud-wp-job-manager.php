@@ -47,16 +47,42 @@ function proud_wp_job_manager_print_types($post) {
  * @todo show any data that is saved
  * @todo look at HTML 5 phone field for better keyboards
  */
-function add_job_data( $post_id ){ ?>
+function add_job_data( $post_id ){
+$phone = get_post_meta( absint( $post_id ), '_job_contact_phone', true ) ? get_post_meta( absint( $post_id ), '_job_contact_phone', true ) : '';
+$job_position = get_post_meta( absint( $post_id ), '_job_position_name', true ) ? get_post_meta( absint( $post_id ), '_job_position_name', true ) : '';
+?>
 	<p class="form-field">
 		<label for="job_contact_phone">Contact Phone</label>
-		<input type="text" name="job_contact_phone" id="job_contact_phone" placeholder="555.555.5555" />
+		<input type="text" name="job_contact_phone" id="job_contact_phone" placeholder="555.555.5555" value="<?php echo esc_attr( $phone ); ?>" />
 	</p>
 
 	<p class="form-field">
-		<label for="position_name">Contact Position Name</label>
-		<input type="text" name="position_name" id="position_name" placeholder="" />
+		<label for="job_position_name">Job Position Name</label>
+		<input type="text" name="job_position_name" id="job_position_name" placeholder="" value="<?php echo esc_attr( $job_position ); ?>" />
 	</p>
 <?php
 }
 add_action( 'job_manager_job_listing_data_end', __NAMESPACE__ . '\\add_job_data' );
+
+/**
+ * Saves our new meta fields
+ *
+ * @since 2023.02.17
+ * @author Curtis McHale
+ *
+ * @param   int         $post_id        required            ID of the post we're saving
+ * @param   object      $post_object    required            Entire post object
+ * @uses    update_post_meta()                              Updates meta given post_id, key, value
+ */
+function save_listing_meta( $post_id, $post_object ){
+
+	if ( isset( $_POST['job_contact_phone'] ) && ! empty( $_POST['job_contact_phone'] ) ){
+		update_post_meta( absint( $post_id ), '_job_contact_phone', esc_attr( $_POST['job_contact_phone'] ) );
+	}
+
+	if ( isset( $_POST['job_position_name'] ) && ! empty( $_POST['job_position_name'] ) ){
+		update_post_meta( absint( $post_id ), '_job_position_name', esc_attr( $_POST['job_position_name'] ) );
+	}
+
+}
+add_action( 'job_manager_save_job_listing', __NAMESPACE__ . '\\save_listing_meta', 10, 2 );
