@@ -55,11 +55,6 @@ $job_position = get_post_meta( absint( $post_id ), '_job_position_name', true ) 
 		<label for="job_contact_phone">Contact Phone</label>
 		<input type="text" name="job_contact_phone" id="job_contact_phone" placeholder="555.555.5555" value="<?php echo esc_attr( $phone ); ?>" />
 	</p>
-
-	<p class="form-field">
-		<label for="job_position_name">Job Position Name</label>
-		<input type="text" name="job_position_name" id="job_position_name" placeholder="" value="<?php echo esc_attr( $job_position ); ?>" />
-	</p>
 <?php
 }
 add_action( 'job_manager_job_listing_data_end', __NAMESPACE__ . '\\add_job_data' );
@@ -78,10 +73,6 @@ function save_listing_meta( $post_id, $post_object ){
 
 	if ( isset( $_POST['job_contact_phone'] ) && ! empty( $_POST['job_contact_phone'] ) ){
 		update_post_meta( absint( $post_id ), '_job_contact_phone', esc_attr( $_POST['job_contact_phone'] ) );
-	}
-
-	if ( isset( $_POST['job_position_name'] ) && ! empty( $_POST['job_position_name'] ) ){
-		update_post_meta( absint( $post_id ), '_job_position_name', esc_attr( $_POST['job_position_name'] ) );
 	}
 
 }
