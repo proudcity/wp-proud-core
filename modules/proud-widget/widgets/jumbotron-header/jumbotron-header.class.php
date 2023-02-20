@@ -173,9 +173,9 @@ class JumbotronHeader extends Core\ProudWidget {
         '#title' => __( 'Image: Use featured image from post?', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'no',
-        '#options' => [ 
-          'yes' => __( 'Yes', 'wp-proud-core' ), 
-          'no' => __( 'No', 'wp-proud-core' ) 
+        '#options' => [
+          'yes' => __( 'Yes', 'wp-proud-core' ),
+          'no' => __( 'No', 'wp-proud-core' )
         ],
         '#description' => __('If yes, the image used will be from the "Featured Image" field', 'wp-proud-core' ),
         '#states' => [
@@ -291,8 +291,8 @@ class JumbotronHeader extends Core\ProudWidget {
         '#title' => __( 'Image Vertical Alignment', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'middle',
-        '#options' => [ 
-          'top' => __( 'Align top of image with top of header', 'wp-proud-core' ), 
+        '#options' => [
+          'top' => __( 'Align top of image with top of header', 'wp-proud-core' ),
           'middle' => __( 'Center image vertically', 'wp-proud-core' ),
           'bottom' => __( 'Align bottom of image with bottom of header', 'wp-proud-core' ),
         ],
@@ -311,14 +311,14 @@ class JumbotronHeader extends Core\ProudWidget {
         '#title' => __( 'Text box position', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'middle_left',
-        '#options' => [ 
-          'middle_left' => __( 'Middle Left', 'wp-proud-core' ), 
+        '#options' => [
+          'middle_left' => __( 'Middle Left', 'wp-proud-core' ),
           'middle_right' => __( 'Middle Right', 'wp-proud-core' ),
           'middle_center' => __( 'Middle Center', 'wp-proud-core' ),
-          'top_left' => __( 'Top Left', 'wp-proud-core' ), 
+          'top_left' => __( 'Top Left', 'wp-proud-core' ),
           'top_right' => __( 'Top Right', 'wp-proud-core' ),
-          'bottom_left' => __( 'Bottom Left', 'wp-proud-core' ), 
-          'bottom_right' => __( 'Bottom Right', 'wp-proud-core' ) 
+          'bottom_left' => __( 'Bottom Left', 'wp-proud-core' ),
+          'bottom_right' => __( 'Bottom Right', 'wp-proud-core' )
         ],
         '#description' => __( 'Position of the header text', 'wp-proud-core' ),
         '#states' => [
@@ -335,9 +335,9 @@ class JumbotronHeader extends Core\ProudWidget {
         '#title' => __( 'Style', 'wp-proud-core' ),
         '#type' => 'radios',
         '#default_value'  => 'no',
-        '#options' => [ 
-          'yes' => __( 'White text on dark background', 'wp-proud-core' ), 
-          'no' => __( 'Black text on light background', 'wp-proud-core' ) 
+        '#options' => [
+          'yes' => __( 'White text on dark background', 'wp-proud-core' ),
+          'no' => __( 'Black text on light background', 'wp-proud-core' )
         ],
       ]
     ];
@@ -351,7 +351,7 @@ class JumbotronHeader extends Core\ProudWidget {
    * @param array $instance Previously saved values from database.
    */
   public function form( $instance ) {
-    // $instance['image'] should be a media['ID'], but due to 
+    // $instance['image'] should be a media['ID'], but due to
     // https://github.com/proudcity/wp-proudcity/issues/436
     // Old values may be [featured-image]
     // Set new value 'featured_image' if that is the case
@@ -389,7 +389,7 @@ class JumbotronHeader extends Core\ProudWidget {
     return $background_repeat;
   }
 
-  // Image should be a media['ID'], but due to 
+  // Image should be a media['ID'], but due to
   // https://github.com/proudcity/wp-proudcity/issues/436
   // Some values may be a url
   function getResponsiveImage( $image ) {
@@ -404,8 +404,8 @@ class JumbotronHeader extends Core\ProudWidget {
       global $wpdb;
       $media_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s' AND post_type='attachment' LIMIT 1;", $url ));
     }
-    
-    // Build image attrs 
+
+    // Build image attrs
     return !empty( $media_id ) ? Core\build_responsive_image_meta( $media_id ) : [];
   }
 
@@ -486,7 +486,7 @@ class JumbotronHeader extends Core\ProudWidget {
     $content .= !empty($instance['page_title']) ? '<h1>' . Core\sanitize_input_text_output($instance['page_title']) . '</h1>' : '';
     $content .= !empty($instance['subtitle']) ? '<p class="lead">' . Core\sanitize_input_text_output($instance['subtitle']) . '</p>' : '';
     $content .= Core\sanitize_input_text_output($instance['text']);
-  
+
     // normal header type
     if( $instance['headertype'] == 'header' ) {
       $jumbotron_col_classes = apply_filters('proud_jumbotron_col_classes', 'col-lg-7 col-md-8 col-sm-9', 'header');
