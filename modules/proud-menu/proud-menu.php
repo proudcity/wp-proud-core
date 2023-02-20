@@ -323,3 +323,32 @@ class ProudBreadcrumb {
         }
     }
 }
+
+/**
+ * Resets a menu item parent if it is set to be its own parent
+ *
+ * @since 2023.02.20
+ * @author Curtis
+ *
+ * @param   int         $menu_id            required            ID of the menu we're working with
+ * @param   int         $menu_item_db_id    required            database id of the menu item we're saving
+ * @param   array       $args               required            array of values that are getting saved in the menu
+ * @uses    update_post_meta()                                  updates post meta given key, post_id, value
+ */
+function proud_menu_fix( $menu_id, $menu_item_db_id, $args ){
+
+	// if ID of the current item and ID of parent match we get recursion so correct that
+	if ( $menu_item_db_id == $args['menu-item-parent-id'] ){
+		update_post_meta( absint( $menu_item_db_id ), '_menu_item_menu_item_parent', 0 );
+	}
+
+	//echo '<pre>';
+	//print_r( $menu_id );
+	//echo 'menu_data ';
+	//print_r( $menu_item_db_id );
+	//echo 'args';
+	//print_r( $args );
+	//echo '</pre>';
+
+}
+add_action( 'wp_update_nav_menu_item', __NAMESPACE__ . '\\proud_menu_fix', 10, 3 );

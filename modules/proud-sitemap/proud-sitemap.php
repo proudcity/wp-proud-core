@@ -56,6 +56,10 @@ if ( ! class_exists( 'SiteMap' ) ) {
 					}
 				}
 
+//			echo '<pre>';
+//			print_r( $menu_items );
+//			echo '</pre>';
+
 				// Build menus
 				$menus = '';
 				foreach ( $menu_items as $menu ) {
