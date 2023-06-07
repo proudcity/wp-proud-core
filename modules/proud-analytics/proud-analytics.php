@@ -9,4 +9,4 @@ function enqueue_proud_analytics_frontend() {
   wp_enqueue_script('proud-analytics/js');
 }
 
-add_action( 'wp_enqueue_scripts', 'enqueue_proud_analytics_frontend' );
+//add_action( 'wp_enqueue_scripts', 'enqueue_proud_analytics_frontend' );
