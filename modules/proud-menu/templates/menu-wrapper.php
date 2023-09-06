@@ -1,4 +1,4 @@
-<div class="menu-slider level-count-<?php echo count($menus) ?> level-<?php echo $active ?>-active" data-level-active="<?php echo $active ?>">
+<div class="menu-slider level-count-<?php echo count($menus) ?> level-<?php echo $active ?>-active" data-level-active="<?php echo $active ?>"><!-- wp-proud-core/modules/proud-menu/templates/menu-wrapper.php -->
   <div class="inner list-group">
     <?php echo implode('', $menus) ?> 
   </div>

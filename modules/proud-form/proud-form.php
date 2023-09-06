@@ -553,10 +553,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
           // Init group titles
           $field['#group_titles'] = [];
           // How many of these do we have saved ?
-          if( empty( $instance[$id] ) ) {
+          if( empty( $instance[$id] ) && ! is_string( $instance[$id] ) ) {
             $instance[$id][] = [];
-          }
-          $count =  count( $instance[$id] );
+		  }
+
+			if ( is_countable( $instance[$id] ) ) {
+				$count =  count( $instance[$id] );
+			} else {
+				$count = null;
+			}
+
           // Run through any saved field items
           $i = 1;
           foreach( $instance[$id] as $key => $value ) {
