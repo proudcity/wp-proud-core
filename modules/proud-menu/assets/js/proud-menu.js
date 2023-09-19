@@ -25,20 +25,43 @@
         self.setWatch();
       }
 
-      self.sliderClick = function(event) {
-        event.preventDefault();
-        var level = $(this).data('active-click') || $(this).data('back-click') || 1;
-        // Alter items
-        self.alterHeight(level, true);
-        self.alterClass(level);
-        // Save active
-        active = level;
-      }
+		self.sliderClick = function(event) {
+			event.preventDefault();
+			var level = $(this).data('active-click') || $(this).data('back-click') || 1;
+			// Alter items
+			self.alterHeight(level, true);
+			self.alterClass(level);
+			// Save active
+			active = level;
 
-	  // migrates the menu visually to the desired location
-      self.alterHeight = function(levelTo, animate) {
-        // on bigger screens this is getting cut off, so add 2
-        var toHeight = $slider.find('.level-' + levelTo).height() + 2;
+			// resetting tabindex on backclick so that users
+			// can still navigate through the rest of the menu
+			if ( $(this).data('back-click') ){ 
+				var items = $slider.find('.inner div');
+				var tindex = 1;
+
+				//reset tab index
+				items.each( function( index ){
+					var links = $(this).find('a');
+
+					links.each( function( index ) {
+						$(this).attr('tabindex', tindex );
+						tindex = tindex + 1;
+					}); // each links
+
+				}); // each
+
+				// refocusing on the first item
+				$('[tabindex=1]').focus();
+
+			} // if back-click
+
+		} // sliderClick
+
+	// migrates the menu visually to the desired location
+	self.alterHeight = function(levelTo, animate) {
+	// on bigger screens this is getting cut off, so add 2
+	var toHeight = $slider.find('.level-' + levelTo).height() + 2;
 		// @todo set all links to tabindex=-1 but skip the level-$levelTo item
         if(!animate) {
           $slider.height(toHeight);
