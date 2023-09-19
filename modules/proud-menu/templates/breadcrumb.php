@@ -1,4 +1,4 @@
-<ol class="breadcrumb">
+<ol class="breadcrumb"><!-- wp-proud-core/modules/proud-menu/templates/breadcrumb.php -->
   <?php foreach ($active_trail as $item): ?>
     <?php if( !empty( $item['active'] ) ): ?>
     <li class="active">
