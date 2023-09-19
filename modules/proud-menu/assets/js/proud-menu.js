@@ -35,9 +35,11 @@
         active = level;
       }
 
+	  // migrates the menu visually to the desired location
       self.alterHeight = function(levelTo, animate) {
         // on bigger screens this is getting cut off, so add 2
         var toHeight = $slider.find('.level-' + levelTo).height() + 2;
+		// @todo set all links to tabindex=-1 but skip the level-$levelTo item
         if(!animate) {
           $slider.height(toHeight);
         }
@@ -46,6 +48,26 @@
             height: toHeight
           }, 250 );
         }
+
+		/**
+		 * This messes with the tab index of slider menu items. A bunch of it is offscreen
+		 *  but it still gets a tabindex setting. Here we remove it for all but the
+		 * active item.
+		 */
+		var items = $slider.find('.inner div');
+		var activeClass = 'level-' + levelTo;
+		  // loop through items removing tabindex
+		  items.each( function( index ) {
+
+			  var itemClass = $(this).attr('class');
+			  //console.log(itemClass);
+
+			  // loops through items removing tabindex from those not visible
+			  if ( itemClass != activeClass ){
+					$(this).find('a').attr( 'tabindex', -1 );
+			  }
+		  });
+
         height = toHeight;
       }
 
