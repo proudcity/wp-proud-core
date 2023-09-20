@@ -399,8 +399,9 @@ function get_nav_primary_menu()
     $menu = '';
     $menu = apply_filters('proud_nav_primary_menu', $menu);
 
-    // Menu wrap with accessible label
-    $menu_wrap = '<label id="primary-menu-label" class="sr-only">Primary menu links</label>';
+	// Menu wrap with accessible label
+	$menu_wrap = '';
+    $menu_wrap .= '<h2 id="primary-menu-label" class="sr-only">Primary menu links</h2>';
     $menu_wrap .= '<ul role="navigation" aria-labelledby="primary-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
 
     // No plugin overtaking, try primary

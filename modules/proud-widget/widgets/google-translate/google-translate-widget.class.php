@@ -83,7 +83,7 @@ class GoogleTranslate extends Core\ProudWidget
         $id = !empty($instance['id']) ? $instance['id'] : 'translate';
         $button_class = get_option('toolbar_button_class', '');
 ?>
-
+<!-- wp-proud-core/modules/proud-widget/widgets/google-translate/google-translate-widget.class.php -->
         <?php if (!empty($instance['navbar'])) : ?>
             <a href="#" id="<?= $id ?>" title="Translate" data-proud-navbar class="btn navbar-btn translate-button <?= $button_class ?>" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i aria-hidden="true" class="fa fa-fw fa-globe"></i>

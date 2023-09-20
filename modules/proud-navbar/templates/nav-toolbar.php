@@ -1,4 +1,4 @@
-<label id="action-toolbar-label" class="sr-only">Action toolbar</label>
+<h2 id="action-toolbar-label" class="sr-only">Action toolbar</h2><!-- wp-proud-core/modules/proud-navbar/templates/nav-toolbar.php -->
 <ul class="btn-toolbar pull-left list-unstyled clearfix" role="toolbar" aria-labelledby="action-toolbar-label">
     <?php do_action('proud_nav_toolbar_pre_buttons'); ?>
     <?php
