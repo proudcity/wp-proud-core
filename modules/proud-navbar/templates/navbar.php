@@ -24,7 +24,6 @@
     <a title="Toggle mobile menu" id="menu-button" href="#" class="btn navbar-btn menu-button">
       <span class="hamburger">
         <span class="hamburger-bars"></span>
-        <span class="sr-only">Toggle mobile menu</span>
       </span>
     </a>
     <?php print get_nav_primary_menu(); ?>
