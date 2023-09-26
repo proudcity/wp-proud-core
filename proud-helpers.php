@@ -124,8 +124,7 @@ function print_proud_logo($logo_version = 'icon-white', $meta = []) {
     'src' => get_proud_logo( false, $logo_version . '-1x.png' ),
     'meta' => [
       'image_meta' => array_merge( [
-        'title' => __('ProudCity - a new way to launch your city site.', 'proud-core'),
-        'alt' => __('ProudCity - a new way to launch your city site.', 'proud-core'),
+        'alt' => __('ProudCity', 'proud-core'),
         'class' => 'proud-logo'
       ], $meta )
     ]

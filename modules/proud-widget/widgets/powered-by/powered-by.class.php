@@ -42,11 +42,11 @@ class PoweredByWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
-    $text = __('ProudCity - a new way to launch your city site.', 'proud-core');
+    $text = __('ProudCity', 'proud-core');
     ?>
       <div class="powered-by">
         <p>
-          Powered by <a href="https://proudcity.com" title="<?php echo esc_attr( $text ); ?>" alt="<?php echo esc_attr( $text ); ?>"><?php echo Core\print_proud_logo( 'logo-white') ?></a>
+          Powered by <a href="https://proudcity.com" alt="<?php echo esc_attr( $text ); ?>"><?php echo Core\print_proud_logo( 'logo-white') ?></a>
         </p>
       </div>
     <?php
