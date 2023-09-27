@@ -40,9 +40,9 @@ class GoogleTranslate extends Core\ProudWidget
     {
         $path = plugins_url('js/', __FILE__);
         // Function init
-        wp_enqueue_script('google-translate-widget', $path . 'google-translate.js', [], '3', true);
+        //wp_enqueue_script('google-translate-widget', $path . 'google-translate.js', [], '3', true);
         // Load translate
-        wp_enqueue_script('google-translate', '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', ['google-translate-widget'], '3', true);
+        //wp_enqueue_script('google-translate', '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', ['google-translate-widget'], '3', true);
     }
 
     /**
@@ -94,15 +94,11 @@ class GoogleTranslate extends Core\ProudWidget
         <?php endif; ?>
         <ul class="dropdown-menu nav nav-pills" aria-labelledby="<?= $id ?>">
             <li>
-                <label id="google-<?= $id ?>-label"><span class="sr-only">Translate language select</span>
-                    <div id="google_<?= $id ?>_element"></div>
+				<label id="google-<?= $id ?>-label"><span class="sr-only">Translate language select</span>
+					<?php echo do_shortcode( '[gtranslate]' ); ?>
                 </label>
             </li>
         </ul>
-        <script>
-            window.google_translate_init_ids = window.google_translate_init_ids || [];
-            window.google_translate_init_ids.push('<?= $id ?>')
-        </script>
         <!--</div>-->
 <?php
     }
