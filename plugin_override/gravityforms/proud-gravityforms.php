@@ -10,6 +10,10 @@ if ( class_exists( 'GFCommon' ) ) {
     function proud_gravityforms_init() {
         // Always alter:
 
+		// forces legacy markup on every form all the time regardless of the setting in the admin
+		// Issue: https://github.com/proudcity/wp-proudcity/issues/2162
+		add_filter( 'gform_enable_legacy_markup', '\__return_true' );
+
         add_filter( 'gform_confirmation_anchor', __NAMESPACE__ . '\\gform_confirmation_anchor_alter' );
         add_filter( "gform_init_scripts_footer", __NAMESPACE__ . '\\gform_force_footer_scripts' );
         add_action( 'gform_enqueue_scripts', __NAMESPACE__ . '\\gform_css_dequeue', 100 );
