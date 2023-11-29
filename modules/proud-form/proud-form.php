@@ -18,7 +18,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
     private $number;
     private $template_path;
 	private $fields;
-	public $field_base
+	public $field_base;
 
     /**
      * Set up
