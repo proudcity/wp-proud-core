@@ -553,8 +553,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $field['#items'] = [];
           // Init group titles
           $field['#group_titles'] = [];
-          // How many of these do we have saved ?
-          if( empty( $instance[$id] ) && ! is_string( $instance[$id] ) ) {
+		  // How many of these do we have saved ?
+		  if( empty( $instance[$id] ) && ! is_string( $instance[$id] ) ) {
             $instance[$id][] = [];
 		  }
 
