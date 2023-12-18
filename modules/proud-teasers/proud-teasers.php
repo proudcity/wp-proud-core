@@ -26,7 +26,10 @@ if ( !class_exists( 'TeaserList' ) ) {
     private $columns; // Splits media view into columns
     private $options; // Extra options
     private $default_image; // Default image to use
-    private $templates = []; // Holder for templates to avoid extra checks
+	private $templates = []; // Holder for templates to avoid extra checks
+	private $specific_ids;
+	private $search_key;
+	private $terms;
 
     /**
      * $post_type: post, event, ect
