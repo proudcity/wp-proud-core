@@ -684,9 +684,11 @@ if ( !class_exists( 'TeaserList' ) ) {
 
 
     /**
-     * Wraps teaser list: open
+	 * Wraps teaser list: open
+	 *
+	 * @param 		string 		$uniqueID 			required 				We really just pass this through to the included templates so that they can use the unique value to identify accordion parents
      */
-    private function print_wrapper_open() {
+    private function print_wrapper_open( $uniqueID ) {
       $class = '';
       $attrs = '';
       switch( $this->get_display_type() ) {
@@ -771,9 +773,11 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
-     * Prints teaser list
+	 * Prints teaser list
+	 *
+	 * @param 		string 		$uniqueID 			required 				We really just pass this through to the included templates so that they can use the unique value to identify accordion parents
      */
-    private function print_content( $post_count, $current ) {
+    private function print_content( $post_count, $current, $uniqueID ) {
       if( empty( $templates['content'] ) ) {
         // Try for post type
         $template = self::_TEMPLATE_PATH . 'teaser-' . $this->get_post_type() . '-' . $this->get_display_type() . '.php';
@@ -953,19 +957,21 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
-     * Function runs through, builds entire teaser list
+	 * Function runs through, builds entire teaser list
+	 *
+	 * @uses 	string 			$uniqueID 			required 			Hashed array instance so that we can have a uniqueID for accordions which lets them target the expected parent item
      */
-    public function print_list() {
-      if( $this->query->have_posts() ) {
-        $this->print_wrapper_open();
+    public function print_list( $uniqueID ) {
+	  if( $this->query->have_posts() ) {
+        $this->print_wrapper_open( $uniqueID );
         if( !empty( $this->featured ) ) {
           $this->print_featured();
         }
         // Get some stats
         $post_count = count($this->query->posts);
         $current = 1;
-        while ( $this->query->have_posts() ) :
-          $this->print_content($post_count, $current);
+		while ( $this->query->have_posts() ) :
+          $this->print_content($post_count, $current, $uniqueID );
           $current++;
         endwhile;
         // Close wrapper

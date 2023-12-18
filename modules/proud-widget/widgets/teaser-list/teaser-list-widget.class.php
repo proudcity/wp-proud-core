@@ -396,10 +396,25 @@ class TeaserListWidget extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
-    extract($instance);
+	extract($instance);
+
+	/**
+ 	 * This is created and passed through our templates so that our Accordions have a uniqueID
+	 * that they can associate with and then two accordions on the same page will collapse and
+	 * expand as expected.
+	 *
+	 * MD5 is fine and fast as we're just looking for a number that is unique on the page and
+	 * no data in the $instance var is private in nature, it's all content that's available
+	 * once a user see the post anyway.
+	 *
+	 * See Issue: https://github.com/proudcity/wp-proudcity/issues/2352
+	 * Note: https://github.com/proudcity/developers/blob/main/Github%20Issue%20Notes/2352%20-%20Double%20Accordion.md
+	 */
+	$uniqueID = md5( serialize( $instance ) );
+
     $file = plugin_dir_path( __FILE__ ) . 'templates/teaser-list.php';
-    // Include the template file
-    include( $file );
+	// Include the template file
+	include( $file );
   }
 
   /**

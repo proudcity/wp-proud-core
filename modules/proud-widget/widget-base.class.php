@@ -289,8 +289,8 @@ abstract class ProudWidget extends \WP_Widget
 ?>
         <?php echo $args['before_widget'] ?>
             <?php if (!empty($instance['title'])) : ?>
-            <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
-            <?php endif; ?>
+				<?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
+			<?php endif; ?>
             <?php echo $content; ?>
         <?php echo $args['after_widget'] ?>
         <?php
