@@ -15,7 +15,15 @@
 //echo '</pre>';
 ?>
 <tr><!-- template-file: wp-proud-core/modules/proud-teasers/templates/teaser-table.php -->
-	<td><?php the_title( sprintf( '<a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a>' ); ?></td>
+	<td>
+		<?php
+			if ( function_exists( 'wpjm_get_job_listing_structured_data' ) ){
+				$structured_data = wpjm_get_job_listing_structured_data( get_the_ID() );
+				echo '<script type="application/ld+json">' . wpjm_esc_json( wp_json_encode( $structured_data ), true ) . '</script>';
+			}
+		?>
+		<?php the_title( sprintf( '<a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a>' ); ?>
+	</td>
 	<td><?php echo '<span class="label job-type '. sanitize_html_class( $class ) .'">'.esc_attr( $name ) .'</span>'; ?></td>
 	<td><?php echo esc_attr( $phone ); ?></td>
 </tr>
