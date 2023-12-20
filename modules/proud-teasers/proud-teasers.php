@@ -962,9 +962,9 @@ if ( !class_exists( 'TeaserList' ) ) {
     /**
 	 * Function runs through, builds entire teaser list
 	 *
-	 * @uses 	string 			$uniqueID 			required 			Hashed array instance so that we can have a uniqueID for accordions which lets them target the expected parent item
+	 * @uses 	string 			$uniqueID 			required 			Hashed array instance so that we can have a uniqueID for accordions which lets them target the expected parent item or null when it's not defined
      */
-    public function print_list( $uniqueID ) {
+    public function print_list( $uniqueID = null ) {
 	  if( $this->query->have_posts() ) {
         $this->print_wrapper_open( $uniqueID );
         if( !empty( $this->featured ) ) {
