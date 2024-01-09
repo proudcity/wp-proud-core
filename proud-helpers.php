@@ -474,17 +474,17 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
 // Returns a text string of Federal Holidays.
 // Form: https://www.redcort.com/us-federal-bank-holidays/
 function federalHolidays() {
-  return 'New Year\'s Day: Friday, January 1 2023
-Martin Luther King, Jr. Day: Monday, January 16 2023
-George Washington’s Birthday: Monday, February 20 2023
-Memorial Day: Monday, May 29 2023
-Juneteenth: Friday, June 19 2023
-Independence Day: Monday, July 4 2023
-Labor Day: Monday, September 4 2023
-Columbus Day: Monday, October 9 2023
-Veterans Day: Thursday, November 11 2023
-Thanksgiving Day: Thursday, November 23 2023
-Christmas Day: Wednesday, December 25 2023';
+  return 'New Year\'s Day: Monday, January 1 2024
+Martin Luther King, Jr. Day: Monday, January 15 2024
+George Washington’s Birthday: Monday, February 19 2024
+Memorial Day: Monday, May 27 2024
+Juneteenth: Wednesday, June 19 2024
+Independence Day: Thursday, July 4 2024
+Labor Day: Monday, September 2 2024
+Columbus Day: Monday, October 14 2024
+Veterans Day: Monday, November 11 2024
+Thanksgiving Day: Thursday, November 28 2024
+Christmas Day: Wednesday, December 25 2024';
 }
 
 
