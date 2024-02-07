@@ -64,6 +64,8 @@ class ProudGravityformsStripe {
 		// Stripe connect destination so payments are sent to customers directly
 		$transfer_account = get_option( 'proudcity_payments_account', false );
 
+		do_action( 'proud_gfstripe_pre_payment_fees', $transfer_account, $data, $feed );
+
 		if ( $transfer_account ){
 
 			// getting percentage fee for a customer
@@ -80,14 +82,6 @@ class ProudGravityformsStripe {
 			// value to get the fee we should be charging via stripe
 			$pc_fee = $data['amount'] - $fee_minus_thirty;
 
-			/*
-			error_log( 'amount before fee ' . $data['amount'] );
-			error_log( 'percent dec ' . $percent_dec );
-			error_log( 'fee amount ' . $fee_amount_percent );
-			error_log( 'fee minus thirty ' . $fee_minus_thirty );
-			error_log( 'pc fee ' . $pc_fee );
-			*/
-
 			// getting form suffix
 			$suffix = get_option('proudcity_payments_descriptor', get_bloginfo('name'));
 
@@ -99,6 +93,8 @@ class ProudGravityformsStripe {
 			$data['application_fee_amount'] = (int) $pc_fee;
 			$data['transfer_data']['destination'] = (string) $transfer_account;
 			$data['transfer_group'] = (string) $form_title;
+
+			do_action( 'proud_gfstripe_post_payment_fees', $transfer_account, $data, $feed );
 
 		} // if $transfer_account
 
