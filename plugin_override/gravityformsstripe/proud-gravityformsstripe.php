@@ -61,6 +61,8 @@ class ProudGravityformsStripe {
 	 */
 	public static function add_transfer_meta( $data, $feed ){
 
+		update_option( 'proud_log_payments_ran', time(), false );
+
 		// Stripe connect destination so payments are sent to customers directly
 		$transfer_account = get_option( 'proudcity_payments_account', false );
 
