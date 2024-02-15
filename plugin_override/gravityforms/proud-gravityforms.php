@@ -15,7 +15,10 @@ if ( class_exists( 'GFCommon' ) ) {
         add_action( 'gform_enqueue_scripts', __NAMESPACE__ . '\\gform_css_dequeue', 100 );
         add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\gform_admin_css_dequeue', 100 );
         // Enable ability to controll label visibilit
-        add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );
+		add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );
+
+		// dealing with entry export
+		add_action( 'gform_post_export_entries', __NAMESPACE__ . '\\sync_entry_export_file', 10, 5 );
 
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
@@ -36,7 +39,29 @@ if ( class_exists( 'GFCommon' ) ) {
     }
 
     add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
-    // Add Processing
+	// Add Processing
+
+
+	/**
+ 	 * Pushes the generated entry export file to cloud storage
+	 */
+	function sync_entry_export_file( $form, $start_date, $end_date, $fields, $export_id ){
+
+		$uploads_dir = wp_upload_dir();
+		$absolutePath = $uploads_dir['basedir'] . '/gravity_forms/export/export-' . $export_id . '.csv';
+
+		// defining the relative path starting point
+		if ( getenv( 'WORDPRESS_DB_NAME' ) ){
+			$name = getenv( 'WORDPRESS_DB_NAME' );
+		} else {
+			$name = 'wwwproudcity';
+		}
+
+		$relativePath = $name . '/uploads/gravity_forms/export/export-'.$export_id . '.csv';
+		$relativePath = apply_filters( 'wp_stateless_filename', $relativePath, 0 );
+
+		do_action( 'sm:sync::syncFile', $relativePath, $absolutePath, true );
+	}
 
 	function get_upload_root_url() {
 		// Get wordpress base;
