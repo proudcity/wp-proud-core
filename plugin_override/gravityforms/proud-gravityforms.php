@@ -19,6 +19,9 @@ if ( class_exists( 'GFCommon' ) ) {
 
 		// dealing with entry export
 		add_action( 'gform_post_export_entries', __NAMESPACE__ . '\\sync_entry_export_file', 10, 5 );
+		//add_action( 'wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export' );
+		remove_all_filters( 'wp_ajax_gf_download_export', 10 );
+		add_filter( 'wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1 );
 
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
@@ -41,6 +44,47 @@ if ( class_exists( 'GFCommon' ) ) {
     add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
 	// Add Processing
 
+	function gf_hijack_download_export(){
+
+		check_ajax_referer( 'gform_download_export' );
+
+		if ( ! current_user_can( 'gravityforms_export_entries' ) ){
+			// not allow to export entries
+			exit;
+		}
+
+		// defining the relative path starting point
+		if ( getenv( 'WORDPRESS_DB_NAME' ) ){
+			$name = getenv( 'WORDPRESS_DB_NAME' );
+		} else {
+			$name = 'wwwproudcity';
+		}
+
+		$form_id = rgget('form-id');
+		$form = \GFAPI::get_form( absint( $form_id ) );
+		$form_title = $form['title'];
+
+		$filename =  sanitize_title_with_dashes( $form['title'] ) . '-' . gmdate( 'Y-m-d', \GFCommon::get_local_timestamp( time() ) ) . '.csv';
+		$url = 'https://storage.googleapis.com/proudcity/' . esc_attr( $name ) .'/uploads/gravity_forms/export/export-'. esc_attr( rgget('export-id') ) .'.csv';
+
+		$charset = get_option( 'blog_charset' );
+		header( 'Content-Description: File Transfer' );
+		header( "Content-Disposition: attachment; filename=$filename" );
+		header( 'Content-Type: text/csv; charset=' . $charset, true );
+		$result        = readfile( $url );
+
+		$logging = array(
+			'url' => $url,
+			'form_title' => $form_title,
+			'export_id' => rgget('export-id'),
+			'form_id' => rgget('form-id'),
+		);
+
+		update_option( 'sfn_test_download_url', $logging );
+
+		exit;
+
+	}
 
 	/**
  	 * Pushes the generated entry export file to cloud storage
