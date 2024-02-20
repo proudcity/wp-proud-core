@@ -46,12 +46,12 @@ if ( class_exists( 'GFCommon' ) ) {
 
 	function gf_hijack_download_export(){
 
-		check_ajax_referer( 'gform_download_export' );
-
-		if ( ! current_user_can( 'gravityforms_export_entries' ) ){
+		//check_ajax_referer( 'gform_download_export' );
+error_log( 'gf_hijack ' . time() );
+		//if ( ! current_user_can( 'gravityforms_export_entries' ) ){
 			// not allow to export entries
-			exit;
-		}
+		//	exit;
+		//}
 
 		// defining the relative path starting point
 		if ( getenv( 'WORDPRESS_DB_NAME' ) ){
@@ -79,6 +79,8 @@ if ( class_exists( 'GFCommon' ) ) {
 			'export_id' => rgget('export-id'),
 			'form_id' => rgget('form-id'),
 		);
+
+error_log( print_r( $logging, true ) );
 
 		update_option( 'sfn_test_download_url', $logging );
 
