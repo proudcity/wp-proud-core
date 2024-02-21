@@ -44,10 +44,26 @@ if ( class_exists( 'GFCommon' ) ) {
     add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
 	// Add Processing
 
+	/**
+ 	 * Hijacks the GF download function and sends it the file from WP Stateless
+	 *
+	 * @since 2024.02.21
+	 * @author Curtis
+	 *
+	 * @uses 	check_ajax_referer() 				verifies that the AJAX request is valid
+	 * @uses 	current_user_can() 					true if the user has required permissions
+	 * @uses 	getenv() 							gets k8s environment var
+	 * @uses 	rgget() 							GF function to get form data
+	 * @uses 	GFAPI::get_form() 					GF - returns form object
+	 * @uses 	sanitize_title_with_dashes() 		sanitizes title
+	 * @uses 	esc_attr() 							keeping content safe
+	 * @uses 	get_option() 						returns data from wp_options
+	 * @uses 	readfile() 							pushes file download
+	 */
 	function gf_hijack_download_export(){
 
 		check_ajax_referer( 'gform_download_export' );
-error_log( 'gf_hijack ' . time() );
+
 		if ( ! current_user_can( 'edit_posts' ) ){
 			error_log( 'not allow to export gf entries' );
 			// not allow to export entries
@@ -74,6 +90,8 @@ error_log( 'gf_hijack ' . time() );
 		header( 'Content-Type: text/csv; charset=' . $charset, true );
 		$result        = readfile( $url );
 
+		/**
+ 		 * Logging code if we need to check this in the future
 		$logging = array(
 			'url' => $url,
 			'form_title' => $form_title,
@@ -81,21 +99,35 @@ error_log( 'gf_hijack ' . time() );
 			'form_id' => rgget('form-id'),
 		);
 
-error_log( print_r( $logging, true ) );
+		error_log( print_r( $logging, true ) );
 
 		update_option( 'sfn_test_download_url', $logging );
+		*/
 
 		exit;
 
 	}
 
 	/**
- 	 * Pushes the generated entry export file to cloud storage
+	 * Pushes the generated entry export file to cloud storage
+	 *
+	 * @since 2024.02.21
+	 * @author Curtis
+	 *
+	 * @param 		object 		$form 			optional 			GF form object
+	 * @param 		string 		$start_date 	optional 			start date for export
+	 * @param 		string 		$end_date 		optional 			end date for export
+	 * @param 		array 		$fields 		optional 			fields to include in export
+	 * @param 		string 		$exort_id 		required 			ID of the export we're dealing with
+	 * @uses 		wp_upload_dir() 								returns WP upload directory path
+	 * @uses 		esc_attr() 										keepin content safe
+	 * @uses 		getenv() 										returns k8s environment var
+	 * @uses 		sm:sync::syncFile 								hooks in with WP Stateless and syncs the given file
 	 */
 	function sync_entry_export_file( $form, $start_date, $end_date, $fields, $export_id ){
 
 		$uploads_dir = wp_upload_dir();
-		$absolutePath = $uploads_dir['basedir'] . '/gravity_forms/export/export-' . $export_id . '.csv';
+		$absolutePath = $uploads_dir['basedir'] . '/gravity_forms/export/export-' . esc_attr( $export_id ) . '.csv';
 
 		// defining the relative path starting point
 		if ( getenv( 'WORDPRESS_DB_NAME' ) ){
@@ -104,7 +136,7 @@ error_log( print_r( $logging, true ) );
 			$name = 'wwwproudcity';
 		}
 
-		$relativePath = $name . '/uploads/gravity_forms/export/export-'.$export_id . '.csv';
+		$relativePath = esc_attr( $name ) . '/uploads/gravity_forms/export/export-'. esc_attr( $export_id ) . '.csv';
 		$relativePath = apply_filters( 'wp_stateless_filename', $relativePath, 0 );
 
 		do_action( 'sm:sync::syncFile', $relativePath, $absolutePath, true );
