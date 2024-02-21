@@ -48,7 +48,7 @@ if ( class_exists( 'GFCommon' ) ) {
 
 		//check_ajax_referer( 'gform_download_export' );
 error_log( 'gf_hijack ' . time() );
-		if ( ! current_user_can( 'gravityforms_export_entries' ) ){
+		if ( ! current_user_can( 'edit_posts' ) ){
 			error_log( 'not allow to export gf entries' );
 			// not allow to export entries
 			exit;
