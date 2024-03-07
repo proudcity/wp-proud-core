@@ -23,6 +23,8 @@ if ( class_exists( 'GFCommon' ) ) {
 		remove_all_filters( 'wp_ajax_gf_download_export', 10 );
 		add_filter( 'wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1 );
 
+		add_filter( 'gform_enable_legacy_markup', '__return_true' );
+
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
         try {
