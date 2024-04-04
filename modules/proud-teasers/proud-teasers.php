@@ -957,7 +957,18 @@ if ( !class_exists( 'TeaserList' ) ) {
           $next = get_previous_posts_link( $next_text );
       }
       include($file);
-    }
+	}
+
+	/**
+ 	 * Written specifically for search results to show the number
+	 * of results returned in the query
+	 *
+	 * @since 2024.27.0721
+	 * @author Curtis
+	 */
+	public function get_total_found_posts(){
+		return absint( $this->query->found_posts );
+	}
 
     /**
 	 * Function runs through, builds entire teaser list
@@ -995,7 +1006,10 @@ if ( !class_exists( 'TeaserList' ) ) {
     }
 
     /**
-     * Prints list filters
+	 * Prints list filters
+	 *
+	 * @param 		??? 			$include_filters 				optional 				This should be set to true to show filters but !empty was picked for some reason. Leave empty to not show filters
+	 * @param 		string 			$button_text 					optional 				The button text defaults to Filters
      */
     public function print_filters( $include_filters = null, $button_text = 'Filter' ) {
       // Remove filters that we don't want to show
