@@ -159,7 +159,7 @@ function get_logo_markup($logo, $title_name, $pc_default = true)
     // Build user uploaded logo
     if (!empty($logo_meta['image_meta'])) {
         ob_start();
-        Proud\Core\print_retina_image($logo_meta['image_meta'], false, true);
+        Proud\Core\print_retina_image($logo_meta['image_meta'], array(), true);
         $logo_markup = ob_get_contents();
         ob_end_clean();
     }
