@@ -10,7 +10,7 @@
       <?php endif; ?>
     </div>
   <?php endif; ?>
-  <div id="navbar-external" class="navbar navbar-default navbar-external navbar-fixed-bottom <?php echo get_proud_logo_wrapper_class(); ?>">
+  <div id="navbar-external" role="navigation" class="navbar navbar-default navbar-external navbar-fixed-bottom <?php echo get_proud_logo_wrapper_class(); ?>">
     <ul id="logo-menu" class="nav navbar-nav">
       <li class="nav-logo" style="<?php if( !empty( $custom_width ) ) { echo 'width: ' . $custom_width . 'px;'; } ?>">
         <a title="Home" rel="home" id="logo" href="<?php echo get_logo_link_url(); ?>" class="same-window">

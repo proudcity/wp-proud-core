@@ -354,7 +354,7 @@ function get_nav_topbar_menu()
 
     // Menu wrap with accessible label
     $menu_wrap = '<label id="topbar-menu-label" class="sr-only">Quick top menu links</label>';
-    $menu_wrap .= '<ul role="navigation" aria-labelledby="topbar-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
+    $menu_wrap .= '<ul aria-labelledby="topbar-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
 
     // No plugin overtaking, try primary
     if (!$menu && has_nav_menu('topbar_menu')) {
@@ -402,7 +402,7 @@ function get_nav_primary_menu()
 	// Menu wrap with accessible label
 	$menu_wrap = '';
     $menu_wrap .= '<h2 id="primary-menu-label" class="sr-only">Primary menu links</h2>';
-    $menu_wrap .= '<ul role="navigation" aria-labelledby="primary-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
+    $menu_wrap .= '<ul aria-labelledby="primary-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
 
     // No plugin overtaking, try primary
     if (!$menu && has_nav_menu('primary_navigation')) {
