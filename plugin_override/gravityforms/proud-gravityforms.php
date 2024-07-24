@@ -25,6 +25,9 @@ if ( class_exists( 'GFCommon' ) ) {
 
 		add_filter( 'gform_enable_legacy_markup', '__return_true' );
 
+		add_filter( 'gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1 );
+		add_filter( 'gform_disable_post_creation', '__return_true' ); // stops all post creation
+
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
         try {
@@ -45,6 +48,60 @@ if ( class_exists( 'GFCommon' ) ) {
 
     add_action( 'init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
 	// Add Processing
+
+	// remove Name field type from editor
+
+	/**
+	 * Removes the fields specified in the $fields_to_remove array
+	 * from visibility in the GF creation
+	 *
+	 * @since 2024.07.24
+	 * @author Curtis
+	 *
+	 * @param	$field_buttons		array			required				The array of available field buttons
+	 * @return	$field_buttons												Our modified array of buttons
+	 */
+	function proud_remove_gf_post_fields( $field_buttons ){
+
+		// removes the heading we don't need once we've removed button
+		$field_buttons = array_filter( $field_buttons, function( $group ) {
+
+			return ! in_array( $group['name'], ['post_fields'] );
+
+		});
+
+		return $field_buttons;
+
+
+		// if you need to remove individual buttons then you can use this code below
+		// clearly you'll need to work it into the filter above which removes an entire section
+		foreach( $field_buttons as &$field_group ) {
+
+			if ( is_array( $field_group ) && array_key_exists( 'fields', $field_group ) ) {
+
+				// removes fields inside the group first
+				$field_group['fields'] = array_filter( $field_group['fields'], function( $field ) {
+
+					$fields_to_remove = [
+						'post_title',
+						'post_content',
+						'post_excerpt',
+						'post_tags',
+						'post_category',
+						'post_image',
+						'post_custom_field',
+					];
+
+					return ! in_array( $field['data-type'], $fields_to_remove );
+				} );
+
+			} // if
+
+		} // foreach
+
+		return $field_buttons;
+
+	}
 
 	/**
  	 * Hijacks the GF download function and sends it the file from WP Stateless
