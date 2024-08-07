@@ -61,6 +61,9 @@ class ProudGravityformsStripe {
 	 */
 	public static function add_transfer_meta( $data, $feed ){
 
+		// skip all this stuff if we're on proudcity
+		if ( "https://proudcity.com" === site_url() ){ return $data; }
+
 		update_option( 'proud_log_payments_ran', time(), false );
 
 		// Stripe connect destination so payments are sent to customers directly
