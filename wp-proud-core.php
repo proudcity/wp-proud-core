@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2024.08.22.0933
+Version:            2024.08.22.0942
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
