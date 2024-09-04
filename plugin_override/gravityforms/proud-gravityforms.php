@@ -68,7 +68,20 @@ if (class_exists('GFCommon')) {
      */
     function gf_remove_aria_required($content, $field, $value, $lead_id, $form_id)
     {
-        $content = str_replace("aria-required='true'", '', $content);
+        /**
+         * We get the form first so we can check the setting for the requiredIndicator
+         * and if it's text then we'll have the `required` text in the field label
+         * and we can remove the `aria-required` field from the input.
+         *
+         * I think there are too many other options to test for if a user chooses
+         * `custom` and then puts any arbitrary text in place for `required` text and thus
+         * we're not testing further
+         */
+        $form = \GFAPI::get_form(absint($form_id));
+
+        if ('text' === $form['requiredIndicator']) {
+            $content = str_replace("aria-required='true'", '', $content);
+        }
         return $content;
     }
 
