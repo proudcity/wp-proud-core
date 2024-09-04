@@ -79,7 +79,7 @@ if (class_exists('GFCommon')) {
          */
         $form = \GFAPI::get_form(absint($form_id));
 
-        if ('text' === $form['requiredIndicator']) {
+        if (isset($form['requiredIndicator']) && 'text' === $form['requiredIndicator']) {
             $content = str_replace("aria-required='true'", '', $content);
         }
         return $content;
