@@ -192,7 +192,7 @@ class ProudMenu
         $menus[$menu_level] = !empty(self::$show_level) ? '<div class="' . $menu_level . '">' : '';
 
         // Have parent?  Add backbutton
-        if(!empty($parent) && file_exists(self::$back_template)) {
+        if(!empty($parent)) {
             ob_start();
             include(self::$back_template);
             $menus[$menu_level] .= ob_get_contents();
