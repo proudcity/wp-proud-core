@@ -976,6 +976,16 @@ if ( !class_exists( 'TeaserList' ) ) {
 	 * @uses 	string 			$uniqueID 			required 			Hashed array instance so that we can have a uniqueID for accordions which lets them target the expected parent item or null when it's not defined
      */
     public function print_list( $uniqueID = null ) {
+      // If we are using elasticpress, the running of proud-teaser will alter the index'd post type
+      $elasticEnabled = is_plugin_active('elasticpress/elasticpress.php');
+      if ( $elasticEnabled && did_action( 'save_post' ) > 1 ) {
+        return; 
+      } 
+
+      if ( $elasticEnabled && defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+        return;
+      }
+
 	  if( $this->query->have_posts() ) {
         $this->print_wrapper_open( $uniqueID );
         if( !empty( $this->featured ) ) {
