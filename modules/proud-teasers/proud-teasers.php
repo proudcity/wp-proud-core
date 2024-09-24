@@ -977,12 +977,7 @@ if ( !class_exists( 'TeaserList' ) ) {
      */
     public function print_list( $uniqueID = null ) {
       // If we are using elasticpress, the running of proud-teaser will alter the index'd post type
-      $elasticEnabled = is_plugin_active('elasticpress/elasticpress.php');
-      if ( $elasticEnabled && did_action( 'save_post' ) > 1 ) {
-        return; 
-      } 
-
-      if ( $elasticEnabled && defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+      if ( !empty($GLOBALS['elasticpress_is_indexing']) ) {
         return;
       }
 
