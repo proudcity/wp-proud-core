@@ -290,8 +290,10 @@ if (!class_exists('TeaserList')) {
                 }
                 if(!empty($categories)) {
                     $options = [];
-                    foreach ($categories as $cat) {
+					foreach ($categories as $cat) {
+
                         if (!$terms || in_array($cat->term_id, $terms)) {
+
                             $options[$cat->term_id] = $cat->name;
                         }
                     };
@@ -996,11 +998,12 @@ if (!class_exists('TeaserList')) {
          * @uses 	string 			$uniqueID 			required 			Hashed array instance so that we can have a uniqueID for accordions which lets them target the expected parent item or null when it's not defined
          */
         public function print_list($uniqueID = null)
-        {
+		{
+
             // If we are using elasticpress, the running of proud-teaser will alter the index'd post type
             if (!empty($GLOBALS['elasticpress_is_indexing'])) {
                 return;
-            }
+			}
 
             if($this->query->have_posts()) {
                 $this->print_wrapper_open($uniqueID);

@@ -5,17 +5,19 @@
 
 use Proud\Core;
 
-class BreadcrumbWidget extends Core\ProudWidget {
-
-    function __construct() {
+class BreadcrumbWidget extends Core\ProudWidget
+{
+    public function __construct()
+    {
         parent::__construct(
             'proud_breadcrumb', // Base ID
-            __( 'Breadcrumb', 'wp-proud-core' ), // Name
-            array( 'description' => __( 'Prints out breadcrumb path, page-title(optional)', 'wp-proud-core' ), ) // Args
+            __('Breadcrumb', 'wp-proud-core'), // Name
+            array( 'description' => __('Prints out breadcrumb path, page-title(optional)', 'wp-proud-core'), ) // Args
         );
     }
 
-    function initialize() {
+    public function initialize()
+    {
         $this->settings = [
             'page_header' => [
                 '#type' => 'checkbox',
@@ -39,25 +41,28 @@ class BreadcrumbWidget extends Core\ProudWidget {
      * @param array $args     Widget arguments.
      * @param array $instance Saved values from database.
      */
-    public function printWidget( $args, $instance ) {
-        if ( empty( $instance['page_header'] ) ) {
+    public function printWidget($args, $instance)
+    {
+        if (empty($instance['page_header'])) {
             Core\ProudBreadcrumb::print_breadcrumb();
         } else {
             // Set flag
-            $file = locate_template( 'templates/page-header-breadcrumb.php' );
-            if ( $file ) {
+            $file = locate_template('templates/page-header-breadcrumb.php');
+            if ($file) {
                 $hide_mobile_menu = true;
                 include($file);
             } else {
-                error_log('Missing templates/page-header-breadcrumb.php template needed for breadcrumb widget' );
+                error_log('Missing templates/page-header-breadcrumb.php template needed for breadcrumb widget');
             }
         }
     }
 }
 
 // register Foo_Widget widget
-function register_breadcrumb_widget() {
-    register_widget( 'BreadcrumbWidget' );
+function register_breadcrumb_widget()
+{
+    register_widget('BreadcrumbWidget');
 
 }
-add_action( 'widgets_init', 'register_breadcrumb_widget' );
+add_action('widgets_init', 'register_breadcrumb_widget');
+
