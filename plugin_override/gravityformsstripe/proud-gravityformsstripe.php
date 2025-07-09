@@ -94,6 +94,7 @@ class ProudGravityformsStripe {
 	$form = \GFAPI::get_form( absint( $feed['form_id'] ) );
 	$form_title = $form['title'];
 
+	$data['on_behalf_of'] = (string) $transfer_account;
 	$data['statement_descriptor_suffix'] = (string) $suffix;
 	$data['application_fee_amount'] = (int) $pc_fee;
 	$data['transfer_data']['destination'] = (string) $transfer_account;
