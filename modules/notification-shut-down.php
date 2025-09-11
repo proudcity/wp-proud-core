@@ -12,17 +12,21 @@
  * @return  object      $transient                                  Our possibly modified transient
  */
 function proud_remove_core_updates( $transient ){
-	global $wp_version;
+    global $wp_version;
 
-	if ( wp_get_environment_type() === 'production' ){
-		$transient = array('last_checked'=> time(),'version_checked'=> $wp_version,);
-	}
+    if (null !== getenv("APP")){
+        return $transient;
+    }
 
-	return $transient;
+    if ( wp_get_environment_type() === 'production' ){
+        $transient = array('last_checked'=> time(),'version_checked'=> $wp_version,);
+    }
+
+    return $transient;
 }
-add_filter('pre_site_transient_update_core',	'__return_null' ); //hide updates for WordPress itself
-add_filter('pre_site_transient_update_plugins',	'proud_remove_core_updates'); //hide updates for all plugins
-add_filter('pre_site_transient_update_themes',	'proud_remove_core_updates'); //hide updates for all themes
+add_filter('pre_site_transient_update_core',    '__return_null' ); //hide updates for WordPress itself
+add_filter('pre_site_transient_update_plugins', 'proud_remove_core_updates'); //hide updates for all plugins
+add_filter('pre_site_transient_update_themes',  'proud_remove_core_updates'); //hide updates for all themes
 
 /**
  * Fighting with stupid plugins to get their notices removed from the dashboard
@@ -33,10 +37,10 @@ add_filter('pre_site_transient_update_themes',	'proud_remove_core_updates'); //h
  */
 function proud_remove_extra_notices(){
 
-	if ( wp_get_environment_type() == 'production' ){
-		remove_all_actions( 'admin_notices' );
-		remove_all_actions( 'disable_comments_notice', 10 );
-	}
+    if (wp_get_environment_type() == 'production' && null !== getenv("APP")) {
+        remove_all_actions( 'admin_notices' );
+        remove_all_actions( 'disable_comments_notice', 10 );
+    }
 
 }
 add_action( 'wp_loaded', 'proud_remove_extra_notices', 99 );
