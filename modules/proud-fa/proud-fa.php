@@ -76,7 +76,7 @@ class Proud_FA extends \ProudPlugin{
 
         $fonts = array();
 
-        if (!class_exists('FortAwesome')) {
+        if (!is_plugin_active('font-awesome/index.php')) {
             return $fonts;
         }
 
