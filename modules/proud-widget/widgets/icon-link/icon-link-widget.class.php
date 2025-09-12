@@ -64,6 +64,8 @@ class IconLink extends Core\ProudWidget {
    *
    * @param array $args     Widget arguments.
    * @param array $instance Saved values from database.
+   *
+   * @return null
    */
   public function printWidget( $args, $instance ) {
     ?>

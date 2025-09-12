@@ -67,9 +67,10 @@ class Proud_FA extends \ProudPlugin{
      * @since 2022.04.21
      * @author Curtis
      *
-     * @uses    get_transient()                 Returns the transient value. false if nothing
-     * @uses    get_option()                    Returns value from database
-     * @return  array()         $fonts          The font array we needed
+     * @uses get_transient() Returns the transient value. false if nothing
+     * @uses get_option()    Returns value from database
+     *
+     * @return array() $fonts The font array we needed
      */
     public static function get_fa_fonts(){
 
