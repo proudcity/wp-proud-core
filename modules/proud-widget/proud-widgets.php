@@ -23,6 +23,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/contact-submenu/contact-submen
 require_once plugin_dir_path(__FILE__) . 'widgets/contact-block/contact-block-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/gravity-form/gravity-form-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/proudscore-widget/proudscore-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/text-widget/text-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/fullcalendar/fullcalendar-widget.class.php';
@@ -58,4 +59,4 @@ function proud_shortcode($atts) {
 }
 
 // Add shortcode
-add_shortcode( 'widget' , 'proud_shortcode' ); 
+add_shortcode( 'widget' , 'proud_shortcode' );

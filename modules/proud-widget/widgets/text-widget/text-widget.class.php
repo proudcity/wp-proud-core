@@ -58,9 +58,9 @@ if (! class_exists('TextWidget')) :
             'textset' => [
                 '#title' => __('Text items', 'wp-proud-core'),
                 '#type' => 'group',
-                '#group_title_field' => 'link_title',
+                '#group_title_field' => 'text_title',
                 '#sub_items_template' => [
-                'link_title' => [
+                'text_title' => [
                     '#title' => 'Title',
                     '#type' => 'text',
                     '#default_value' => '',
@@ -119,15 +119,16 @@ if (! class_exists('TextWidget')) :
         function printWidget($args, $instance)
         {
             extract($instance);
-            $file = plugin_dir_path(__FILE__) . 'templates/image-cards.php';
+            $file = plugin_dir_path(__FILE__) . 'templates/text-cards.php';
             include $file;
         }
     }
 
-// register Foo_Widget widget
-function register_image_set_widget() {
-  register_widget( 'ImageSet' );
-}
-add_action( 'widgets_init', __NAMESPACE__ . '\\register_image_set_widget' );
+    // register Foo_Widget widget
+    function register_text_set_widget()
+    {
+        register_widget('TextWidget');
+    }
+    add_action( 'widgets_init', __NAMESPACE__ . '\\register_text_set_widget' );
 
 endif;
