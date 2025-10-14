@@ -10,7 +10,7 @@ if (!empty($textset)) :
         <div class="card-wrap">
             <div class="card">
                 <div class="card-block">
-                    <h3>
+                    <h2>
                         <?php if (!empty($textcard['link_url'])){ ?>
                             <a href="<?php esc_url($textcard['link_url']); ?>">
                                 <?php echo esc_attr($textcard['text_title']); ?>
@@ -18,7 +18,7 @@ if (!empty($textset)) :
                         <?php } else { ?>
                             <?php echo esc_attr($textcard['text_title']); ?>
                         <?php } ?>
-                    </h3>
+                    </h2>
                     <?php if (!empty($textcard['text'])) : ?>
                         <p class="margin-bottom-none"><?php echo $textcard['text']; ?></p>
                     <?php endif; ?>
