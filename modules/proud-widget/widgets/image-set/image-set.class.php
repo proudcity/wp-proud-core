@@ -1,10 +1,11 @@
 <?php
 /**
- * @version    $Id$
- * @package    ProudCore
- * @author     ProudCity
- * @copyright  Copyright (C) 2015 http://getproudcity.com. All Rights Reserved.
- * @license    GNU/GPL v2 or later http://www.gnu.org/licenses/gpl-2.0.html
+ * Shows the image set form
+ *
+ * @package   ProudCore
+ * @author    ProudCity <dev@proudcity.com>
+ * @copyright Copyright (C) 2015 http://getproudcity.com. All Rights Reserved.
+ * @license   GNU/GPL v2 or later http://www.gnu.org/licenses/gpl-2.0.html
  *
  * Websites: http://getproudcity.com
  * Technical Support:  Feedback - http://getproudcity.com
