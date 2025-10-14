@@ -13,7 +13,7 @@
 
 use Proud\Core;
 
-if (! class_exists('TextWidget')) :
+if (! class_exists('TextCardWidget')) :
 
     /**
      * Proud Widget
@@ -21,7 +21,7 @@ if (! class_exists('TextWidget')) :
      * @package ProudCore
      * @since   1.0.0
      */
-    class TextWidget extends Core\ProudWidget
+    class TextCardWidget extends Core\ProudWidget
     {
         /**
          * Constructor
@@ -31,8 +31,8 @@ if (! class_exists('TextWidget')) :
         public function __construct()
         {
             parent::__construct(
-                'proud_text_widget', // Base ID
-                __('Text Widget', 'wp-proud-core'), // Name
+                'proud_text_card_widget', // Base ID
+                __('Text Card Widget', 'wp-proud-core'), // Name
                 array('description' => __('A collection of text cards', 'wp-proud-core'),) // Args
             );
         }
@@ -56,7 +56,7 @@ if (! class_exists('TextWidget')) :
                 '#description' => __('How many columns to display', 'wp-proud-core')
             ],
             'textset' => [
-                '#title' => __('Text items', 'wp-proud-core'),
+                '#title' => __('Text Card', 'wp-proud-core'),
                 '#type' => 'group',
                 '#group_title_field' => 'text_title',
                 '#sub_items_template' => [
@@ -65,6 +65,13 @@ if (! class_exists('TextWidget')) :
                     '#type' => 'text',
                     '#default_value' => '',
                     '#description' => 'Title for the text card',
+                    '#to_js_settings' => false
+                ],
+                'link_url' => [
+                    '#title' => 'Link url',
+                    '#type' => 'text',
+                    '#default_value' => '',
+                    '#description' => 'Link for the title',
                     '#to_js_settings' => false
                 ],
                 'text' => [
@@ -102,7 +109,8 @@ if (! class_exists('TextWidget')) :
          *
          * @return string
          */
-        public static function row_close( $current, $post_count, $columns ) {
+        public static function row_close($current, $post_count, $columns)
+        {
             return ( ( $post_count - 1 ) === $current ) || ( $current%$columns === ( $columns - 1 ) )
                 ? '</div>'
                 : '';
@@ -125,10 +133,10 @@ if (! class_exists('TextWidget')) :
     }
 
     // register Foo_Widget widget
-    function register_text_set_widget()
+    function register_text_card_widget()
     {
-        register_widget('TextWidget');
+        register_widget('TextCardWidget');
     }
-    add_action( 'widgets_init', __NAMESPACE__ . '\\register_text_set_widget' );
+    add_action('widgets_init', __NAMESPACE__ . '\\register_text_card_widget');
 
 endif;
