@@ -1,12 +1,14 @@
 <?php
 /**
- * @author ProudCity
+ * The core stuff writter years ago it's a bit of a mess
+ *
+ * @author ProudCity <dev@proudcity.com>
  */
 
 namespace Proud\Core;
 
-if ( class_exists( 'GFForms' ) ) {
-	include_once( ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php' );
+if (class_exists('GFForms')) {
+    include_once ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php';
 }
 
 if ( ! class_exists( 'FormHelper' ) ) {
@@ -17,8 +19,8 @@ if ( ! class_exists( 'FormHelper' ) ) {
     private $form_id_base;
     private $number;
     private $template_path;
-	private $fields;
-	public $field_base;
+    private $fields;
+    public $field_base;
 
     /**
      * Set up
@@ -224,12 +226,19 @@ if ( ! class_exists( 'FormHelper' ) ) {
       include $this->template('form-label');
     }
 
-    public function printTextInput($id, $name, $value, $translate = false, $args = array() ) {
-      $args['class'] = !empty($args['class']) ? $args['class'] . ' form-control' : 'form-control';
-      $after = !empty($args['after']) ? $args['after'] : false;
-      unset($args['after']);
-      include $this->template('text-input');
-    }
+        /**
+         * Prints the text input by calling it's template
+         *
+         * @return string
+         */
+        public function printTextInput($id, $name, $value, $translate = false, $args = array())
+        {
+
+            $args['class'] = !empty($args['class']) ? $args['class'] . ' form-control' : 'form-control';
+            $after = !empty($args['after']) ? $args['after'] : false;
+            unset($args['after']);
+            include $this->template('text-input');
+        }
 
     public function printSelectList($id, $name, $value, $options, $translate = false) {
       include $this->template('select-list');
@@ -282,7 +291,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
           break;
 
         case 'gravityform':
-	        if ( class_exists( 'GFAPI' ) ) {
+            if ( class_exists( 'GFAPI' ) ) {
             $options = ['' => __('-- Select form --')];
             $forms = \GFAPI::get_forms();
             foreach ($forms as $key => $form) {
@@ -553,16 +562,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
           $field['#items'] = [];
           // Init group titles
           $field['#group_titles'] = [];
-		  // How many of these do we have saved ?
-		  if( empty( $instance[$id] ) && ! is_string( $instance[$id] ) ) {
+          // How many of these do we have saved ?
+          if( empty( $instance[$id] ) && ! is_string( $instance[$id] ) ) {
             $instance[$id][] = [];
-		  }
+          }
 
-			if ( is_countable( $instance[$id] ) ) {
-				$count =  count( $instance[$id] );
-			} else {
-				$count = null;
-			}
+            if ( is_countable( $instance[$id] ) ) {
+                $count =  count( $instance[$id] );
+            } else {
+                $count = null;
+            }
 
           // Run through any saved field items
           $i = 1;

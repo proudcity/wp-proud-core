@@ -1,7 +1,10 @@
 <?php
 
 /**
- * @author ProudCity
+ * The base widget class for ProudCity widgets
+ *
+ * @package Proud\Core
+ * @author  ProudCity <dev@proudcity.com>
  */
 
 namespace Proud\Core;
