@@ -12,7 +12,7 @@ if (!empty($textset)) :
                 <div class="card-block">
                     <h2>
                         <?php if (!empty($textcard['link_url'])){ ?>
-                            <a href="<?php esc_url($textcard['link_url']); ?>">
+                            <a href="<?php echo esc_url($textcard['link_url']); ?>">
                                 <?php echo esc_attr($textcard['text_title']); ?>
                             </a>
                         <?php } else { ?>
