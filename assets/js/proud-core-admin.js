@@ -1,5 +1,6 @@
 jQuery(document).ready(function ($) {
 
+  // implements the counter for text cards
   (function ($) {
     const defaults = {
       selector: 'input[maxlength], textarea[maxlength]',
