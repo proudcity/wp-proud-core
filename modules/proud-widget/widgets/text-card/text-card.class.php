@@ -79,6 +79,10 @@ if (! class_exists('TextCardWidget')) :
                     '#type' => 'text',
                     '#default_value' => '',
                     '#description' => 'Text to display. <strong>Limited to 160 characters</strong>',
+                    '#args' => array(
+                        'class' => 'limit-maxlength',
+                        'maxlength' => '160'
+                    ),
                 ]
                 ],
             ]

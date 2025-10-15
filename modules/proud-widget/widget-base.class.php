@@ -141,7 +141,7 @@ abstract class ProudWidget extends \WP_Widget
     {
         global $proudcore;
 
-        // We are setting app-wide 
+        // We are setting app-wide
         if ($app_wide) {
             if (!empty($instance)) {
                 $proudcore->addJsSettings([
@@ -215,7 +215,7 @@ abstract class ProudWidget extends \WP_Widget
     }
 
     /**
-     * Determines if content empty, show widget, title ect?  
+     * Determines if content empty, show widget, title ect?
      *
      * @see self::widget()
      *

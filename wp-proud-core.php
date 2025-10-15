@@ -196,7 +196,9 @@ class Proudcore extends \ProudPlugin
     {
         $path = plugins_url('assets/js/', __FILE__);
         wp_register_script('proud', $path . 'proud.js', ['jquery']);
-        wp_enqueue_script('proud');
+		wp_enqueue_script('proud');
+
+        wp_enqueue_script('proudCorAdminJS', $path . 'proud-core-admin.js', ['jquery']);
 
         // fonticonpicker
         wp_enqueue_script('fonticonpicker_js', plugins_url('assets/js/fonticonpicker/js/jquery.fonticonpicker.min.js', __FILE__), array( 'jquery' ), '3.1.1');

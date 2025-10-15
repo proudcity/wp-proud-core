@@ -11,138 +11,152 @@ if (class_exists('GFForms')) {
     include_once ABSPATH . 'wp-content/plugins/gravityforms/includes/api.php';
 }
 
-if ( ! class_exists( 'FormHelper' ) ) {
+if (! class_exists('FormHelper')) {
 
-  class FormHelper {
+    class FormHelper {
 
-    private $form_id;
-    private $form_id_base;
-    private $number;
-    private $template_path;
-    private $fields;
-    public $field_base;
+        private $form_id;
+        private $form_id_base;
+        private $number;
+        private $template_path;
+        private $fields;
+        public $field_base;
 
-    /**
-     * Set up
-     *
-     * @param string $form_id_base
-     * @param array $fields
-     * @param string $number is form number : can be left out
-     * @param string $field_base is form base : can be left out
-     *
-     * For site origin panels, we don't know $number yet, so it can be null
-     */
-    function __construct($form_id_base, $fields, $number = null, $field_base = null) {
-      $this->form_id_base = strtolower($form_id_base);
-      $this->fields = $fields;
-      $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
-      // Add proud admin scripts
-      $this->registerAdminLibraries();
-      // If included, register
-      if( $number && $field_base ) {
-        $this->registerIds( $number, $field_base );
-      }
-    }
-
-    /**
-     * Before printing any fields, first we must construct the basis for
-     * field ids, names
-     */
-    public function registerIds( $number = 1, $field_base = 'form' ) {
-      $this->number = $number;
-      $this->field_base = $field_base;
-      $this->form_id = $this->form_id_base . '-' . $this->number;
-    }
-
-    /**
-     * Constructs name attributes for use in form() fields
-     *
-     * This function should be used in form() methods to create name attributes for fields
-     * to be saved by update()
-     *
-     * @since 2.8.0
-     * @since 4.4.0 Array format field names are now accepted.
-     * @access public
-     *
-     * @param string $field_name Field name
-     * @return string Name attribute for $field_name
-     */
-    public function get_field_name($field_name) {
-      if ( false === $pos = strpos( $field_name, '[' ) ) {
-        return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . $field_name . ']';
-      } else {
-        return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . substr_replace( $field_name, '][', $pos, strlen( '[' ) );
-      }
-    }
-
-    /**
-     * Constructs id attributes for use in WP_Widget::form() fields.
-     *
-     * This function should be used in form() methods to create id attributes
-     * for fields to be saved by WP_Widget::update().
-     *
-     * @since 2.8.0
-     * @since 4.4.0 Array format field IDs are now accepted.
-     * @access public
-     *
-     * @param string $field_name Field name.
-     * @return string ID attribute for `$field_name`.
-     */
-    public function get_field_id( $field_name ) {
-      return $this->field_base . '-' . $this->form_id_base . '-' . $this->number . '-' . trim( str_replace( array( '[]', '[', ']' ), array( '', '-', '' ), $field_name ), '-' );
-    }
-
-    /**
-     * Helper functions checks an array for arrays
-     */
-    public static function contains_array( $array ){
-      foreach( $array as $value ) {
-          if( is_array( $value ) ) {
-            return true;
-          }
-      }
-      return false;
-    }
-
-    /**
-     * Takes instance setting on submit and deals with draggable weights
-     */
-    public static function updateGroupsWeight( $new_instance, $fields = [] ) {
-      $instance = [];
-      foreach ( $new_instance as $key => $value ) {
-        // Array based value
-        if( is_array( $value ) && self::contains_array( $value ) ) {
-          // Try to substitute values #key'd array new values from numeric to key
-          if( !empty( $fields[$key]['#keyed'] ) ) {
-            $keyed_value = [];
-            foreach ( $value as $inner_key => $inner_value ) {
-              // we have a keyed value
-              if( !empty( $inner_value[$fields[$key]['#keyed']] ) ) {
-                $keyed_value[$inner_value[$fields[$key]['#keyed']]] = $inner_value;
-              }
-              else {
-                $keyed_value[$inner_key] = $inner_value;
-              }
+        /**
+         * Set up
+         *
+         * For site origin panels, we don't know $number yet, so it can be null
+         *
+         * @param string $form_id_base
+         * @param array  $fields
+         * @param string $number is form number : can be left out
+         * @param string $field_base is form base : can be left out
+         */
+        function __construct($form_id_base, $fields, $number = null, $field_base = null)
+        {
+            $this->form_id_base = strtolower($form_id_base);
+            $this->fields = $fields;
+            $this->template_path = plugin_dir_path( __FILE__ ) . 'templates/';
+            // Add proud admin scripts
+            $this->registerAdminLibraries();
+            // If included, register
+            if( $number && $field_base ) {
+                $this->registerIds( $number, $field_base );
             }
-            $instance[$key] = $keyed_value;
-          }
-          // Repeating (0-indexed array)
-          else if( count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
-            usort($value, function($a, $b) {
-                if(!isset( $a['weight'] ) || !isset( $b['weight'] ) ) {
-                  return 0;
+        }
+
+        /**
+         * Before printing any fields, first we must construct the basis for
+         * field ids, names
+         *
+         * @return null
+         */
+        public function registerIds( $number = 1, $field_base = 'form' )
+        {
+            $this->number = $number;
+            $this->field_base = $field_base;
+            $this->form_id = $this->form_id_base . '-' . $this->number;
+        }
+
+        /**
+         * Constructs name attributes for use in form() fields
+         *
+         * This function should be used in form() methods to create name attributes for fields
+         * to be saved by update()
+         *
+         * @param string $field_name Field name
+         *
+         * @since  2.8.0
+         * @since  4.4.0 Array format field names are now accepted.
+         * @access public
+         *
+         * @return string Name attribute for $field_name
+         */
+        public function get_field_name($field_name)
+        {
+            if (false === $pos = strpos($field_name, '[')) {
+                return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . $field_name . ']';
+            } else {
+                return $this->field_base . '-' . $this->form_id_base . '[' . $this->number . '][' . substr_replace($field_name, '][', $pos, strlen('['));
+            }
+        }
+
+        /**
+         * Constructs id attributes for use in WP_Widget::form() fields.
+         *
+         * This function should be used in form() methods to create id attributes
+         * for fields to be saved by WP_Widget::update().
+         *
+         * @param string $field_name Field name.
+         *
+         * @since  2.8.0
+         * @since  4.4.0 Array format field IDs are now accepted.
+         * @access public
+         *
+         * @return string ID attribute for `$field_name`.
+         */
+        public function get_field_id( $field_name )
+        {
+            return $this->field_base . '-' . $this->form_id_base . '-' . $this->number . '-' . trim( str_replace( array( '[]', '[', ']' ), array( '', '-', '' ), $field_name ), '-' );
+        }
+
+        /**
+         * Helper functions checks an array for arrays
+         *
+         * @return bool
+         */
+        public static function contains_array( $array )
+        {
+            foreach ($array as $value) {
+                if (is_array($value)) {
+                    return true;
                 }
-                return intval( $a['weight'] ) - intval( $b['weight'] );
-            });
-            $instance[$key] = $value;
-          }
+            }
+            return false;
         }
-        else {
-          $instance[$key] = $value;
+
+        /**
+         * Takes instance setting on submit and deals with draggable weights
+         *
+         * @return $instance object Widget instance
+         */
+        public static function updateGroupsWeight( $new_instance, $fields = [] )
+        {
+            $instance = [];
+            foreach ( $new_instance as $key => $value ) {
+                // Array based value
+                if (is_array($value) && self::contains_array($value)) {
+                    // Try to substitute values #key'd array new values from numeric to key
+                    if( !empty( $fields[$key]['#keyed'] ) ) {
+                        $keyed_value = [];
+                        foreach ( $value as $inner_key => $inner_value ) {
+                            // we have a keyed value
+                            if( !empty( $inner_value[$fields[$key]['#keyed']] ) ) {
+                                $keyed_value[$inner_value[$fields[$key]['#keyed']]] = $inner_value;
+                            }
+                            else {
+                                $keyed_value[$inner_key] = $inner_value;
+                            }
+                        }
+                        $instance[$key] = $keyed_value;
+                    }
+                    // Repeating (0-indexed array)
+                    else if( count( array_filter( array_keys( $value ), 'is_string' ) ) === 0 ) {
+                        usort($value, function ($a, $b) {
+                            if (!isset($a['weight']) || !isset($b['weight'])) {
+                                return 0;
+                            }
+                            return intval( $a['weight'] ) - intval( $b['weight'] );
+                        }
+                        ); // usort
+                        $instance[$key] = $value;
+                    }
+                } else {
+                    $instance[$key] = $value;
+                }
+            }
+            return $instance;
         }
-      }
-      return $instance;
-    }
 
     /**
      * Extracts values from submit array using static FormHelper::formValues
@@ -220,11 +234,16 @@ if ( ! class_exists( 'FormHelper' ) ) {
       return $this->template_path . $file . '.php';
     }
 
-    public function printFormTextLabel($id, $text, $translate = false, $args = array() ) {
-      $after = !empty($args['after']) ? $args['after'] : false;
-      unset($args['after']);
-      include $this->template('form-label');
-    }
+        /**
+         * Prints the text label by calling it's template
+         *
+         * @return string
+         */
+        public function printFormTextLabel($id, $text, $translate = false, $args = array() ) {
+            $after = !empty($args['after']) ? $args['after'] : false;
+            unset($args['after']);
+            include $this->template('form-label');
+        }
 
         /**
          * Prints the text input by calling it's template
@@ -234,6 +253,9 @@ if ( ! class_exists( 'FormHelper' ) ) {
         public function printTextInput($id, $name, $value, $translate = false, $args = array())
         {
 
+            // @todo merge $class with the $args['class'] below
+            // there must be a way to leverage those $args though because it's already looking for a class
+            // for other inputs they have manually coded the call to the function with a class but I want to define it back in the form definition
             $args['class'] = !empty($args['class']) ? $args['class'] . ' form-control' : 'form-control';
             $after = !empty($args['after']) ? $args['after'] : false;
             unset($args['after']);
@@ -277,7 +299,7 @@ if ( ! class_exists( 'FormHelper' ) ) {
       // Extra class for field group
       $extra_group_class = !empty( $field['#extra_group_class'] )
                          ? ' ' . $field['#extra_group_class']
-                         : '';
+                        : '';
       ob_start();
       switch ($field['#type']) {
         case 'html':
@@ -357,7 +379,14 @@ if ( ! class_exists( 'FormHelper' ) ) {
             $this->printDescription($field['#description']);
           break;
 
-        case 'text':
+            case 'text':
+                $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
+                $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $field['#args']);
+                if (!empty($field['#description'])) {
+                    $this->printDescription($field['#description']);
+                }
+                break;
+
         case 'email':
           // Placeholder ?
           $label_args = !empty( $field['#args']['placeholder'] ) ? array('class' => 'sr-only') : array();
