@@ -1,0 +1,15 @@
+.help-block .ccount{
+  color:black;
+  border-radius: 2px;
+  padding:2px;
+  border:1px solid green;
+  background-color:palegreen;
+}
+.help-block .ccount.cc-warning{
+  border-color:gold;
+  background-color:yellow;
+}
+.help-block .ccount.cc-danger{
+  border-color:red;
+  background-color:IndianRed;
+}

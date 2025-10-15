@@ -16,23 +16,39 @@ jQuery(document).ready(function ($) {
       return $el.attr('id');
     }
 
+
     function renderOrGetCounter($el, opts) {
-      // Reuse if already present right after the field
-      let $next = $el.next('.' + opts.counterClass);
-      if ($next.length) return $next;
-      const $c = $('<span>', {
+      // Look for a help-block immediately after the field
+      let $help = $el.next('.help-block');
+      if (!$help.length) {
+        // fallback: create one if it doesn't exist
+        $help = $('<div class="help-block"></div>');
+        $el.after($help);
+      }
+
+      // Reuse counter if already present
+      let $counter = $help.find('.' + opts.counterClass);
+      if ($counter.length) return $counter;
+
+      // Otherwise, create it inside help-block
+      $counter = $('<span>', {
         class: opts.counterClass + ' cc-normal',
         'aria-live': opts.ariaLive
-      });
-      $el.after($c);
+      }).appendTo($help);
+
       // Link for accessibility
       const id = ensureId($el);
       const describedby = ($el.attr('aria-describedby') || '').trim();
       const newId = id + '-counter';
-      $c.attr('id', newId);
-      $el.attr('aria-describedby', (describedby ? describedby + ' ' : '') + newId);
-      return $c;
+      $counter.attr('id', newId);
+      $el.attr(
+        'aria-describedby',
+        (describedby ? describedby + ' ' : '') + newId
+      );
+
+      return $counter;
     }
+
 
     function updateCounter($el, opts) {
       const max = parseInt($el.attr('maxlength'), 10);
