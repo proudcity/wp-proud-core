@@ -7,24 +7,28 @@ if (!empty($textset)) :
 
 <div class="card-columns card-columns-xs-2 card-columns-sm-2 <?php echo $class ?> card-columns-equalize text-card"><!-- template-file: wp-proud-core/modules/proud-widget/widgets/text-widget/templates/text-card.php -->
     <?php foreach ( $textset as $textcard ) : ?>
-        <div class="card-wrap">
-            <div class="card">
-                <div class="card-block">
-                    <h2>
-                        <?php if (!empty($textcard['link_url'])){ ?>
-                            <a href="<?php echo esc_url($textcard['link_url']); ?>">
-                                <?php echo esc_attr($textcard['text_title']); ?>
-                            </a>
-                        <?php } else { ?>
+
+        <?php if (isset($textcard['link_url']) && !empty($textcard['link_url'])) { ?>
+            <a href="<?php echo esc_url($textcard['link_url']); ?>">
+        <?php } ?>
+
+            <div class="card-wrap">
+                <div class="card">
+                    <div class="card-block">
+                        <h2>
                             <?php echo esc_attr($textcard['text_title']); ?>
-                        <?php } ?>
-                    </h2>
-                    <?php if (!empty($textcard['text'])) : ?>
-                        <p class="margin-bottom-none"><?php echo $textcard['text']; ?></p>
-                    <?php endif; ?>
-                </div><!-- /.card-block -->
-            </div><!-- /.card -->
-        </div><!-- /.card-wrap -->
+                        </h2>
+                        <?php if (!empty($textcard['text'])) : ?>
+                            <p class="margin-bottom-none"><?php echo $textcard['text']; ?></p>
+                        <?php endif; ?>
+                    </div><!-- /.card-block -->
+                </div><!-- /.card -->
+            </div><!-- /.card-wrap -->
+
+        <?php if (isset($textcard['link_url']) && !empty($textcard['link_url'])) { ?>
+            </a>
+        <?php } ?>
+
     <?php endforeach; ?>
 </div>
 <?php endif; ?>
