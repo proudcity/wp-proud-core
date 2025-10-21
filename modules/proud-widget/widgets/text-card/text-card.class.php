@@ -48,10 +48,11 @@ if (! class_exists('TextCardWidget')) :
             'across' => [
                 '#title' => __('Columns across', 'wp-proud-core'),
                 '#type' => 'radios',
-                '#default_value'  => '3',
+                '#default_value'  => '2',
+                '#required' => true,
                 '#options' => [
-                '2' => __('Two', 'wp-proud-core'),
-                '3' => __('Three', 'wp-proud-core'),
+                    '2' => __('Two', 'wp-proud-core'),
+                    '3' => __('Three', 'wp-proud-core'),
                 ],
                 '#description' => __('How many columns to display', 'wp-proud-core')
             ],

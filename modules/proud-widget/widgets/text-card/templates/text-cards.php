@@ -15,9 +15,9 @@ if (!empty($textset)) :
             <div class="card-wrap">
                 <div class="card">
                     <div class="card-block">
-                        <h2>
+                        <h3>
                             <?php echo esc_attr($textcard['text_title']); ?>
-                        </h2>
+                        </h3>
                         <?php if (!empty($textcard['text'])) : ?>
                             <p class="margin-bottom-none"><?php echo $textcard['text']; ?></p>
                         <?php endif; ?>
