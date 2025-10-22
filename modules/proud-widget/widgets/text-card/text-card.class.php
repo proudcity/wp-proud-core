@@ -30,11 +30,24 @@ if (! class_exists('TextCardWidget')) :
          */
         public function __construct()
         {
+
+            // overwriting the default title set in Core\ProudWidget
+            $this->settings = [
+                'title' => [
+                    '#title' => 'testing',
+                    '#type' => 'text',
+                    '#default_value' => '',
+                    '#description' => 'This title appears as a heading (H2) above the cards. The card titles are H3. Leaving it blank can create an accessibility issue.',
+                    '#to_js_settings' => false
+                ]
+            ];
+
             parent::__construct(
                 'proud_text_card_widget', // Base ID
                 __('Text Card Widget', 'wp-proud-core'), // Name
                 array('description' => __('A collection of text cards', 'wp-proud-core'),) // Args
             );
+
         }
 
         /**
