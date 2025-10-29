@@ -702,7 +702,7 @@ if (! class_exists('FormHelper')) {
     /**
      * Prints out form
      */
-    public function printForm ( $args = [] ) {
+	public function printForm ( $args = [] ) {
       // Merge with defaults
       $args = array_merge( [
         'button_text' => __( 'Submit', 'proud-form' ),

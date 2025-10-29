@@ -92,10 +92,10 @@ if (! class_exists('TextCardWidget')) :
                     '#title' => 'Widget text',
                     '#type' => 'text',
                     '#default_value' => '',
-                    '#description' => 'Text to display. <strong>Limited to 160 characters</strong>',
+                    '#description' => 'Text to display. <strong>Limited to 155 characters</strong>',
                     '#args' => array(
                         'class' => 'limit-maxlength',
-                        'maxlength' => '160'
+                        'maxlength' => '155'
                     ),
                 ]
                 ],
