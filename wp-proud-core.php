@@ -194,12 +194,17 @@ class Proudcore extends \ProudPlugin
     // Load common libraries
     public function loadAdminLibraries($hook)
     {
+
+        $screen = get_current_screen();
+
         $path = plugins_url('assets/js/', __FILE__);
         wp_register_script('proud', $path . 'proud.js', ['jquery']);
-		wp_enqueue_script('proud');
+        wp_enqueue_script('proud');
 
-		wp_enqueue_script('proudCoreAdminJS', $path . 'proud-core-admin.js', ['jquery']);
-        wp_enqueue_style('proudCoreAdminStyles', plugins_url('assets/styles/proud-core-admin-styles.css', __FILE__), '', '3.1.1');
+        if ('settings_page_user_directory' !== $screen->id) {
+            wp_enqueue_script('proudCoreAdminJS', $path . 'proud-core-admin.js', ['jquery']);
+            wp_enqueue_style('proudCoreAdminStyles', plugins_url('assets/styles/proud-core-admin-styles.css', __FILE__), '', '3.1.1');
+        }
 
         // fonticonpicker
         wp_enqueue_script('fonticonpicker_js', plugins_url('assets/js/fonticonpicker/js/jquery.fonticonpicker.min.js', __FILE__), array( 'jquery' ), '3.1.1');
