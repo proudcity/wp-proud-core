@@ -380,6 +380,14 @@ if (! class_exists('FormHelper')) {
           break;
 
             case 'text':
+                if (empty($field['#args'])) {
+                    $field['#args'] = null;
+                }
+
+                if (empty($label_args)) {
+                    $label_args = null;
+                }
+
                 $this->printFormTextLabel($field['#id'], $field['#title'], $this->form_id, $label_args );
                 $this->printTextInput($field['#id'], $field['#name'], $field['#value'], $this->form_id, $field['#args']);
                 if (!empty($field['#description'])) {
@@ -702,7 +710,7 @@ if (! class_exists('FormHelper')) {
     /**
      * Prints out form
      */
-	public function printForm ( $args = [] ) {
+    public function printForm ( $args = [] ) {
       // Merge with defaults
       $args = array_merge( [
         'button_text' => __( 'Submit', 'proud-form' ),
