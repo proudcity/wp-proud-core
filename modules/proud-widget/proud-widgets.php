@@ -29,6 +29,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class
 require_once plugin_dir_path(__FILE__) . 'widgets/fullcalendar/fullcalendar-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/embed/embed-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/breadcrumb/breadcrumb.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/hr/hr.class.php';
 
 /**
  * Converts shortcode into widget if its a proud widget
