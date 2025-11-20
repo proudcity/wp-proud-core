@@ -11,7 +11,7 @@ class HRWidget extends Core\ProudWidget
     {
         parent::__construct(
             'proud_hr', // Base ID
-            __('Horizontal Rule', 'wp-proud-core'), // Name
+            __('Horizontal Line', 'wp-proud-core'), // Name
             array( 'description' => __('Prints the hr HTML tag', 'wp-proud-core'), ) // Args
         );
     }
