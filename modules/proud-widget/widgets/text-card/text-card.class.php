@@ -34,7 +34,7 @@ if (! class_exists('TextCardWidget')) :
             // overwriting the default title set in Core\ProudWidget
             $this->settings = [
                 'title' => [
-                    '#title' => 'testing',
+                    '#title' => 'Title',
                     '#type' => 'text',
                     '#default_value' => '',
                     '#description' => 'This title appears as a heading (H2) above the cards. The card titles are H3. Leaving it blank can create an accessibility issue.',
