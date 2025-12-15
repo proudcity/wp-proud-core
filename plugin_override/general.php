@@ -32,7 +32,7 @@ function proud_modified_columns($columns) {
     $new_columns = array();
     foreach ($columns as $key => $value) {
         $new_columns[$key] = $value;
-        if ($key === 'author') {
+        if ($key === 'title') {
             $new_columns['date_published'] = 'Published';
             $new_columns['date_modified'] = 'Updated';
         }
@@ -40,6 +40,10 @@ function proud_modified_columns($columns) {
     return $new_columns;
 }
 add_filter('manage_edit-page_columns', 'proud_modified_columns');
+add_filter('manage_edit-meeting_columns', 'proud_modified_columns');
+add_filter('manage_edit-post_columns', 'proud_modified_columns');
+add_filter('manage_edit-document_columns', 'proud_modified_columns');
+add_filter('manage_edit-agency_columns', 'proud_modified_columns');
 
 /**
  * Display Last Date Modified Value
@@ -67,6 +71,10 @@ function proud_custom_column_content($column, $post_id) {
 
 }
 add_action('manage_page_posts_custom_column', 'proud_custom_column_content', 10, 2);
+add_action('manage_meeting_posts_custom_column', 'proud_custom_column_content', 10, 2);
+add_action('manage_post_posts_custom_column', 'proud_custom_column_content', 10, 2);
+add_action('manage_document_posts_custom_column', 'proud_custom_column_content', 10, 2);
+add_action('manage_agency_posts_custom_column', 'proud_custom_column_content', 10, 2);
 
 /**
  * Make Last Date Modified Column Sortable
