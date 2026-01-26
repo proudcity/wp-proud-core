@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author ProudCity
  */
@@ -18,8 +19,8 @@ class TeaserListWidget extends Core\ProudWidget
     // Sort options
     public $display_sort = false;
     public $sort_by_options = [
-      'date' => 'Post Date',
-      'title' => 'Alphabetical (Title)',
+        'date' => 'Post Date',
+        'title' => 'Alphabetical (Title)',
     ];
     public $sort_by_default = 'date'; // Sort by
     public $sort_order_default = 'DESC'; // Sort direction
@@ -29,7 +30,7 @@ class TeaserListWidget extends Core\ProudWidget
         parent::__construct(
             $base_id ? $base_id : 'proud_teaser_list', // Base ID
             $name ? $name : __('Content list', 'wp-proud-core'), // Name
-            $description ? $description : array( 'description' => __('List of content with a customizable display style', 'wp-proud-core'), ) // Args
+            $description ? $description : array('description' => __('List of content with a customizable display style', 'wp-proud-core'),) // Args
         );
         // Set child class
         $this->child_class = !empty($child_class) ? $child_class : get_class($this);
@@ -41,26 +42,26 @@ class TeaserListWidget extends Core\ProudWidget
     public function postTypes()
     {
         return [
-          'post' => __('News', 'proud-teaser'),
-          'event' => __('Events', 'proud-teaser'),
-          'agency' => _x('Agencies', 'post name', 'wp-agency'),
-          'staff-member' => __('Staff Members', 'proud-teaser'),
-          'document' => __('Documents', 'proud-teaser'),
-          'job_listing' => __('Jobs', 'proud-teaser'),
-          'meeting' => __('Meetings', 'proud-teaser'),
+            'post' => __('News', 'proud-teaser'),
+            'event' => __('Events', 'proud-teaser'),
+            'agency' => _x('Agencies', 'post name', 'wp-agency'),
+            'staff-member' => __('Staff Members', 'proud-teaser'),
+            'document' => __('Documents', 'proud-teaser'),
+            'job_listing' => __('Jobs', 'proud-teaser'),
+            'meeting' => __('Meetings', 'proud-teaser'),
         ];
     }
 
     public function displayModes()
     {
         $modes = [
-          'list' => __('List View', 'proud-teaser'),
-          'icons' => __('Icon Buttons', 'proud-teaser'),
-          'media' => __('Media List View', 'proud-teaser'),
-          'mini' => __('Mini List', 'proud-teaser'),
-          'cards' => __('Card View', 'proud-teaser'),
-          'table' => __('Table View', 'proud-teaser'),
-          'accordion' => __('Accordion View', 'proud-teaser'),
+            'list' => __('List View', 'proud-teaser'),
+            'icons' => __('Icon Buttons', 'proud-teaser'),
+            'media' => __('Media List View', 'proud-teaser'),
+            'mini' => __('Mini List', 'proud-teaser'),
+            'cards' => __('Card View', 'proud-teaser'),
+            'table' => __('Table View', 'proud-teaser'),
+            'accordion' => __('Accordion View', 'proud-teaser'),
         ];
         // Allow content specific to alter
         if (!empty($this->display_modes)) {
@@ -86,10 +87,10 @@ class TeaserListWidget extends Core\ProudWidget
         $settings = $this->settings;
         if (!$this->post_type) {
             $settings['proud_teaser_content'] = [
-              '#title' => __('Content type', 'proud-teaser'),
-              '#type' => 'select',
-              '#options' => $this->postTypes(),
-              '#default_value' => 'post',
+                '#title' => __('Content type', 'proud-teaser'),
+                '#type' => 'select',
+                '#options' => $this->postTypes(),
+                '#default_value' => 'post',
             ];
             $this->display_featured = true;
         } else {
@@ -115,154 +116,154 @@ class TeaserListWidget extends Core\ProudWidget
         $display_modes = $this->displayModes();
         // Init Settings
         $settings += [
-          'proud_teaser_display' => [
-            '#title' => __('Display style', 'proud-teaser'),
-            '#type' => 'radios',
-            '#default_value' => key($display_modes),
-            '#options' => $display_modes,
-          ],
-          'post_count' => [
-            '#type' => 'text',
-            '#title' => 'Number of posts to show',
-            '#description' => 'Set to 0 to show all posts',
-            '#default_value' => 3
-          ],
+            'proud_teaser_display' => [
+                '#title' => __('Display style', 'proud-teaser'),
+                '#type' => 'radios',
+                '#default_value' => key($display_modes),
+                '#options' => $display_modes,
+            ],
+            'post_count' => [
+                '#type' => 'text',
+                '#title' => 'Number of posts to show',
+                '#description' => 'Set to 0 to show all posts',
+                '#default_value' => 3
+            ],
         ];
         // Sort (only display for )?
         if (!empty($this->display_sort)) {
             $settings += [
-              'sort_by' => [
-                '#title' => __('Sort By', 'proud-teaser'),
-                '#type' => 'radios',
-                '#description' => 'Set what the list will be sorted by.',
-                '#options' => $this->sort_by_options,
-                '#default_value' => $this->sort_by_default,
-              ],
-              'sort_order' => [
-                '#title' => __('Sort Order', 'proud-teaser'),
-                '#type' => 'radios',
-                '#description' => 'Ascending is A->Z, 0->10, Old->New.',
-                '#options' => [
-                  'ASC' => 'Ascending',
-                  'DESC' => 'Descending',
+                'sort_by' => [
+                    '#title' => __('Sort By', 'proud-teaser'),
+                    '#type' => 'radios',
+                    '#description' => 'Set what the list will be sorted by.',
+                    '#options' => $this->sort_by_options,
+                    '#default_value' => $this->sort_by_default,
                 ],
-                '#default_value' => $this->sort_order_default,
-              ],
+                'sort_order' => [
+                    '#title' => __('Sort Order', 'proud-teaser'),
+                    '#type' => 'radios',
+                    '#description' => 'Ascending is A->Z, 0->10, Old->New.',
+                    '#options' => [
+                        'ASC' => 'Ascending',
+                        'DESC' => 'Descending',
+                    ],
+                    '#default_value' => $this->sort_order_default,
+                ],
             ];
         }
         // Should we display featured checkbox?
         if (!empty($this->display_featured)) {
             $settings += [
-              'featured' => [
-                '#type' => 'checkbox',
-                '#title' => 'Featured',
-                '#return_value' => '1',
-                '#label_above' => true,
-                '#replace_title' => 'Display first teaser as featured at top of list',
-                '#default_value' => false,
-                '#states' => [
-                  'visible' => [
-                    'proud_teaser_display' => [
-                      'operator' => '==',
-                      'value' => ['list', 'mini'],
-                      'glue' => '||'
+                'featured' => [
+                    '#type' => 'checkbox',
+                    '#title' => 'Featured',
+                    '#return_value' => '1',
+                    '#label_above' => true,
+                    '#replace_title' => 'Display first teaser as featured at top of list',
+                    '#default_value' => false,
+                    '#states' => [
+                        'visible' => [
+                            'proud_teaser_display' => [
+                                'operator' => '==',
+                                'value' => ['list', 'mini'],
+                                'glue' => '||'
+                            ],
+                        ],
                     ],
-                  ],
-                ],
-              ]
+                ]
             ];
         }
         $settings += [
-          'columns' => [
-            '#type' => 'checkbox',
-            '#title' => 'Columns',
-            '#return_value' => '1',
-            '#label_above' => true,
-            '#replace_title' => 'Break media list into columns',
-            '#default_value' => false,
-            '#states' => [
-              'visible' => [
-                'proud_teaser_display' => [
-                  'operator' => '==',
-                  'value' => ['media'],
-                  'glue' => '||'
+            'columns' => [
+                '#type' => 'checkbox',
+                '#title' => 'Columns',
+                '#return_value' => '1',
+                '#label_above' => true,
+                '#replace_title' => 'Break media list into columns',
+                '#default_value' => false,
+                '#states' => [
+                    'visible' => [
+                        'proud_teaser_display' => [
+                            'operator' => '==',
+                            'value' => ['media'],
+                            'glue' => '||'
+                        ],
+                    ],
                 ],
-              ],
             ],
-          ],
-          'pager' => [
-            '#type' => 'checkbox',
-            '#title' => 'Pager',
-            '#return_value' => '1',
-            '#label_above' => true,
-            '#replace_title' => 'Add pager (Only one pager per page can be active)',
-            '#default_value' => false
-          ],
-          'show_teaser_text' => [
-            '#type' => 'checkbox',
-            '#title' => 'Show Teaser Text',
-            '#return_value' => '1',
-            '#label_above' => true,
-            '#replace_title' => 'Show teaser text under title',
-            '#default_value' => false,
-            '#states' => [
-              'visible' => [
-                'proud_teaser_display' => [
-                  'operator' => '==',
-                  'value' => ['media'],
-                  'glue' => '||'
+            'pager' => [
+                '#type' => 'checkbox',
+                '#title' => 'Pager',
+                '#return_value' => '1',
+                '#label_above' => true,
+                '#replace_title' => 'Add pager (Only one pager per page can be active)',
+                '#default_value' => false
+            ],
+            'show_teaser_text' => [
+                '#type' => 'checkbox',
+                '#title' => 'Show Teaser Text',
+                '#return_value' => '1',
+                '#label_above' => true,
+                '#replace_title' => 'Show teaser text under title',
+                '#default_value' => false,
+                '#states' => [
+                    'visible' => [
+                        'proud_teaser_display' => [
+                            'operator' => '==',
+                            'value' => ['media'],
+                            'glue' => '||'
+                        ],
+                    ],
                 ],
-              ],
             ],
-          ],
-          'more_link' => [
-            '#type' => 'checkbox',
-            '#title' => 'More',
-            '#return_value' => '1',
-            '#label_above' => true,
-            '#replace_title' => 'Include a more link',
-            '#default_value' => false
-          ],
-          'link_title' => [
-            '#title' => 'More Link title',
-            '#type' => 'text',
-            '#default_value' => 'More',
-            //'#description' => 'Text for the link',
-            '#to_js_settings' => false,
-            '#states' => [
-              'hidden' => [
-                'more_link' => [
-                  'operator' => '==',
-                  'value' => ['0'],
-                  'glue' => '||'
+            'more_link' => [
+                '#type' => 'checkbox',
+                '#title' => 'More',
+                '#return_value' => '1',
+                '#label_above' => true,
+                '#replace_title' => 'Include a more link',
+                '#default_value' => false
+            ],
+            'link_title' => [
+                '#title' => 'More Link title',
+                '#type' => 'text',
+                '#default_value' => 'More',
+                //'#description' => 'Text for the link',
+                '#to_js_settings' => false,
+                '#states' => [
+                    'hidden' => [
+                        'more_link' => [
+                            'operator' => '==',
+                            'value' => ['0'],
+                            'glue' => '||'
+                        ],
+                    ],
                 ],
-              ],
             ],
-          ],
-          'link_url' => [
-            '#title' => 'More Link url',
-            '#type' => 'text',
-            '#default_value' => '',
-            //'description' => 'Url for the link',
-            '#to_js_settings' => false,
-            '#states' => [
-              'hidden' => [
-                'more_link' => [
-                  'operator' => '==',
-                  'value' => ['0'],
-                  'glue' => '||'
+            'link_url' => [
+                '#title' => 'More Link url',
+                '#type' => 'text',
+                '#default_value' => '',
+                //'description' => 'Url for the link',
+                '#to_js_settings' => false,
+                '#states' => [
+                    'hidden' => [
+                        'more_link' => [
+                            'operator' => '==',
+                            'value' => ['0'],
+                            'glue' => '||'
+                        ],
+                    ],
                 ],
-              ],
             ],
-          ],
-          'show_filters' => [
-            '#type' => 'checkbox',
-            '#title' => 'Filters',
-            '#return_value' => '1',
-            '#description' => 'You must place the "Content list filters" widget somewhere on the page, and only one filter + list combination is allowed',
-            '#replace_title' => __('Filters will be included on this page', 'wp-proud-core'),
-            '#default_value' => false
-          ],
+            'show_filters' => [
+                '#type' => 'checkbox',
+                '#title' => 'Filters',
+                '#return_value' => '1',
+                '#description' => 'You must place the "Content list filters" widget somewhere on the page, and only one filter + list combination is allowed',
+                '#replace_title' => __('Filters will be included on this page', 'wp-proud-core'),
+                '#default_value' => false
+            ],
         ];
 
 
@@ -311,25 +312,28 @@ class TeaserListWidget extends Core\ProudWidget
             $terms = count($terms) ? $terms : false;
         }
 
+        $paged = isset($_GET['pager']) ? max(1, (int) $_GET['pager']) : 1;
+
         $instance['teaser_list'] = new Core\TeaserList(
             $this->post_type ? $this->post_type : $instance['proud_teaser_content'],
             $instance['proud_teaser_display'],
             array(
-            'posts_per_page' => $instance[ 'post_count' ],
-      ),
+                'posts_per_page' => $instance['post_count'],
+                'paged' => $paged,
+            ),
             !empty($instance['show_filters']),
             $terms,
             !empty($instance['pager']),
             apply_filters('proud_teaser_extra_options', array(
-            'sort_by' => (!empty($instance['sort_by']) ? $instance['sort_by'] : null),
-            'sort_order' => (!empty($instance['sort_order']) ? $instance['sort_order'] : null),
-            'featured' => (!empty($instance['featured']) ? $instance['featured'] : null),
-            'hide' => (!empty($instance['proud_teaser_hide']) ? $instance['proud_teaser_hide'] : null),
-            'columns' => (!empty($instance['columns']) ? $instance['columns'] : null),
-            'use_specific' => (!empty($instance['use_specific']) ? $instance['use_specific'] : null),
-            'show_teaser_text' => (!empty($instance['show_teaser_text']) ? $instance['show_teaser_text'] : null),
-            'specific_ids' => (!empty($instance['specific_ids']) ? $instance['specific_ids'] : null)
-      ), $instance)
+                'sort_by' => (!empty($instance['sort_by']) ? $instance['sort_by'] : null),
+                'sort_order' => (!empty($instance['sort_order']) ? $instance['sort_order'] : null),
+                'featured' => (!empty($instance['featured']) ? $instance['featured'] : null),
+                'hide' => (!empty($instance['proud_teaser_hide']) ? $instance['proud_teaser_hide'] : null),
+                'columns' => (!empty($instance['columns']) ? $instance['columns'] : null),
+                'use_specific' => (!empty($instance['use_specific']) ? $instance['use_specific'] : null),
+                'show_teaser_text' => (!empty($instance['show_teaser_text']) ? $instance['show_teaser_text'] : null),
+                'specific_ids' => (!empty($instance['specific_ids']) ? $instance['specific_ids'] : null)
+            ), $instance)
         );
         if (!empty($instance['show_filters'])) {
             $teaser_filter_class = new TeaserFilterTracker($instance['teaser_list']);
@@ -363,8 +367,8 @@ class TeaserListWidget extends Core\ProudWidget
             }
             // Run build?
             $run_build = self::$filter_present
-                      && !empty(self::$filter_parent_instance['panels_info']['class'])
-                      && self::$filter_parent_instance['panels_info']['class'] === $this->child_class;
+                && !empty(self::$filter_parent_instance['panels_info']['class'])
+                && self::$filter_parent_instance['panels_info']['class'] === $this->child_class;
             //  we have teaser list, so build
             if ($run_build) {
                 $this->built_instance = $this->build_teasers(self::$filter_parent_instance);
@@ -438,21 +442,20 @@ class TeaserListWidget extends Core\ProudWidget
     public function taxonomy_heirarchy_options($taxonomy, &$options, $parent = 0, $prefix = '')
     {
         $categories = get_categories([
-          'type' => $this->post_type,
-          'taxonomy' => $taxonomy,
-          'hide_empty' => 0,
-          'parent' => $parent,
-          'depth' => 0,
+            'type' => $this->post_type,
+            'taxonomy' => $taxonomy,
+            'hide_empty' => 0,
+            'parent' => $parent,
+            'depth' => 0,
         ]);
 
         if (!empty($categories) && empty($categories['errors'])) {
             foreach ($categories as $cat) {
-                $options[$cat->term_id] = $prefix .' '. $cat->name;
+                $options[$cat->term_id] = $prefix . ' ' . $cat->name;
                 $this->taxonomy_heirarchy_options($taxonomy, $options, $cat->term_id, $prefix . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
             };
         }
     }
-
 }
 
 // Post-type specific widgets
