@@ -58,6 +58,7 @@ class Proud_Filter_Widget extends WP_Widget
         $instance = $old_instance;
         $instance['title'] = sanitize_text_field($new_instance['title'] ?? '');
         $instance['context_id'] = sanitize_text_field($new_instance['context_id'] ?? '');
+        $instance['hidefilters'] = sanitize_key($new_instance['hidefilters'] ?? 0);
         return $instance;
     }
 
@@ -65,6 +66,8 @@ class Proud_Filter_Widget extends WP_Widget
     {
         $title = $instance['title'] ?? '';
         $context_id = $instance['context_id'] ?? '';
+        $is_checked = $instance['hidefilters'] ?? 0;
+
 ?>
         <div class="form-group">
             <label for="<?php echo esc_attr($this->get_field_name('title')); ?>"> <?php esc_html_e('Title', 'wp-proud-core'); ?></label>
@@ -79,7 +82,7 @@ class Proud_Filter_Widget extends WP_Widget
                 <label for="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>">
                     <input
                         name="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>"
-                        value="" type="checkbox" />
+                        <?php checked($is_checked, true); ?> type="checkbox" />
                     <p class="description help-box">By checking this box the filters will be available with a dropdown.</p>
                 </label>
             </fieldset>
