@@ -66,29 +66,25 @@ class Proud_Filter_Widget extends WP_Widget
         $title = $instance['title'] ?? '';
         $context_id = $instance['context_id'] ?? '';
 ?>
-        <p>
-            <label>
-                <?php esc_html_e('Title', 'wp-proud-core'); ?><br />
-                <input class="widefat"
-                    name="<?php echo esc_attr($this->get_field_name('title')); ?>"
-                    value="<?php echo esc_attr($title); ?>" />
-            </label>
-        </p>
+        <div class="form-group">
+            <label for="<?php echo esc_attr($this->get_field_name('title')); ?>"> <?php esc_html_e('Title', 'wp-proud-core'); ?></label>
+            <input class="widefat"
+                name="<?php echo esc_attr($this->get_field_name('title')); ?>"
+                value="<?php echo esc_attr($title); ?>" />
+        </div>
 
-        <!--
-        <p>
-            <label>
-                <?php esc_html_e('Target context id (optional)', 'wp-proud-core'); ?><br />
-                <input class="widefat"
-                    name="<?php echo esc_attr($this->get_field_name('context_id')); ?>"
-                    value="<?php echo esc_attr($context_id); ?>"
-                    placeholder="<?php echo esc_attr__('Leave blank for auto', 'wp-proud-core'); ?>" />
-            </label>
-        </p>
-        <p class="description">
-            <?php esc_html_e('If blank, the widget will use the first available filter context on the page.', 'wp-proud-core'); ?>
-        </p>
-        -->
+        <div class="form-group">
+            <fieldset class="checkboxes">
+                <legend class="option-box-label">Hide Filters</legend>
+                <label for="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>">
+                    <input
+                        name="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>"
+                        value="" type="checkbox" />
+                    <p class="description help-box">By checking this box the filters will be available with a dropdown.</p>
+                </label>
+            </fieldset>
+        </div>
+
 <?php
     }
 }
