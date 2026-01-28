@@ -17,10 +17,9 @@ class Proud_Filter_Widget extends WP_Widget
     {
         echo $args['before_widget'];
 
-        $title = !empty($instance['title']) ? $instance['title'] : '';
-        if ($title) {
-            echo $args['before_title'] . esc_html($title) . $args['after_title'];
-        }
+        $dropdown_class = !empty($instance['hidefilters']) ? 'panel-group' : '';
+
+        echo '<div class="proud-filter-wrapper ' . sanitize_html_class($dropdown_class) . '">';
 
         if (!function_exists('proud_filters')) {
             // Filter framework not available
@@ -47,8 +46,14 @@ class Proud_Filter_Widget extends WP_Widget
         $config   = $context['config'];
         $state    = $provider->get_state($_GET);
 
+        // merging widget args into $config state
+        $config['widgettitle'] = !empty($instance['title']) ? $instance['title'] : '';
+        $config['hidefilters'] = !empty($instance['hidefilters']) ? 1 : 0;
+        $config['widgetargs'] = $args;
+
         $provider->render($config, $state);
 
+        echo '</div><!-- /.proud-filter-wrapper -->';
 
         echo $args['after_widget'];
     }
@@ -58,7 +63,8 @@ class Proud_Filter_Widget extends WP_Widget
         $instance = $old_instance;
         $instance['title'] = sanitize_text_field($new_instance['title'] ?? '');
         $instance['context_id'] = sanitize_text_field($new_instance['context_id'] ?? '');
-        $instance['hidefilters'] = sanitize_key($new_instance['hidefilters'] ?? 0);
+        $instance['hidefilters'] = !empty($new_instance['hidefilters']) ? 1 : 0;
+
         return $instance;
     }
 
@@ -82,6 +88,7 @@ class Proud_Filter_Widget extends WP_Widget
                 <label for="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>">
                     <input
                         name="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>"
+                        value="1"
                         <?php checked($is_checked, true); ?> type="checkbox" />
                     <p class="description help-box">By checking this box the filters will be available with a dropdown.</p>
                 </label>
