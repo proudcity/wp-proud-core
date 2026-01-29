@@ -6,6 +6,42 @@
 
 namespace Proud\Core;
 
+/**
+ * Helper to return the Yoast Meta description if present or the_excerpt
+ *
+ * @since  2026.01.29
+ * @author Curtis <curtis@proudcity.com>
+ *
+ * @param int $post_id required The post_id we're working with
+ *
+ * @uses absint() no negative numbers
+ * @uses wp_kses_post() Safe HTML inside a post
+ * @uses get_post_meta() returns post meta given key and id
+ *
+ * @return string The content we want back
+ */
+function pc_get_yoast_meta_or_excerpt($post_id)
+{
+    $post_id = absint($post_id);
+
+    // Prefer Yoast API if present
+    if (class_exists('\WPSEO_Meta')) {
+        $desc = \WPSEO_Meta::get_value('metadesc', $post_id);
+        if (is_string($desc) && $desc !== '') {
+            return 'thing' . wp_kses_post($desc);
+        }
+    }
+
+    // Fallback to raw meta
+    $yoast_meta = get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
+    if (is_string($yoast_meta) && $yoast_meta !== '') {
+        return wp_kses_post($yoast_meta);
+    }
+
+    return get_the_excerpt($post_id);
+}
+
+
 // Hacky copied function to produce exerpt
 function wp_trim_excerpt($text = '', $more_link = false, $use_yoast = false, $words = false)
 {
