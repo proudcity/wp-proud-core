@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author ProudCity
  */
@@ -10,9 +11,9 @@ function wp_trim_excerpt($text = '', $more_link = false, $use_yoast = false, $wo
 {
     $raw_excerpt = $text;
     // Try using yoast ?
-    if($use_yoast) {
+    if ($use_yoast) {
         global $post;
-        if(!empty($post)) {
+        if (!empty($post)) {
             $text = get_post_meta($post->ID, '_yoast_wpseo_metadesc', true);
         }
     }
@@ -62,11 +63,11 @@ function sanitize_input_text_output($text, $shortcode = true)
 {
     $text = \wp_kses_post($text);
     // Run some known stuff
-    if(!empty($GLOBALS['wp_embed'])) {
+    if (!empty($GLOBALS['wp_embed'])) {
         $text = $GLOBALS['wp_embed']->autoembed($text);
     }
     // Evaluate shortcode?
-    if($shortcode) {
+    if ($shortcode) {
         $text = do_shortcode($text);
     }
     return $text;
@@ -101,14 +102,14 @@ function array_merge_deep_array($arrays)
  */
 function get_proud_logo($use_theme = true, $logo_file = 'icon-white-1x.png')
 {
-    if($use_theme) {
+    if ($use_theme) {
         // New media ID based logo
         $logo = get_theme_mod('proud_logo_id');
         // Old url based logo
-        if(!$logo) {
+        if (!$logo) {
             $logo = get_theme_mod('proud_logo');
         }
-    } elseif($logo_file) {
+    } elseif ($logo_file) {
         $logo = plugins_url('/assets/images/' . $logo_file, __FILE__);
     }
     return $logo ? $logo : false;
@@ -121,17 +122,17 @@ function get_proud_logo($use_theme = true, $logo_file = 'icon-white-1x.png')
 function print_proud_logo($logo_version = 'icon-white', $meta = [])
 {
     $image_meta = [
-      'srcset' => [
-        '1x' => get_proud_logo(false, $logo_version . '-1x.png'),
-        '2x' => get_proud_logo(false, $logo_version . '-2x.png')
-      ],
-      'src' => get_proud_logo(false, $logo_version . '-1x.png'),
-      'meta' => [
-        'image_meta' => array_merge([
-          'alt' => __('ProudCity', 'proud-core'),
-          'class' => 'proud-logo'
-        ], $meta)
-      ]
+        'srcset' => [
+            '1x' => get_proud_logo(false, $logo_version . '-1x.png'),
+            '2x' => get_proud_logo(false, $logo_version . '-2x.png')
+        ],
+        'src' => get_proud_logo(false, $logo_version . '-1x.png'),
+        'meta' => [
+            'image_meta' => array_merge([
+                'alt' => __('ProudCity', 'proud-core'),
+                'class' => 'proud-logo'
+            ], $meta)
+        ]
     ];
     print_retina_image($image_meta, false, true);
 }
@@ -146,8 +147,8 @@ function build_responsive_image_metadata($media_id)
     $title  = is_object($media_post) && !empty($media_post->post_title) ? $media_post->post_title : '';
     $alt = get_post_meta($media_id, '_wp_attachment_image_alt', true);
     $metadata = [
-      'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
-      //'class' => @todo
+        'caption' => !empty($media_post->post_excerpt) ? $media_post->post_excerpt : null,
+        //'class' => @todo
     ];
     if (!empty($alt)) {
         $metadata['alt'] = $alt;
@@ -165,10 +166,10 @@ function build_responsive_image_metadata($media_id)
 function build_responsive_image_meta($media_id, $size_max = 'full-screen', $size_small = 'medium')
 {
     $return = [
-      'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, null),
-      'size' => wp_get_attachment_image_sizes($media_id, $size_max),
-      'src' => wp_get_attachment_image_src($media_id, $size_small),
-      'meta' => build_responsive_image_metadata($media_id),
+        'srcset' => wp_get_attachment_image_srcset($media_id, $size_max, null),
+        'size' => wp_get_attachment_image_sizes($media_id, $size_max),
+        'src' => wp_get_attachment_image_src($media_id, $size_small),
+        'meta' => build_responsive_image_metadata($media_id),
     ];
     return $return;
 }
@@ -181,25 +182,25 @@ function print_responsive_image($resp_img, $classes = [], $skip_media = false)
 {
     $classes[] = 'media';
     $image_meta = !empty($resp_img['meta']) ? $resp_img['meta'] : [];
-    ?>
-  <?php if(!empty($resp_img['src'])): ?>
-    <?php if(!$skip_media && !empty($classes)): ?>
-    <div class="<?php echo implode(' ', $classes) ?>">
+?>
+    <?php if (!empty($resp_img['src'])): ?>
+        <?php if (!$skip_media && !empty($classes)): ?>
+            <div class="<?php echo implode(' ', $classes) ?>">
+            <?php endif; ?>
+            <img src="<?php echo esc_url($resp_img['src'][0]); ?>"
+                srcset="<?php echo esc_attr($resp_img['srcset']); ?>"
+                sizes="<?php echo esc_attr($resp_img['size']); ?>"
+                <?php if (!empty($image_meta['class'])): ?> class="<?php echo $image_meta['class'] ?>" <?php endif; ?>
+                <?php if (!empty($image_meta['title'])): ?> title="<?php echo $image_meta['title'] ?>" <?php endif; ?>
+                <?php if (!empty($image_meta['alt'])): ?> alt="<?php echo $image_meta['alt'] ?>" <?php endif; ?>>
+            <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
+                <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
+            <?php endif; ?>
+            <?php if (!$skip_media && !empty($classes)): ?>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
-      <img src="<?php echo esc_url($resp_img['src'][0]); ?>"
-         srcset="<?php echo esc_attr($resp_img['srcset']); ?>"
-         sizes="<?php echo esc_attr($resp_img['size']); ?>"
-         <?php if (!empty($image_meta['class'])): ?> class="<?php echo $image_meta['class'] ?>"<?php endif; ?>
-         <?php if (!empty($image_meta['title'])): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
-         <?php if (!empty($image_meta['alt'])): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
-    <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
-      <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
-    <?php endif; ?>
-    <?php if(!$skip_media && !empty($classes)): ?>
-    </div>
-    <?php endif; ?>
-  <?php endif; ?>
-  <?php
+<?php
 }
 
 /**
@@ -212,12 +213,12 @@ function build_retina_image_meta($media_id, $normal = 'medium', $retina = 'mediu
     $media_meta = wp_get_attachment_metadata($media_id);
     $src = wp_get_attachment_image_url($media_id, $normal);
     return [
-      'srcset' => [
-        '1x' => $src,
-        '2x' => wp_get_attachment_image_url($media_id, $retina)
-      ],
-      'src' => $src,
-      'meta' => $media_meta
+        'srcset' => [
+            '1x' => $src,
+            '2x' => wp_get_attachment_image_url($media_id, $retina)
+        ],
+        'src' => $src,
+        'meta' => $media_meta
     ];
 }
 
@@ -227,31 +228,31 @@ function build_retina_image_meta($media_id, $normal = 'medium', $retina = 'mediu
 function print_retina_image($resp_img, $classes = [], $skip_media = false)
 {
 
-    $classes = (! is_array($classes)) ? $classes = array( 'media' ) : $classes[] = 'media';
+    $classes = (! is_array($classes)) ? $classes = array('media') : $classes[] = 'media';
 
     $image_meta = $resp_img['meta']['image_meta'];
     $srcset = '';
     foreach ($resp_img['srcset'] as $key => $image) {
         $resp_img['srcset'][$key] = esc_url($image) . ' ' . $key;
     }
-    ?>
-  <?php if(!empty($resp_img['src'])): ?>
-    <?php if(!$skip_media && !empty($classes)): ?>
-    <div class="<?php echo implode(' ', $classes) ?>">
+?>
+    <?php if (!empty($resp_img['src'])): ?>
+        <?php if (!$skip_media && !empty($classes)): ?>
+            <div class="<?php echo implode(' ', $classes) ?>">
+            <?php endif; ?>
+            <img src="<?php echo esc_url($resp_img['src']); ?>"
+                srcset="<?php echo implode(', ', $resp_img['srcset']); ?>"
+                <?php if (!empty($image_meta['class'])): ?> class="<?php echo $image_meta['class'] ?>" <?php endif; ?>
+                <?php if (!empty($image_meta['title'])): ?> title="<?php echo $image_meta['title'] ?>" <?php endif; ?>
+                <?php if (!empty($image_meta['alt'])): ?> alt="<?php echo $image_meta['alt'] ?>" <?php endif; ?>>
+            <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
+                <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
+            <?php endif; ?>
+            <?php if (!$skip_media && !empty($classes)): ?>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
-      <img src="<?php echo esc_url($resp_img['src']); ?>"
-         srcset="<?php echo implode(', ', $resp_img['srcset']); ?>"
-         <?php if (!empty($image_meta['class'])): ?> class="<?php echo $image_meta['class'] ?>"<?php endif; ?>
-         <?php if (!empty($image_meta['title'])): ?> title="<?php echo $image_meta['title'] ?>"<?php endif; ?>
-         <?php if (!empty($image_meta['alt'])): ?> alt="<?php echo $image_meta['alt'] ?>"<?php endif; ?>>
-    <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
-      <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
-    <?php endif; ?>
-    <?php if(!$skip_media && !empty($classes)): ?>
-    </div>
-    <?php endif; ?>
-  <?php endif; ?>
-  <?php
+<?php
 }
 
 
@@ -267,11 +268,10 @@ function socialAccountUrl($service, $account)
             return sprintf('https://%s.com/%s', $service, $account);
             break;
 
-            // @TODO figure out youtube user / channel
+        // @TODO figure out youtube user / channel
         case 'youtube':
             return sprintf('https://%s.com/channel/%s', $service, $account);
             break;
-
     }
 }
 
@@ -285,9 +285,9 @@ function extractSocialData($string)
     $account = explode(':', $string);
     $url = socialAccountUrl($account[0], $account[1]);
     return [
-      'service' => ucfirst($account[0]),
-      'account' => $account[1],
-      'url'     => $url
+        'service' => ucfirst($account[0]),
+        'account' => $account[1],
+        'url'     => $url
     ];
 }
 
@@ -297,7 +297,7 @@ function extractSocialData($string)
 function getSocialData()
 {
     $social = get_option('social_feeds');
-    if(!empty($social)) {
+    if (!empty($social)) {
         $social = explode(PHP_EOL, $social);
         // Empty? Trim whitespace
         return !empty($social) ? array_filter(array_map('trim', $social)) : [];
@@ -356,28 +356,28 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
     Saturday: 9:00am - 12:00pm
     Sunday: Closed";
     */
-    $string = str_replace(array('<br/>','<br>', '<br />'), "\n", $string);
+    $string = str_replace(array('<br/>', '<br>', '<br />'), "\n", $string);
     $classes = array('text-danger', 'text-success', 'text-warning', 'text-warning'); // Same key as $values
 
-    $days = array( 'Mon', 'Monday', 'Tue', 'Tuesday', 'Wed', 'Wednesday', 'Thu', 'Thursday', 'Fri', 'Friday', 'Sat', 'Saturday', 'Sun', 'Sunday' );
-    $nums = array( 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7 );
+    $days = array('Mon', 'Monday', 'Tue', 'Tuesday', 'Wed', 'Wednesday', 'Thu', 'Thursday', 'Fri', 'Friday', 'Sat', 'Saturday', 'Sun', 'Sunday');
+    $nums = array(1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7);
 
     // Get the current site time
     $blogtime = current_time('mysql');
     list($today_year, $today_month, $today_day, $hour, $minute, $second) = preg_split('([^0-9])', $blogtime);
     $timestamp = current_time('timestamp');
     $week_day = date('N', $timestamp);
-    $daystamp = strtotime($hour .':'. $minute .':'. $second);
-    $datestamp = strtotime($today_year .'-'. $today_month .'-'. $today_day);
+    $daystamp = strtotime($hour . ':' . $minute . ':' . $second);
+    $datestamp = strtotime($today_year . '-' . $today_month . '-' . $today_day);
 
     // Check today with the holidays
-    $holidays .= $federal_holidays ? federalHolidays() ."\n" : "\n";
+    $holidays .= $federal_holidays ? federalHolidays() . "\n" : "\n";
     $pattern = '/(.+?)\:\s?(.+?)\n/';
     $matches = array();
     $result = preg_match_all($pattern, $holidays, $matches);
     for ($i = 0; $i < $result; $i++) {
         if (strtotime($matches[2][$i]) == $datestamp) {
-            $alert = _x('Today is a holiday:', 'post name', 'wp-proud-core') .' '. $matches[1][$i];
+            $alert = _x('Today is a holiday:', 'post name', 'wp-proud-core') . ' ' . $matches[1][$i];
             return false;
         }
     }
@@ -390,18 +390,18 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
         //print_r($type_matches[0]);
         foreach ($type_matches[0] as $item) {
             array_push($labels, array(
-              'label' => trim($item[0]),
-              'value' => false,
-              'class' => '',
-              'index' => $item[1],
+                'label' => trim($item[0]),
+                'value' => false,
+                'class' => '',
+                'index' => $item[1],
             ));
         }
     } else {
         $labels = array(array(
-          'label' => 'Currently',
-          'value' => false,
-          'class' => '',
-          'index' => 0,
+            'label' => 'Currently',
+            'value' => false,
+            'class' => '',
+            'index' => 0,
         ));
     }
 
@@ -470,13 +470,12 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
                 }
             }
         }
-
     } // for
 
     // Clean up the return
     foreach ($labels as $key => $label) {
-        $labels[$key]['class'] = $classes[ $label['value'] ];
-        $labels[$key]['value'] = $values[ $label['value'] ];
+        $labels[$key]['class'] = $classes[$label['value']];
+        $labels[$key]['value'] = $values[$label['value']];
         unset($labels[$key]['index']);
     }
 
@@ -489,17 +488,17 @@ function isTimeOpen($string, &$alert, $holidays = '', $federal_holidays = true, 
 // Form: https://www.redcort.com/us-federal-bank-holidays/
 function federalHolidays()
 {
-    return 'New Year\'s Day: Monday, January 1 2024
-Martin Luther King, Jr. Day: Monday, January 15 2024
-George Washington’s Birthday: Monday, February 19 2024
-Memorial Day: Monday, May 27 2024
-Juneteenth: Wednesday, June 19 2024
-Independence Day: Thursday, July 4 2024
-Labor Day: Monday, September 2 2024
-Columbus Day: Monday, October 14 2024
-Veterans Day: Monday, November 11 2024
-Thanksgiving Day: Thursday, November 28 2024
-Christmas Day: Wednesday, December 25 2024';
+    return 'New Year\'s Day: Monday, January 1 2026
+Martin Luther King, Jr. Day: Monday, January 18 2026
+George Washington’s Birthday: Monday, February 16 2026
+Memorial Day: Monday, May 25 2026
+Juneteenth: Wednesday, June 19 2026
+Independence Day: Thursday, July 3 2026
+Labor Day: Monday, September 7 2026
+Columbus Day: Monday, October 12 2026
+Veterans Day: Monday, November 11 2026
+Thanksgiving Day: Thursday, November 26 2026
+Christmas Day: Wednesday, December 25 2026';
 }
 
 
