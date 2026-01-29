@@ -156,10 +156,11 @@ function get_logo_markup($logo, $title_name, $pc_default = true)
     // @TODO does this do anything?
     //    $custom_width = $logo_meta['custom_width'];
 
+    $alt = get_post_meta((int) $logo, '_wp_attachment_image_alt', true);
     // Build user uploaded logo
     if (!empty($logo_meta['image_meta'])) {
         ob_start();
-        Proud\Core\print_retina_image($logo_meta['image_meta'], array(), true);
+        Proud\Core\print_retina_image($logo_meta['image_meta'], array(), true, 'Home', $logo);
         $logo_markup = ob_get_contents();
         ob_end_clean();
     }
@@ -169,7 +170,7 @@ function get_logo_markup($logo, $title_name, $pc_default = true)
         Proud\Core\print_proud_logo('icon-white', [
             'class' => 'logo',
             'title' => 'Home',
-            'alt' => 'Home'
+            'alt' => $alt,
         ]);
         $logo_markup = ob_get_contents();
         ob_end_clean();
@@ -376,7 +377,7 @@ function get_nav_topbar_menu()
             'walker'            => ''
         ];
 
-        $menu = wp_nav_menu( $menu_args );
+        $menu = wp_nav_menu($menu_args);
 
         /* @todo this can likely just be deleted
         ob_start();
@@ -399,8 +400,8 @@ function get_nav_primary_menu()
     $menu = '';
     $menu = apply_filters('proud_nav_primary_menu', $menu);
 
-	// Menu wrap with accessible label
-	$menu_wrap = '';
+    // Menu wrap with accessible label
+    $menu_wrap = '';
     $menu_wrap .= '<h2 id="primary-menu-label" class="sr-only">Primary menu links</h2>';
     $menu_wrap .= '<ul aria-labelledby="primary-menu-label" id="%1$s" class="%2$s">%3$s</ul>';
 
@@ -435,7 +436,7 @@ function get_nav_primary_menu()
             $menu_args['depth'] = '2';
         }
 
-        $menu = wp_nav_menu( $menu_args );
+        $menu = wp_nav_menu($menu_args);
 
         /* @todo this can likely be removed
         ob_start();

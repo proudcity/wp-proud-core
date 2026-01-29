@@ -261,35 +261,54 @@ function build_retina_image_meta($media_id, $normal = 'medium', $retina = 'mediu
 /**
  * Print retina image
  */
-function print_retina_image($resp_img, $classes = [], $skip_media = false)
+function print_retina_image($resp_img, $classes = [], $skip_media = false, $alt = 'Home', $attachment_id = 0)
 {
+    $attachment_id = (int) $attachment_id;
 
-    $classes = (! is_array($classes)) ? $classes = array('media') : $classes[] = 'media';
+    // Only override alt from attachment meta if we have an attachment id
+    if ($attachment_id > 0) {
+        $maybe_alt = get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
+        if ($maybe_alt !== '') {
+            $alt = $maybe_alt;
+        }
+    }
 
-    $image_meta = $resp_img['meta']['image_meta'];
-    $srcset = '';
-    foreach ($resp_img['srcset'] as $key => $image) {
+    // Normalize classes (your original line is buggy: it mixes assignment + appending)
+    $classes = is_array($classes) ? $classes : ['media'];
+    $classes[] = 'media';
+
+    $image_meta = $resp_img['meta']['image_meta'] ?? [];
+    foreach (($resp_img['srcset'] ?? []) as $key => $image) {
         $resp_img['srcset'][$key] = esc_url($image) . ' ' . $key;
     }
+
+    if (empty($resp_img['src'])) {
+        return;
+    }
 ?>
-    <?php if (!empty($resp_img['src'])): ?>
-        <?php if (!$skip_media && !empty($classes)): ?>
-            <div class="<?php echo implode(' ', $classes) ?>">
-            <?php endif; ?>
-            <img src="<?php echo esc_url($resp_img['src']); ?>"
-                srcset="<?php echo implode(', ', $resp_img['srcset']); ?>"
-                <?php if (!empty($image_meta['class'])): ?> class="<?php echo $image_meta['class'] ?>" <?php endif; ?>
-                <?php if (!empty($image_meta['title'])): ?> title="<?php echo $image_meta['title'] ?>" <?php endif; ?>
-                <?php if (!empty($image_meta['alt'])): ?> alt="<?php echo $image_meta['alt'] ?>" <?php endif; ?>>
-            <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
-                <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');"><span class="media-byline-inner"><?php echo $image_meta['caption'] ?></span></div>
-            <?php endif; ?>
-            <?php if (!$skip_media && !empty($classes)): ?>
+    <?php if (!$skip_media && !empty($classes)): ?>
+        <div class="<?php echo esc_attr(implode(' ', $classes)); ?>">
+        <?php endif; ?>
+
+        <img
+            src="<?php echo esc_url($resp_img['src']); ?>"
+            srcset="<?php echo esc_attr(implode(', ', $resp_img['srcset'] ?? [])); ?>"
+            <?php if (!empty($image_meta['class'])): ?> class="<?php echo esc_attr($image_meta['class']); ?>" <?php endif; ?>
+            <?php if (!empty($image_meta['title'])): ?> title="<?php echo esc_attr($image_meta['title']); ?>" <?php endif; ?>
+            alt="<?php echo esc_attr($alt); ?>">
+
+        <?php if (!$skip_media && !empty($image_meta['caption'])): ?>
+            <div class="media-byline text-left" onclick="jQuery(this).toggleClass('active');">
+                <span class="media-byline-inner"><?php echo wp_kses_post($image_meta['caption']); ?></span>
             </div>
         <?php endif; ?>
+
+        <?php if (!$skip_media && !empty($classes)): ?>
+        </div>
     <?php endif; ?>
 <?php
 }
+
 
 
 /**
