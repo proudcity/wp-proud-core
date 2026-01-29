@@ -48,9 +48,9 @@ class Proud_Filter_Widget extends WP_Widget
 
         // merging widget args into $config state
         $config['widgettitle'] = !empty($instance['title']) ? $instance['title'] : '';
-        $config['hidefilters'] = !empty($instance['hidefilters']) ? 1 : 0;
         $config['widgetargs'] = $args;
-
+        $config['hidesearch'] = !empty($instance['hidesearch']) ? 1 : 0;
+        $config['hidecheckboxfilters'] = !empty($instance['hidecheckboxfilters']) ? 1 : 0;
         $provider->render($config, $state);
 
         echo '</div><!-- /.proud-filter-wrapper -->';
@@ -63,7 +63,8 @@ class Proud_Filter_Widget extends WP_Widget
         $instance = $old_instance;
         $instance['title'] = sanitize_text_field($new_instance['title'] ?? '');
         $instance['context_id'] = sanitize_text_field($new_instance['context_id'] ?? '');
-        $instance['hidefilters'] = !empty($new_instance['hidefilters']) ? 1 : 0;
+        $instance['hidecheckboxfilters'] = !empty($new_instance['hidecheckboxfilters']) ? 1 : 0;
+        $instance['hidesearch'] = !empty($new_instance['hidesearch']) ? 1 : 0;
 
         return $instance;
     }
@@ -72,7 +73,8 @@ class Proud_Filter_Widget extends WP_Widget
     {
         $title = $instance['title'] ?? '';
         $context_id = $instance['context_id'] ?? '';
-        $is_checked = $instance['hidefilters'] ?? 0;
+        $hideCheckboxFilters = $instance['hidecheckboxfilters'] ?? 0;
+        $hideSearch = $instance['hidesearch'] ?? 0;
 
 ?>
         <div class="form-group">
@@ -84,13 +86,26 @@ class Proud_Filter_Widget extends WP_Widget
 
         <div class="form-group">
             <fieldset class="checkboxes">
-                <legend class="option-box-label">Hide Filters</legend>
-                <label for="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>">
+                <legend class="option-box-label">Hide Checkbox Filters</legend>
+                <label for="<?php echo esc_attr($this->get_field_name('hidecheckboxfilters')); ?>">
                     <input
-                        name="<?php echo esc_attr($this->get_field_name('hidefilters')); ?>"
+                        name="<?php echo esc_attr($this->get_field_name('hidecheckboxfilters')); ?>"
                         value="1"
-                        <?php checked($is_checked, true); ?> type="checkbox" />
-                    <p class="description help-box">By checking this box the filters will be available with a dropdown.</p>
+                        <?php checked($hideCheckboxFilters, true); ?> type="checkbox" />
+                    <p class="description help-box">By checking this box the checkboxes wiill NOT show up for users.</p>
+                </label>
+            </fieldset>
+        </div>
+
+        <div class="form-group">
+            <fieldset class="checkboxes">
+                <legend class="option-box-label">Hide Search</legend>
+                <label for="<?php echo esc_attr($this->get_field_name('hidesearch')); ?>">
+                    <input
+                        name="<?php echo esc_attr($this->get_field_name('hidesearch')); ?>"
+                        value="1"
+                        <?php checked($hideSearch, true); ?> type="checkbox" />
+                    <p class="description help-box">By checking this box the search will NOT show for users.</p>
                 </label>
             </fieldset>
         </div>
