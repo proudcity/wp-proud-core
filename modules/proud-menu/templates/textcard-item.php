@@ -1,3 +1,14 @@
-<a href="<?php echo $item['url'] ?>" title="<?php echo $item['title'] ?>" class="list-group-item<?php echo (!empty($item['active']) || !empty($item['active_trail']) ? ' active' : '') ?>" <?php echo (!empty($item['active_click_level']) ? ' data-active-click="' . $item['active_click_level'] . '"' : '') ?>><!-- wp-proud-core/modules/proud-menu/templates/textcard-item.php -->
-    <?php echo $item['title'] ?>
-</a>
+    <a href="<?php echo esc_url($item['url']); ?>">
+
+        <div class="card-wrap">
+            <div class="card">
+                <div class="card-block">
+                    <h3>
+                        <?php echo esc_attr($item['title']); ?>
+                    </h3>
+
+                </div><!-- /.card-block -->
+            </div><!-- /.card -->
+        </div><!-- /.card-wrap -->
+
+    </a>
