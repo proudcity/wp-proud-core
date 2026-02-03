@@ -14,7 +14,7 @@ class ProudMenuUtil
     public function __construct()
     {
         self::$menus = [];
-        foreach(wp_get_nav_menus() as $menu) {
+        foreach (wp_get_nav_menus() as $menu) {
             self::$menus[$menu->slug] = $menu;
         }
     }
@@ -24,7 +24,7 @@ class ProudMenuUtil
      */
     public static function get_menu_items($menu_id)
     {
-        if($menu_id && !empty(self::$menus[$menu_id])) {
+        if ($menu_id && !empty(self::$menus[$menu_id])) {
             return wp_get_nav_menu_items(self::$menus[$menu_id]->term_id);
         }
         return false;
