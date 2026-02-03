@@ -27,19 +27,36 @@ function pc_get_yoast_meta_or_excerpt($post_id)
     // Prefer Yoast API if present
     if (class_exists('\WPSEO_Meta')) {
         $desc = \WPSEO_Meta::get_value('metadesc', $post_id);
-        if (is_string($desc) && $desc !== '') {
+        if (is_string($desc) && trim($desc) !== '') {
             return wp_kses_post($desc);
         }
     }
 
     // Fallback to raw meta
     $yoast_meta = get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
-    if (is_string($yoast_meta) && $yoast_meta !== '') {
+    if (is_string($yoast_meta) && trim($yoast_meta) !== '') {
         return wp_kses_post($yoast_meta);
     }
 
-    return get_the_excerpt($post_id);
+    // Safe excerpt fallback (no SiteOrigin recursion)
+    $p = get_post($post_id);
+    if (!($p instanceof \WP_Post)) {
+        return '';
+    }
+
+    // If there's a manual excerpt, use it
+    if (!empty($p->post_excerpt)) {
+        return esc_html(wp_trim_words(wp_strip_all_tags($p->post_excerpt), 22));
+    }
+
+    // Otherwise, trim raw content without running content filters
+    $content = $p->post_content ?? '';
+    $content = strip_shortcodes($content);
+    $content = wp_strip_all_tags($content);
+
+    return esc_html(wp_trim_words($content, 22));
 }
+
 
 
 // Hacky copied function to produce exerpt
