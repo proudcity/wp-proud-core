@@ -37,13 +37,15 @@ class ProudMenuUtil
     private static function insert_deep(&$array, array $keys, &$value, &$active_trail)
     {
         $last = array_pop($keys);
-        if(!empty($keys)) {
-            foreach($keys as $key) {
-                if(!array_key_exists($key, $array) ||
-                    array_key_exists($key, $array) && !is_array($array[$key])) {
+        if (!empty($keys)) {
+            foreach ($keys as $key) {
+                if (
+                    !array_key_exists($key, $array) ||
+                    array_key_exists($key, $array) && !is_array($array[$key])
+                ) {
                     $array[$key] = array();
                     $array[$key]['children'] = array();
-                    if(!empty($value['active'])) {
+                    if (!empty($value['active'])) {
                         $active_trail[(string) $key] = '';
                         $array[$key]['active_trail'] = true;
                     }
@@ -69,7 +71,7 @@ class ProudMenuUtil
      */
     public static function get_nested_menu($menu_id)
     {
-        if(!empty(self::$menu_structures[$menu_id])) {
+        if (!empty(self::$menu_structures[$menu_id])) {
             return self::$menu_structures[$menu_id];
         }
         // Track active trail hits
@@ -85,14 +87,14 @@ class ProudMenuUtil
             // How deep we are into children
             $menu_depth_stack = [];
 
-            foreach($menu_items as $menu_item) {
+            foreach ($menu_items as $menu_item) {
                 $link_obj = [
-                  'url' => $menu_item->url,
-                  'title' => $menu_item->title,
-                  'mid' => $menu_item->object_id
+                    'url' => $menu_item->url,
+                    'title' => $menu_item->title,
+                    'mid' => $menu_item->object_id
                 ];
                 // Active?
-                if(!empty($menu_item->object_id) && $post->ID === (int) $menu_item->object_id) {
+                if (!empty($menu_item->object_id) && $post->ID === (int) $menu_item->object_id) {
                     $link_obj['active'] = true;
                 }
                 // Top level
@@ -101,9 +103,9 @@ class ProudMenuUtil
                     $menu_depth_stack = [$menu_item->ID];
                 } else {
                     // Find the right parent item
-                    while(end($menu_depth_stack)) {
+                    while (end($menu_depth_stack)) {
                         // Found parent
-                        if(end($menu_depth_stack) === (int) $menu_item->menu_item_parent) {
+                        if (end($menu_depth_stack) === (int) $menu_item->menu_item_parent) {
                             break;
                         }
                         array_pop($menu_depth_stack);
@@ -113,7 +115,7 @@ class ProudMenuUtil
                 }
                 self::attach_link($menu_structure, $menu_depth_stack, $link_obj, $active_trail);
                 // Add active
-                if(!empty($link_obj['active'])) {
+                if (!empty($link_obj['active'])) {
                     $active_trail[(string) $menu_item->ID] = '';
                 }
             }
@@ -130,11 +132,11 @@ class ProudMenuUtil
     public static function get_active_trail($menu_id)
     {
         // Cached
-        if(!empty(self::$active_menu_trails[$menu_id])) {
+        if (!empty(self::$active_menu_trails[$menu_id])) {
             return self::$active_menu_trails[$menu_id];
         }
         // Need to run nested first
-        elseif(empty(self::$menu_structures[$menu_id])) {
+        elseif (empty(self::$menu_structures[$menu_id])) {
             self::get_nested_menu($menu_id);
             return self::$active_menu_trails[$menu_id];
         }
@@ -160,18 +162,21 @@ class ProudMenu
     public function __construct($menu_id = false, $format = 'sidebar')
     {
         // Actually build
-        if($menu_id) {
+        if ($menu_id) {
             // Init templates
             if ($format == 'pills') {
                 self::$link_template = plugin_dir_path(__FILE__) . 'templates/pills-item.php';
                 self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/pills-wrapper.php';
+                self::$show_level = false;
+            } elseif ($format == 'textcard') {
+                self::$link_template = plugin_dir_path(__FILE__) . 'templates/textcard-item.php';
+                self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/textcard-wrapper.php';
                 self::$show_level = false;
             } else {
                 self::$link_template = plugin_dir_path(__FILE__) . 'templates/menu-item.php';
                 self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/menu-wrapper.php';
                 self::$back_template = plugin_dir_path(__FILE__) . 'templates/back-link.php';
                 self::$show_level = true;
-
             }
             global $proud_menu_util;
             self::$menu_structure = $proud_menu_util::get_nested_menu($menu_id);
@@ -192,33 +197,33 @@ class ProudMenu
         $menus[$menu_level] = !empty(self::$show_level) ? '<div class="' . $menu_level . '">' : '';
 
         // Have parent?  Add backbutton
-        if(!empty($parent) && file_exists(self::$back_template)) {
+        if (!empty($parent) && file_exists(self::$back_template)) {
             ob_start();
             include(self::$back_template);
             $menus[$menu_level] .= ob_get_contents();
             ob_end_clean();
         }
 
-        foreach($current_menu as $key => $item) {
+        foreach ($current_menu as $key => $item) {
             $children = !empty($item['children']);
 
             // We active?
-            if(!empty($item['active'])) {
+            if (!empty($item['active'])) {
                 $active = ($children) ? count($menus) + 1 : $count;
             }
 
-            if($children) {
+            if ($children) {
 
                 // in active trail, so add click level
-                if(!empty($item['active']) || !empty($item['active_trail'])) {
+                if (!empty($item['active']) || !empty($item['active_trail'])) {
                     $item['active_click_level'] = count($menus) + 1;
                     // self::
                 }
 
                 self::build_recursive($item['children'], $menus, $active, [
-                  'count' => $count,
-                  'title' => $item['title'],
-                  'url' => $item['url']
+                    'count' => $count,
+                    'title' => $item['title'],
+                    'url' => $item['url']
                 ]);
             }
 
@@ -238,7 +243,7 @@ class ProudMenu
      */
     public function print_menu()
     {
-        if(!empty(self::$menu_structure)) {
+        if (!empty(self::$menu_structure)) {
             $active = 1;
             $menus = array();
             self::build_recursive(self::$menu_structure, $menus, $active);
@@ -280,8 +285,8 @@ class ProudBreadcrumb
             if (! empty($menu_items)) {
                 foreach ($menu_items as $menu_item) {
                     $menu_id = (string) $menu_item->ID;
-                    if (isset($active_trail[ $menu_id ])) {
-                        $active_trail[ $menu_id ] = [
+                    if (isset($active_trail[$menu_id])) {
+                        $active_trail[$menu_id] = [
                             'url'   => $menu_item->url,
                             'title' => $menu_item->title,
                             'menu_id' => $menu_id,
@@ -290,7 +295,7 @@ class ProudBreadcrumb
                         ];
                         // We've filled it up
                         if (! empty(end($active_trail))) {
-                            $active_trail[ $menu_id ]['active'] = true;
+                            $active_trail[$menu_id]['active'] = true;
                             break;
                         }
                     }
