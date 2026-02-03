@@ -91,7 +91,12 @@ class ProudMenuUtil
                 $link_obj = [
                     'url' => $menu_item->url,
                     'title' => $menu_item->title,
-                    'mid' => $menu_item->object_id
+                    'mid' => $menu_item->object_id,
+                    // add these so you can decide how to fetch excerpt/description
+                    'type'      => $menu_item->type,   // 'post_type', 'taxonomy', 'custom'
+                    'object'    => $menu_item->object, // e.g. 'page', 'post', 'category', custom taxonomy slug, etc.
+                    // new:
+                    'excerpt'   => \Proud\Core\pc_get_yoast_meta_or_excerpt(absint($menu_item->object_id)),
                 ];
                 // Active?
                 if (!empty($menu_item->object_id) && $post->ID === (int) $menu_item->object_id) {
@@ -261,7 +266,6 @@ class ProudMenu
             include $this->warning_template;
         }
     }
-}
 }
 
 // register proud widget

@@ -28,7 +28,7 @@ function pc_get_yoast_meta_or_excerpt($post_id)
     if (class_exists('\WPSEO_Meta')) {
         $desc = \WPSEO_Meta::get_value('metadesc', $post_id);
         if (is_string($desc) && $desc !== '') {
-            return 'thing' . wp_kses_post($desc);
+            return wp_kses_post($desc);
         }
     }
 
