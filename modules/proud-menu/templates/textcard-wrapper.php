@@ -1,26 +1,8 @@
-<div class="menu-slider textcard level-count-<?php echo count($menus) ?> level-<?php echo $active ?>-active" data-level-active="<?php echo $active ?>"><!-- wp-proud-core/modules/proud-menu/templates/textcard-wrapper.php -->
-    <div class="inner list-group">
-        <?php echo implode('', $menus) ?>
-    </div>
-    <noscript>
-        <style>
-            .menu-slider {
-                height: auto !important;
-                opacity: 1 !important;
-                overflow: visible !important;
-            }
+<?php
+$across = 2;
+$class = ((int) $across === 3) ? 'card-columns-md-3' : 'card-columns-md-2';
+?>
 
-            .menu-slider>.inner {
-                float: none !important;
-                transition: none !important;
-                max-width: 100%;
-                margin: 0 !important;
-            }
-
-            .menu-slider>.inner>* {
-                float: none;
-                width: 100% !important;
-            }
-        </style>
-    </noscript>
+<div class="card-columns card-columns-xs-2 card-columns-sm-2 <?php echo sanitize_html_class($class) ?> card-columns-equalize text-card"><!-- template-file: wp-proud-menu/templates/textcard-wrapper.php -->
+    <?php echo implode('', $menus); ?>
 </div>
