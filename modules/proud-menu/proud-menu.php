@@ -197,7 +197,12 @@ class ProudMenu
         $menus[$menu_level] = !empty(self::$show_level) ? '<div class="' . $menu_level . '">' : '';
 
         // Have parent?  Add backbutton
-        if (!empty($parent) && file_exists(self::$back_template)) {
+        if (
+            !empty($parent)
+            && is_string(self::$back_template)
+            && self::$back_template !== ''
+            && file_exists(self::$back_template)
+        ) {
             ob_start();
             include(self::$back_template);
             $menus[$menu_level] .= ob_get_contents();
@@ -226,7 +231,6 @@ class ProudMenu
                     'url' => $item['url']
                 ]);
             }
-
             ob_start();
             include(self::$link_template);
             $menus[$menu_level] .= ob_get_contents();
