@@ -152,93 +152,93 @@ $proud_menu_util = new ProudMenuUtil();
  */
 class ProudMenu
 {
-    public static $back_template;
-    public static $link_template;
-    public static $show_level;
-    public static $wrapper_template;
-    public static $warning_template;
-    public static $menu_structure;
+    public $back_template = null;
+    public $link_template = null;
+    public $show_level = true;
+    public $wrapper_template = null;
+    public $warning_template = null;
+    public $menu_structure = [];
 
-    public function __construct($menu_id = false, $format = 'sidebar')
+    public $across = 2; // your new setting
+
+    public function __construct($menu_id = false, $format = 'sidebar', $textcardcolumns = 2)
     {
-        // Actually build
-        if ($menu_id) {
-            // Init templates
-            if ($format == 'pills') {
-                self::$link_template = plugin_dir_path(__FILE__) . 'templates/pills-item.php';
-                self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/pills-wrapper.php';
-                self::$show_level = false;
-            } elseif ($format == 'textcard') {
-                self::$link_template = plugin_dir_path(__FILE__) . 'templates/textcard-item.php';
-                self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/textcard-wrapper.php';
-                self::$show_level = false;
-            } else {
-                self::$link_template = plugin_dir_path(__FILE__) . 'templates/menu-item.php';
-                self::$wrapper_template = plugin_dir_path(__FILE__) . 'templates/menu-wrapper.php';
-                self::$back_template = plugin_dir_path(__FILE__) . 'templates/back-link.php';
-                self::$show_level = true;
-            }
-            global $proud_menu_util;
-            self::$menu_structure = $proud_menu_util::get_nested_menu($menu_id);
+        $across = (int) $textcardcolumns;
+        $this->across = in_array($across, [2, 3], true) ? $across : 2;
+
+        $this->warning_template = plugin_dir_path(__FILE__) . 'templates/warning.php';
+
+        if (!$menu_id) {
+            return;
         }
-        // Just utility
-        self::$warning_template = plugin_dir_path(__FILE__) . 'templates/warning.php';
+
+        if ($format === 'pills') {
+            $this->link_template    = plugin_dir_path(__FILE__) . 'templates/pills-item.php';
+            $this->wrapper_template = plugin_dir_path(__FILE__) . 'templates/pills-wrapper.php';
+            $this->show_level       = false;
+        } elseif ($format === 'textcard') {
+            $this->link_template    = plugin_dir_path(__FILE__) . 'templates/textcard-item.php';
+            $this->wrapper_template = plugin_dir_path(__FILE__) . 'templates/textcard-wrapper.php';
+            $this->show_level       = false;
+            $this->back_template    = null; // explicitly disabled
+
+        } else {
+            $this->link_template    = plugin_dir_path(__FILE__) . 'templates/menu-item.php';
+            $this->wrapper_template = plugin_dir_path(__FILE__) . 'templates/menu-wrapper.php';
+            $this->back_template    = plugin_dir_path(__FILE__) . 'templates/back-link.php';
+            $this->show_level       = true;
+        }
+
+        global $proud_menu_util;
+        $this->menu_structure = $proud_menu_util::get_nested_menu($menu_id) ?: [];
     }
 
     /**
-     * Builds submenu markup
+     * Recursively builds the menu
      */
-    public static function build_recursive($current_menu, &$menus, &$active, $parent = false)
+    public function build_recursive($current_menu, &$menus, &$active, $parent = false)
     {
         $count = count($menus) + 1;
         $menu_level = 'level-' . $count;
 
-        // init menu
-        $menus[$menu_level] = !empty(self::$show_level) ? '<div class="' . $menu_level . '">' : '';
+        $menus[$menu_level] = !empty($this->show_level) ? '<div class="' . $menu_level . '">' : '';
 
-        // Have parent?  Add backbutton
         if (
             !empty($parent)
-            && is_string(self::$back_template)
-            && self::$back_template !== ''
-            && file_exists(self::$back_template)
+            && is_string($this->back_template)
+            && $this->back_template !== ''
+            && file_exists($this->back_template)
         ) {
             ob_start();
-            include(self::$back_template);
-            $menus[$menu_level] .= ob_get_contents();
-            ob_end_clean();
+            include $this->back_template;
+            $menus[$menu_level] .= ob_get_clean();
         }
 
         foreach ($current_menu as $key => $item) {
             $children = !empty($item['children']);
 
-            // We active?
             if (!empty($item['active'])) {
                 $active = ($children) ? count($menus) + 1 : $count;
             }
 
             if ($children) {
-
-                // in active trail, so add click level
                 if (!empty($item['active']) || !empty($item['active_trail'])) {
                     $item['active_click_level'] = count($menus) + 1;
-                    // self::
                 }
 
-                self::build_recursive($item['children'], $menus, $active, [
+                $this->build_recursive($item['children'], $menus, $active, [
                     'count' => $count,
                     'title' => $item['title'],
-                    'url' => $item['url']
+                    'url'   => $item['url'],
                 ]);
             }
+
             ob_start();
-            include(self::$link_template);
-            $menus[$menu_level] .= ob_get_contents();
-            ob_end_clean();
+            include $this->link_template;
+            $menus[$menu_level] .= ob_get_clean();
         }
 
-        // close menu
-        $menus[$menu_level] .= !empty(self::$show_level) ? '</div>' : '';
+        $menus[$menu_level] .= !empty($this->show_level) ? '</div>' : '';
     }
 
     /**
@@ -247,15 +247,21 @@ class ProudMenu
      */
     public function print_menu()
     {
-        if (!empty(self::$menu_structure)) {
+        if (!empty($this->menu_structure)) {
             $active = 1;
-            $menus = array();
-            self::build_recursive(self::$menu_structure, $menus, $active);
-            include(self::$wrapper_template);
+            $menus = [];
+
+            $this->build_recursive($this->menu_structure, $menus, $active);
+
+            // variables for wrapper template scope
+            $across = $this->across;
+
+            include $this->wrapper_template;
         } else {
-            include(self::$warning_template);
+            include $this->warning_template;
         }
     }
+}
 }
 
 // register proud widget

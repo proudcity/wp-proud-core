@@ -59,6 +59,15 @@ class Submenu extends Core\ProudWidget
                 ],
                 '#default_value' => 'sidebar',
             ),
+            'textcardcolumns' => array(
+                '#title' => __('Textcard Columns', 'wp-proud-core'),
+                '#type' => 'radios',
+                '#options' => [
+                    '2' => '2 Columns',
+                    '3' => '3 Columns',
+                ],
+                '#default_value' => '2',
+            ),
         );
     }
 
@@ -72,7 +81,7 @@ class Submenu extends Core\ProudWidget
      */
     public function hasContent($args, &$instance)
     {
-        $instance['menu_class'] = new Core\ProudMenu($instance['menu_id'], $instance['format']);
+        $instance['menu_class'] = new Core\ProudMenu($instance['menu_id'], $instance['format'], $instance['textcardcolumns']);
         return true;
     }
 
