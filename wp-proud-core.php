@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2026.02.04.0950
+Version:            2026.02.05.1943
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -59,6 +59,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/so-pagebuilder/proud-s
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-job-manager/proud-wp-job-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-gravityforms.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-manager.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-feed.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/e-signature/proud-e-signature.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityformsstripe/proud-gravityformsstripe.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/buddydrive/proud-buddydrive.php';
