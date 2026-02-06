@@ -163,13 +163,15 @@ class ProudMenu
     public $wrapper_template = null;
     public $warning_template = null;
     public $menu_structure = [];
-
-    public $across = 2; // your new setting
+    public $across = 2; // how many columns
+    public $format = 'sidebar';
 
     public function __construct($menu_id = false, $format = 'sidebar', $textcardcolumns = 2)
     {
         $across = (int) $textcardcolumns;
         $this->across = in_array($across, [2, 3], true) ? $across : 2;
+        // setting the format so we can build_recursive different based on format
+        $this->format = (string) $format;
 
         $this->warning_template = plugin_dir_path(__FILE__) . 'templates/warning.php';
 
@@ -221,6 +223,11 @@ class ProudMenu
 
         foreach ($current_menu as $key => $item) {
             $children = !empty($item['children']);
+
+            // For textcard: only show top-level items (no children, no recursion)
+            if ($this->format === 'textcard' && !empty($item['pid'])) {
+                continue; // child item, skip entirely
+            }
 
             if (!empty($item['active'])) {
                 $active = ($children) ? count($menus) + 1 : $count;
