@@ -24,7 +24,7 @@ if (class_exists('GFCommon')) {
         remove_all_filters('wp_ajax_gf_download_export', 10);
         add_filter('wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1);
 
-        add_filter('gform_enable_legacy_markup', '__return_true');
+        //add_filter('gform_enable_legacy_markup', '__return_true');
 
         add_filter('gform_field_content', __NAMESPACE__ . '\\gf_remove_aria_required', 999, 5);
 
@@ -35,7 +35,7 @@ if (class_exists('GFCommon')) {
         $statelessModuleActive = false;
         try {
             $statelessModuleActive = filter_var(\wpCloud\StatelessMedia\Module::get_module('gravity-form')['enabled'], FILTER_VALIDATE_BOOLEAN);
-        } catch(\Throwable $t) {
+        } catch (\Throwable $t) {
             // don't care
         }
 
@@ -102,7 +102,6 @@ if (class_exists('GFCommon')) {
         $field_buttons = array_filter($field_buttons, function ($group) {
 
             return ! in_array($group['name'], ['post_fields']);
-
         });
 
         return $field_buttons;
@@ -110,7 +109,7 @@ if (class_exists('GFCommon')) {
 
         // if you need to remove individual buttons then you can use this code below
         // clearly you'll need to work it into the filter above which removes an entire section
-        foreach($field_buttons as &$field_group) {
+        foreach ($field_buttons as &$field_group) {
 
             if (is_array($field_group) && array_key_exists('fields', $field_group)) {
 
@@ -129,13 +128,11 @@ if (class_exists('GFCommon')) {
 
                     return ! in_array($field['data-type'], $fields_to_remove);
                 });
-
             } // if
 
         } // foreach
 
         return $field_buttons;
-
     }
 
     /**
@@ -177,7 +174,7 @@ if (class_exists('GFCommon')) {
         $form_title = $form['title'];
 
         $filename =  sanitize_title_with_dashes($form['title']) . '-' . gmdate('Y-m-d', \GFCommon::get_local_timestamp(time())) . '.csv';
-        $url = 'https://storage.googleapis.com/proudcity/' . esc_attr($name) .'/uploads/gravity_forms/export/export-'. esc_attr(rgget('export-id')) .'.csv';
+        $url = 'https://storage.googleapis.com/proudcity/' . esc_attr($name) . '/uploads/gravity_forms/export/export-' . esc_attr(rgget('export-id')) . '.csv';
 
         $charset = get_option('blog_charset');
         header('Content-Description: File Transfer');
@@ -197,10 +194,9 @@ if (class_exists('GFCommon')) {
         error_log( print_r( $logging, true ) );
 
         update_option( 'sfn_test_download_url', $logging );
-        */
+         */
 
         exit;
-
     }
 
     /**
@@ -232,7 +228,7 @@ if (class_exists('GFCommon')) {
             $name = 'wwwproudcity';
         }
 
-        $relativePath = esc_attr($name) . '/uploads/gravity_forms/export/export-'. esc_attr($export_id) . '.csv';
+        $relativePath = esc_attr($name) . '/uploads/gravity_forms/export/export-' . esc_attr($export_id) . '.csv';
         $relativePath = apply_filters('wp_stateless_filename', $relativePath, 0);
 
         do_action('sm:sync::syncFile', $relativePath, $absolutePath, true);
@@ -354,7 +350,7 @@ if (class_exists('GFCommon')) {
 
                 if (! empty($values)) {
                     foreach ($values as $key => $v) {
-                        $values[ $key ] = gform_get_gcloud_file($v);
+                        $values[$key] = gform_get_gcloud_file($v);
                     }
                     return json_encode($values);
                 }
