@@ -1,7 +1,7 @@
 <div data-count="<?php echo $key ?>" class="panel panel-default">
   <div class="panel-heading" role="tab" id="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
     <h4 class="panel-title">
-      <a role="button" data-toggle="collapse" data-parent="#<?php echo $field['#id']; ?>-accordion" href="#<?php echo $field['#id']; ?>-<?php echo $key; ?>" aria-expanded="true" aria-controls="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
+      <a role="button" data-bs-toggle="collapse" data-bs-parent="#<?php echo $field['#id']; ?>-accordion" href="#<?php echo $field['#id']; ?>-<?php echo $key; ?>" aria-expanded="true" aria-controls="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
         <?php echo $group_title ?>
       </a>
       <?php
@@ -12,7 +12,7 @@
       <?php endif; ?>
     </h4>
   </div>
-  <div id="<?php echo $field['#id']; ?>-<?php echo $key; ?>" class="panel-collapse collapse<?php if( $key == 0 ) echo ' in'; ?> " role="tabpanel" aria-labelledby="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
+  <div id="<?php echo $field['#id']; ?>-<?php echo $key; ?>" class="panel-collapse collapse<?php if( $key == 0 ) echo ' show'; ?> " role="tabpanel" aria-labelledby="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
     <div class="panel-body">
       <?php 
         // Try to build states, print fields
