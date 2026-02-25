@@ -61,9 +61,13 @@ if (class_exists('GFCommon')) {
     function proud_action_button_form_setting($placement, $form_id)
     {
         if ($placement == 50) { ?>
-            <label for="proudSubmitActionButton">Action Button Color</label>
-            <input type="checkbox" id="proudSubmitActionButton" value="1" name="proudSubmitActionButton" />
-            <p class="description">Makes the submit button take the action button color defined in the customizer</p>
+            <li class="submit_width_setting field_setting">
+                <fieldset>
+                    <label for="proudSubmitActionButton">Action Button Color</label>
+                    <input type="checkbox" id="proudSubmitActionButton" value="1" name="proudSubmitActionButton" />
+                    <p class="description">Makes the submit button take the action button color defined in the customizer</p>
+                </fieldset>
+            </li>
 <?php
         }
     }
