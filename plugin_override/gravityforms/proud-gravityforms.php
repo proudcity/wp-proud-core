@@ -31,7 +31,7 @@ if (class_exists('GFCommon')) {
         add_filter('gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1);
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
 
-        add_filter('gform_form_settings_fields', __NAMESPACE__ . '\\proud_action_button_form_setting', 10, 2);
+        add_filter('gform_field_appearance_settings', __NAMESPACE__ . '\\proud_action_button_form_setting', 10, 2);
         add_filter('gform_submit_button', __NAMESPACE__ . '\\proud_apply_action_button_color', 10, 2);
 
         // Only alter if gravityforms <> stateless not enabled
@@ -58,25 +58,14 @@ if (class_exists('GFCommon')) {
      * Adds an "Apply Action Button Color" checkbox to Form Settings → Form Button.
      * GF's Settings API natively handles saving and restoring the value on the form object.
      */
-    function proud_action_button_form_setting($fields, $form)
+    function proud_action_button_form_setting($placement, $form_id)
     {
-        if (!isset($fields['form_button'])) {
-            return $fields;
+        if ($placement == 50) { ?>
+            <label for="proudSubmitActionButton">Action Button Color</label>
+            <input type="checkbox" id="proudSubmitActionButton" value="1" name="proudSubmitActionButton" />
+            <p class="description">Makes the submit button take the action button color defined in the customizer</p>
+<?php
         }
-
-        $fields['form_button']['fields'][] = array(
-            'type'    => 'checkbox',
-            'name'    => 'proudSubmitActionButton',
-            'label'   => esc_html__('Submit Button Color', 'wp-proud-core'),
-            'choices' => array(
-                array(
-                    'name'  => 'proudSubmitActionButton',
-                    'label' => esc_html__('Apply Action Button Color', 'wp-proud-core'),
-                ),
-            ),
-        );
-
-        return $fields;
     }
 
     /**
@@ -86,11 +75,8 @@ if (class_exists('GFCommon')) {
      */
     function proud_apply_action_button_color($button, $form)
     {
-        echo '<pre>';
-        print_r($form['proudSubmitActionButton']);
-        echo '</pre>';
 
-        if ($form['proudSubmitActionButton']) {
+        if (isset($form['proudSubmitActionButton']) && $form['proudSubmitActionButton']) {
             $actionColor = get_theme_mod('color_action_button', '#e49c11');
 
             $style = '<style type="text/css">.gform_button.button{background-color:' . $actionColor . ' !important; border-color:' . $actionColor . ' !important;}</style>';
