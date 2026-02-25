@@ -64,7 +64,7 @@ if (class_exists('GFCommon')) {
             fieldSettings.text += ", .action_setting";
             //binding to the load field settings event to initialize the checkbox
             jQuery(document).on("gform_load_appearance_settings", function(event, field, form) {
-                jQuery('#proudActionButton').prop('checked', Boolean(rgar(field, 'encryptField')));
+                jQuery('#proudActionButton').prop('checked', Boolean(rgar(field, 'proudActionButton')));
             });
         </script>
         <?php
@@ -84,7 +84,7 @@ if (class_exists('GFCommon')) {
     {
         if ($placement == 50) { ?>
             <li class="submit_width_setting action_setting field_setting">
-                <input type="checkbox" id="proudActionButton" onclick="SetFieldProperty('encryptField', this.checked);" />
+                <input type="checkbox" id="proudActionButton" onclick="SetFieldProperty('proudActionButton', this.checked);" />
                 <label for="proudActionButton" style="display:inline;">
                     <?php _e("Action Button", "your_text_domain"); ?>
                     <?php gform_tooltip("form_field_action_color") ?>
