@@ -38,6 +38,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-filters/filter-widget.ph
 // customizer updates
 require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-customizer.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-default-social-image-customizer.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-customizer/proud-menu-bold.php';
 
 
 require_once plugin_dir_path(__FILE__) . 'modules/proud-form/proud-form.php';
