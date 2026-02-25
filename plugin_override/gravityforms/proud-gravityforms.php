@@ -31,6 +31,9 @@ if (class_exists('GFCommon')) {
         add_filter('gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1);
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
 
+        add_action('gform_field_appearance_settings', __NAMESPACE__ . '\\proud_action_button', 10, 2);
+        add_action('gform_editor_js', __NAMESPACE__ . '\\proud_action_button_editor_js');
+
         // Only alter if gravityforms <> stateless not enabled
         $statelessModuleActive = false;
         try {
@@ -50,7 +53,40 @@ if (class_exists('GFCommon')) {
     }
 
     add_action('init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
-    // Add Processing
+
+    function proud_action_button($position, $form_id)
+    {
+        // Position 250 sits just before the submit_width_setting in the Appearance tab.
+        // GF renders one shared settings panel; JS (see proud_action_button_editor_js)
+        // controls which field types actually see this <li> via fieldSettings.
+        if ($position == 250) {
+?>
+            <li class="submit_action_button_setting field_setting">
+                <input type="checkbox" id="field_submit_action_button" onclick="SetFieldProperty('submitActionButton', this.checked);">
+                <label for="field_submit_action_button" class="inline">Apply Action Button Color</label>
+            </li>
+<?php
+        }
+    }
+
+    function proud_action_button_editor_js()
+    {
+        ?>
+        <script type="text/javascript">
+            // Register our custom setting so GF shows it only for submit fields.
+            jQuery(document).ready(function ($) {
+                if (typeof fieldSettings !== 'undefined' && typeof fieldSettings['submit'] !== 'undefined') {
+                    fieldSettings['submit'] += ', .submit_action_button_setting';
+                }
+            });
+
+            // Populate the checkbox when the submit field's settings panel opens.
+            jQuery(document).on('gform_load_field_settings', function (event, field, form) {
+                jQuery('#field_submit_action_button').prop('checked', field.submitActionButton == true);
+            });
+        </script>
+        <?php
+    }
 
     /**
      * Removes the aria-required="true" field as it makes screen readers state "required" twice when the
