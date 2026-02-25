@@ -1,84 +1,109 @@
 <?php
+
 /**
  * @author ProudCity
  */
 
 use Proud\Core;
 
-class IconLink extends Core\ProudWidget {
+class IconLink extends Core\ProudWidget
+{
 
-  function __construct() {
-    parent::__construct(
-      'proud_icon_link', // Base ID
-      __( 'Icon link', 'wp-proud-core' ), // Name
-      array( 'description' => __( 'Simple icon button, and link', 'wp-proud-core' ), ) // Args
-    );
-  }
+    function __construct()
+    {
+        parent::__construct(
+            'proud_icon_link', // Base ID
+            __('Icon link', 'wp-proud-core'), // Name
+            array('description' => __('Simple icon button, and link', 'wp-proud-core'),) // Args
+        );
+    }
 
-  function initialize() {
-    $this->settings = [
-      'link_title' => [
-        '#title' => 'Link title',
-        '#type' => 'text',
-        '#default_value' => '',
-        '#description' => 'Text for the link',
-        '#to_js_settings' => false
-      ],
-      'link_url' => [
-        '#title' => 'Link url',
-        '#type' => 'text',
-        '#default_value' => '',
-        '#description' => 'Url for the link',
-        '#to_js_settings' => false
-      ],
-      'classname' => [
-        '#type' => 'select',
-        '#title' => 'Style',
-        '#options' => [
-            '' => 'Standard: Dark text on light background',
-            'card-inverse' => 'Inverse: Light text on dark background',
-        ],
-        '#default_value' => ''
-      ],
-      'fa_icon' => [
-          '#title' => 'Icon',
-          '#type' => 'fa-icon',
-          '#default_value' => '',
-          '#description' => 'The icon to use for the icon box.',
-          '#to_js_settings' => false,
-          '#admin_libraries' => 'fontIconPicker' // this is where the icon picker call would go
-      ],
-      'external' => [
-        '#type' => 'checkbox',
-        '#title' => 'Open in new tab',
-        '#return_value' => '1',
-        '#default_value' => false
-      ]
-    ];
-  }
+    function initialize()
+    {
+        $this->settings = [
+            'link_title' => [
+                '#title' => 'Link title',
+                '#type' => 'text',
+                '#default_value' => '',
+                '#description' => 'Text for the link',
+                '#to_js_settings' => false
+            ],
+            'link_url' => [
+                '#title' => 'Link url',
+                '#type' => 'text',
+                '#default_value' => '',
+                '#description' => 'Url for the link',
+                '#to_js_settings' => false
+            ],
+            'classname' => [
+                '#type' => 'select',
+                '#title' => 'Style',
+                '#options' => [
+                    '' => 'Standard: Dark text on light background',
+                    'card-inverse' => 'Inverse: Light text on dark background',
+                    'action' => 'Action: Uses the color defined in the Customizer for Action Button as the background color with white text.',
+                ],
+                '#default_value' => ''
+            ],
+            'fa_icon' => [
+                '#title' => 'Icon',
+                '#type' => 'fa-icon',
+                '#default_value' => '',
+                '#description' => 'The icon to use for the icon box.',
+                '#to_js_settings' => false,
+                '#admin_libraries' => 'fontIconPicker' // this is where the icon picker call would go
+            ],
+            'external' => [
+                '#type' => 'checkbox',
+                '#title' => 'Open in new tab',
+                '#return_value' => '1',
+                '#default_value' => false
+            ],
+        ];
+    }
 
-  /**
-   * Front-end display of widget.
-   *
-   * @see WP_Widget::widget()
-   *
-   * @param array $args     Widget arguments.
-   * @param array $instance Saved values from database.
-   *
-   * @return null
-   */
-  public function printWidget( $args, $instance ) {
-    ?>
-    <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if($instance['external']): ?>target="_blank"<?php endif;?> >
-      <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
-      <div class="h4"><?php echo $instance['link_title']; ?></div>
-    </a></div>
-    <?php
-  }
+    /**
+     * Front-end display of widget.
+     *
+     * @see WP_Widget::widget()
+     *
+     * @param array $args     Widget arguments.
+     * @param array $instance Saved values from database.
+     *
+     * @return null
+     */
+    public function printWidget($args, $instance)
+    {
+
+        if ($instance['classname'] == 'action') {
+            $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
+
+?>
+            <style type="text/css">
+                .card.card-btn.action {
+                    background-color: <?php echo esc_html($actionColor); ?>;
+                    color: white;
+                }
+
+                .card.card-btn.action .h4 {
+                    color: white;
+                }
+            </style>
+        <?php
+        }
+
+        ?>
+        <div class="card-wrap"><a href="<?php echo $instance['link_url']; ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
+                <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
+                <div class="h4"><?php echo $instance['link_title']; ?></div>
+            </a></div>
+<?php
+    }
 }
 
 // register Foo_Widget widget
-function register_icon_link_widget() {
-  register_widget( 'IconLink' );
+function register_icon_link_widget()
+{
+    register_widget('IconLink');
 }
-add_action( 'widgets_init', 'register_icon_link_widget' );
+add_action('widgets_init', 'register_icon_link_widget');
