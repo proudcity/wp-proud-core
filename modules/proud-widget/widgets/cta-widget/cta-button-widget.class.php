@@ -39,9 +39,9 @@ class CTA extends Core\ProudWidget
                 '#type' => 'select',
                 '#title' => 'Style',
                 '#options' => [
+                    'action' => 'Action: Uses the color defined in the Customizer for Action Button as the background color with white text.',
                     '' => 'Standard: Dark text on light background',
                     'card-inverse' => 'Inverse: Light text on dark background',
-                    'action' => 'Action: Uses the color defined in the Customizer for Action Button as the background color with white text.',
                 ],
                 '#default_value' => ''
             ],
