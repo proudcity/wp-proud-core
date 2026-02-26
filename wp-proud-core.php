@@ -59,6 +59,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/notification-shut-down.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/so-pagebuilder/proud-so-pagebuilder.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-job-manager/proud-wp-job-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-gravityforms.php';
+//require_once plugin_dir_path(__FILE__) . 'plugin_override/gravityforms/proud-submit-action-button.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/events-manager/proud-events-feed.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/e-signature/proud-e-signature.php';
