@@ -13,3 +13,15 @@
   border-color:red;
   background-color:IndianRed;
 }
+
+.icons-selector.proudcity-iconpicker{
+    border:1px rgb(140, 143, 148) solid;
+    border-radius: 4px;
+    margin-left:150px;
+}
+
+.icons-selector .selector-popup{
+    border:1px rgb(140, 143, 148) solid;
+    border-radius:0 4px 4px 4px;
+    margin-left:-1px;
+}
