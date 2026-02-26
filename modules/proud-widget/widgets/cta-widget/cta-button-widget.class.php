@@ -6,15 +6,15 @@
 
 use Proud\Core;
 
-class IconLink extends Core\ProudWidget
+class CTA extends Core\ProudWidget
 {
 
     function __construct()
     {
         parent::__construct(
-            'proud_icon_link', // Base ID
-            __('Icon link', 'wp-proud-core'), // Name
-            array('description' => __('Simple icon button, and link', 'wp-proud-core'),) // Args
+            'proud_cta', // Base ID
+            __('Call to Action', 'wp-proud-core'), // Name
+            array('description' => __('Simple button with a link', 'wp-proud-core'),) // Args
         );
     }
 
@@ -44,14 +44,6 @@ class IconLink extends Core\ProudWidget
                     'action' => 'Action: Uses the color defined in the Customizer for Action Button as the background color with white text.',
                 ],
                 '#default_value' => ''
-            ],
-            'fa_icon' => [
-                '#title' => 'Icon',
-                '#type' => 'fa-icon',
-                '#default_value' => '',
-                '#description' => 'The icon to use for the icon box.',
-                '#to_js_settings' => false,
-                '#admin_libraries' => 'fontIconPicker' // this is where the icon picker call would go
             ],
             'external' => [
                 '#type' => 'checkbox',
@@ -95,7 +87,6 @@ class IconLink extends Core\ProudWidget
         ?>
         <div class="card-wrap">
             <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
-                <i aria-hidden="true" class="fa <?php echo sanitize_html_class($instance['fa_icon']); ?> fa-3x"></i>
                 <div class="h4"><?php echo sanitize_title($instance['link_title']); ?></div>
             </a>
         </div>
@@ -104,8 +95,8 @@ class IconLink extends Core\ProudWidget
 }
 
 // register Foo_Widget widget
-function register_icon_link_widget()
+function register_cta_button_widget()
 {
-    register_widget('IconLink');
+    register_widget('CTA');
 }
-add_action('widgets_init', 'register_icon_link_widget');
+add_action('widgets_init', 'register_cta_button_widget');

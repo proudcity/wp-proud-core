@@ -1,10 +1,12 @@
 <?php
+
 /**
  * @author ProudCity
  */
 
 require_once plugin_dir_path(__FILE__) . 'widget-base.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/icon-link/icon-link-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/cta-widget/cta-button-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/teaser-list/teaser-list-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/font-size/font-size-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/share-links/share-links-widget.class.php';
@@ -34,30 +36,30 @@ require_once plugin_dir_path(__FILE__) . 'widgets/hr/hr.class.php';
 /**
  * Converts shortcode into widget if its a proud widget
  */
-function proud_shortcode($atts) {
+function proud_shortcode($atts)
+{
 
-  global $wp_widget_factory;
+    global $wp_widget_factory;
 
-  extract(shortcode_atts(array(
-      'widget_name' => FALSE
-  ), $atts));
+    extract(shortcode_atts(array(
+        'widget_name' => FALSE
+    ), $atts));
 
-  $widget_name = esc_html($widget_name);
+    $widget_name = esc_html($widget_name);
 
-  if ( !is_a( $wp_widget_factory->widgets[$widget_name], 'ProudWidget') ) {
-    // Try to get instance info
-    $instance = !empty($atts) ? str_ireplace("&amp;", '&' ,$atts) : [];
-    ob_start();
-    // Print widget
-    the_widget($widget_name, $instance, array('widget_id'=>'arbitrary-instance-' . strtolower($widget_name) ) );
-    $output = ob_get_contents();
-    ob_end_clean();
-    return $output;
-  }
-  else {
-    return '<p>'.sprintf(__("%s: Widget class not found. Make sure this widget exists and the class name is correct"),'<strong>' . $widget_name . '</strong>').'</p>';
-  }
+    if (!is_a($wp_widget_factory->widgets[$widget_name], 'ProudWidget')) {
+        // Try to get instance info
+        $instance = !empty($atts) ? str_ireplace("&amp;", '&', $atts) : [];
+        ob_start();
+        // Print widget
+        the_widget($widget_name, $instance, array('widget_id' => 'arbitrary-instance-' . strtolower($widget_name)));
+        $output = ob_get_contents();
+        ob_end_clean();
+        return $output;
+    } else {
+        return '<p>' . sprintf(__("%s: Widget class not found. Make sure this widget exists and the class name is correct"), '<strong>' . $widget_name . '</strong>') . '</p>';
+    }
 }
 
 // Add shortcode
-add_shortcode( 'widget' , 'proud_shortcode' );
+add_shortcode('widget', 'proud_shortcode');
