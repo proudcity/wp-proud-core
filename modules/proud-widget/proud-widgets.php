@@ -7,6 +7,7 @@
 require_once plugin_dir_path(__FILE__) . 'widget-base.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/icon-link/icon-link-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/cta-widget/cta-button-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/subtitle/subtitle-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/teaser-list/teaser-list-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/font-size/font-size-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/share-links/share-links-widget.class.php';
