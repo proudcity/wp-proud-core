@@ -66,19 +66,35 @@ class CTA extends Core\ProudWidget
      */
     public function printWidget($args, $instance)
     {
+?>
+        <style type="text/css">
+            .card.card-btn.card-btn-action {
+                width: 33%;
+                min-width: 300px;
+            }
+
+            @media screen and (max-width: 700px) {
+                .card.card-btn.card-btn-action {
+                    width: 100%;
+                    min-width: 300px;
+                }
+            }
+        </style>
+        <?php
+
 
         if ($instance['classname'] == 'action') {
             $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
 
-?>
+        ?>
             <style type="text/css">
                 .card.card-btn.action {
                     background-color: <?php echo esc_html($actionColor); ?>;
-                    color: white;
+                    color: black;
                 }
 
                 .card.card-btn.action .h4 {
-                    color: white;
+                    color: black;
                 }
             </style>
         <?php
@@ -86,7 +102,7 @@ class CTA extends Core\ProudWidget
 
         ?>
         <div class="card-wrap">
-            <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
+            <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-btn-action card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
                 <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
             </a>
         </div>
