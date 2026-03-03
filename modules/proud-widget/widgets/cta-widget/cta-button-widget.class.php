@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author ProudCity
+ * @Php ProudCity
  */
 
 use Proud\Core;

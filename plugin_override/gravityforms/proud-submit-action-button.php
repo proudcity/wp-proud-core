@@ -6,9 +6,17 @@
  */
 function proud_action_button_form_setting($placement, $form_id)
 {
+
+    $form = GFAPI::get_form(absint($form_id));
+ 
     if ($placement == 50) { ?>
         <li class="action_setting field_setting">
-            <input type="checkbox" id="proudActionButton" onclick="SetFieldProperty('proudActionButton', this.checked);" />
+            <input
+                type="checkbox"
+                id="proudActionButton"
+                onclick="window.form.button.proudActionButton = this.checked;"
+                <?php checked( (bool) rgar( $form['button'], 'proudActionButton' ), true ); ?>
+            />
             <label for="proudActionButton" style="display:inline;">
                 <?php _e("Action Button", "your_text_domain"); ?>
                 <?php gform_tooltip("form_field_action_color") ?>
@@ -28,7 +36,7 @@ function proud_editor_script()
         //binding to the load field settings event to initialize the checkbox
         jQuery(document).on("gform_load_field_settings", function(event, field, form) {
             jQuery('#proudActionButton').prop('checked', Boolean(rgar(field, 'proudActionButton')));
-        });
+        };
     </script>
 <?php
 }
@@ -62,3 +70,4 @@ function proud_apply_action_button_color($button, $form)
         return $button;
     }
 }
+//add_action( 'gform_submit_button', 'proud_apply_action_button_color', 10, 2 );
