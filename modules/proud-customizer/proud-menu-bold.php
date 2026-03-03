@@ -85,8 +85,7 @@ class ProudMenuBoldOption extends \ProudPlugin
     public function outputBoldMenuCss()
     {
 
-        if (get_option('proud_menu_bold', false)) {
-            echo 'boldmenu'; ?>
+        if (get_option('proud_menu_bold', false)) { ?>
             <style type="text/css">
                 #main-menu li a {
                     font-weight: 800 !important;

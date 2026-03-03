@@ -7,6 +7,30 @@
 namespace Proud\Core;
 
 /**
+ * Returns '#000000' or '#ffffff' depending on which has better contrast
+ * against the given hex background color, using WCAG relative luminance.
+ *
+ * @param string $hex A hex color string, with or without leading #.
+ * @return string '#000000' for dark text or '#ffffff' for light text.
+ */
+function proud_contrast_color( $hex ) {
+    $hex = ltrim( $hex, '#' );
+
+    $r = hexdec( substr( $hex, 0, 2 ) ) / 255;
+    $g = hexdec( substr( $hex, 2, 2 ) ) / 255;
+    $b = hexdec( substr( $hex, 4, 2 ) ) / 255;
+
+    // Linearise each channel.
+    $r = $r <= 0.03928 ? $r / 12.92 : pow( ( $r + 0.055 ) / 1.055, 2.4 );
+    $g = $g <= 0.03928 ? $g / 12.92 : pow( ( $g + 0.055 ) / 1.055, 2.4 );
+    $b = $b <= 0.03928 ? $b / 12.92 : pow( ( $b + 0.055 ) / 1.055, 2.4 );
+
+    $luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+
+    return $luminance > 0.179 ? '#000000' : '#ffffff';
+}
+
+/**
  * Helper to return the Yoast Meta description if present or the_excerpt
  *
  * @since  2026.01.29

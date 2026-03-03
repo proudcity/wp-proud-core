@@ -66,8 +66,9 @@ function proud_apply_action_button_color($button, $form)
 
     if (isset($form['button']['proudActionButton']) && $form['button']['proudActionButton']) {
         $actionColor = get_theme_mod('color_action_button', '#e49c11');
+        $textColor   = \Proud\Core\proud_contrast_color( $actionColor );
 
-        $style = '<style type="text/css">.gform_button.button{background-color:' . $actionColor . ' !important; border-color:' . $actionColor . ' !important; color:black !important;}</style>';
+        $style = '<style type="text/css">.gform_button.button{background-color:' . $actionColor . ' !important; border-color:' . $actionColor . ' !important; color:' . $textColor . ' !important;}</style>';
         return $style . ' ' . $button;
     } else {
         return $button;
