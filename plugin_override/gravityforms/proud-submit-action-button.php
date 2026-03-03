@@ -35,8 +35,10 @@ function proud_editor_script()
         fieldSettings.submit += ", .action_setting";
         //binding to the load field settings event to initialize the checkbox
         jQuery(document).on("gform_load_field_settings", function(event, field, form) {
-            jQuery('#proudActionButton').prop('checked', Boolean(rgar(field, 'proudActionButton')));
-        };
+            if (field.type === 'submit') {
+                jQuery('#proudActionButton').prop('checked', Boolean(rgar(form.button, 'proudActionButton')));
+            }
+        });
     </script>
 <?php
 }
@@ -57,17 +59,18 @@ add_filter('gform_tooltips', 'proud_add_action_button_tooltips');
 function proud_apply_action_button_color($button, $form)
 {
 
-    echo '<pre>';
-    print_r($form);
-    echo '</pre>';
+    // don't run the CSS stuff in admin
+    if ( is_admin() ){
+        return $button;
+    }
 
-    if (isset($form['proudActionButton']) && $form['proudActionButton']) {
+    if (isset($form['button']['proudActionButton']) && $form['button']['proudActionButton']) {
         $actionColor = get_theme_mod('color_action_button', '#e49c11');
 
-        $style = '<style type="text/css">.gform_button.button{background-color:' . $actionColor . ' !important; border-color:' . $actionColor . ' !important;}</style>';
+        $style = '<style type="text/css">.gform_button.button{background-color:' . $actionColor . ' !important; border-color:' . $actionColor . ' !important; color:black !important;}</style>';
         return $style . ' ' . $button;
     } else {
         return $button;
     }
 }
-//add_action( 'gform_submit_button', 'proud_apply_action_button_color', 10, 2 );
+add_action( 'gform_submit_button', 'proud_apply_action_button_color', 10, 2 );
