@@ -85,17 +85,17 @@ class CTA extends Core\ProudWidget
 
         if ($instance['classname'] == 'action') {
             $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
-            $textColor   = \Proud\Core\proud_contrast_color( $actionColor );
+            $textColor   = \Proud\Core\proud_contrast_color($actionColor);
 
         ?>
             <style type="text/css">
                 .card.card-btn.action {
                     background-color: <?php echo esc_html($actionColor); ?>;
-                    color: <?php echo $textColor; ?>;
+                    color: <?php echo $textColor; ?> !important;
                 }
 
                 .card.card-btn.action .h4 {
-                    color: <?php echo $textColor; ?>;
+                    color: <?php echo $textColor; ?> !important;
                 }
             </style>
         <?php
