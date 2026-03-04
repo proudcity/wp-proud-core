@@ -25,7 +25,7 @@ class SubTitle extends Core\ProudWidget
                 '#title' => 'Title',
                 '#type' => 'text',
                 '#default_value' => '',
-                '#description' => 'Text for the subtitle',
+                '#description' => 'Write a sentence or 2 describing the purpose or main message of the page. Max 155 characters.',
                 '#to_js_settings' => false
             ],
         ];
