@@ -77,16 +77,17 @@ class IconLink extends Core\ProudWidget
 
         if ($instance['classname'] == 'action') {
             $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
+            $textColor   = \Proud\Core\proud_contrast_color($actionColor);
 
 ?>
             <style type="text/css">
                 .card.card-btn.action {
                     background-color: <?php echo esc_html($actionColor); ?>;
-                    color: white;
+                    color: <?php echo $textColor ?>;
                 }
 
                 .card.card-btn.action .h4 {
-                    color: white;
+                    color: <?php echo $textColor ?>;
                 }
             </style>
         <?php
