@@ -188,7 +188,6 @@ class ProudMenu
             $this->wrapper_template = plugin_dir_path(__FILE__) . 'templates/textcard-wrapper.php';
             $this->show_level       = false;
             $this->back_template    = null; // explicitly disabled
-
         } else {
             $this->link_template    = plugin_dir_path(__FILE__) . 'templates/menu-item.php';
             $this->wrapper_template = plugin_dir_path(__FILE__) . 'templates/menu-wrapper.php';
@@ -222,6 +221,7 @@ class ProudMenu
         }
 
         foreach ($current_menu as $key => $item) {
+
             $children = !empty($item['children']);
 
             // For textcard: only show top-level items (no children, no recursion)

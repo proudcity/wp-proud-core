@@ -68,15 +68,17 @@ class CTA extends Core\ProudWidget
     {
 ?>
         <style type="text/css">
+        .card-wrap.action-button{width:33%;}
+
             .card.card-btn.card-btn-action {
                 width: 33%;
-                min-width: 300px;
+                min-width: 250px;
             }
 
             @media screen and (max-width: 700px) {
                 .card.card-btn.card-btn-action {
                     width: 100%;
-                    min-width: 300px;
+                    min-width: 250px;
                 }
             }
         </style>
@@ -102,7 +104,7 @@ class CTA extends Core\ProudWidget
         }
 
         ?>
-        <div class="card-wrap">
+        <div class="card-wrap action-button">
             <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-btn-action card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
                 <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
             </a>

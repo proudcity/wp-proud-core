@@ -1,3 +1,4 @@
 .DS_Store
 .php-cs-fixer.cache
+.php-cs-fixer.dist.php
 .direnv/*
