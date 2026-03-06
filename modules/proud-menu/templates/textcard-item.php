@@ -6,10 +6,7 @@
                     <h3>
                         <?php echo esc_attr($item['title']); ?>
                     </h3>
-                    <?php echo '<pre>';
-                    print_r($item);
-                    echo '</pre>';
-                    ?>
+
                     <?php if (!empty($item['excerpt'])) : ?>
                         <p class="card-excerpt"><?php echo esc_html($item['excerpt']); ?></p>
                     <?php endif; ?>
