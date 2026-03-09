@@ -25,6 +25,7 @@ if (class_exists('GFCommon')) {
         add_filter('wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1);
 
         add_filter('gform_enable_legacy_markup', '__return_false');
+        add_filter('gform_form_theme_slug', __NAMESPACE__ . '\\proud_force_orbital_theme', 10, 2);
 
         add_filter('gform_field_content', __NAMESPACE__ . '\\gf_remove_aria_required', 999, 5);
 
@@ -51,6 +52,20 @@ if (class_exists('GFCommon')) {
 
     add_action('init', __NAMESPACE__ . '\\proud_gravityforms_init', 11);
 
+    /**
+     * Forces the orbital theme on all forms at render time
+     *
+     * @since 2026.02.09
+     * @author Curtis <curtis@proudcity.com>
+     *
+     * @param string $slug required Slug for the form
+     * @param string $form required The form object 
+     *
+     * @return string The new slug we're forcing
+     */
+    function proud_force_orbital_theme( $slug, $form ){
+        return 'orbital';
+    }
 
     /**
      * Removes the aria-required="true" field as it makes screen readers state "required" twice when the
