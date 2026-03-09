@@ -24,7 +24,7 @@ if (class_exists('GFCommon')) {
         remove_all_filters('wp_ajax_gf_download_export', 10);
         add_filter('wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1);
 
-        //add_filter('gform_enable_legacy_markup', '__return_true');
+        add_filter('gform_enable_legacy_markup', '__return_false');
 
         add_filter('gform_field_content', __NAMESPACE__ . '\\gf_remove_aria_required', 999, 5);
 
