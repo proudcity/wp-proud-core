@@ -23,7 +23,7 @@ class SubTitle extends Core\ProudWidget
         $this->settings = [
             'subtitle_title' => [
                 '#title' => 'Title',
-                '#type' => 'text',
+                '#type' => 'textarea',
                 '#default_value' => '',
                 '#description' => 'Write a sentence or 2 describing the purpose or main message of the page. Max 155 characters.',
                 '#to_js_settings' => false
