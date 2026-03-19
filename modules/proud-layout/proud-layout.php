@@ -95,7 +95,10 @@ if ( !class_exists( 'ProudLayout' ) ) {
          * Helper function checks if page is full width
          */
         public function post_is_full_width( ){
-          if ( is_page() || get_post_type() == 'agency' ) {
+
+            $fullwidth = array( 'agency', 'proud-topic');
+
+          if ( is_page() || in_array( get_post_type(), $fullwidth ) ) {
             // @todo: fix this so we dont need to reference post ids
             $id = get_the_ID();
             return !empty( $this->get_site_origins_meta() ) 
