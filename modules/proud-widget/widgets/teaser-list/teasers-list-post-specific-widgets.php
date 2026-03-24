@@ -171,7 +171,7 @@ class TopicTeaserListWidget extends TeaserListWidget {
     );
 
     $this->post_type = 'proud-topic';
-    $this->display_modes = [ 'cards', 'media', 'icons', 'table' ];
+    $this->display_modes = [ 'cards', 'media', 'icons' ];
 
     // Sort options
     $this->display_sort = true;
