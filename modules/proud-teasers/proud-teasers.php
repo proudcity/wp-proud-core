@@ -835,6 +835,7 @@ if (!class_exists('TeaserList')) {
                     // Intentionally no break
                     // no break
                 case 'agency':
+                case 'proud-topic':
                 case 'event':
                     $meta = get_post_meta($post->ID);
                     // Uncomment to test event times

@@ -160,6 +160,119 @@ class ContactTeaserListWidget extends TeaserListWidget {
 
 }
 
+// Topic
+class TopicTeaserListWidget extends TeaserListWidget {
+  function __construct(  ) {
+    parent::__construct(
+      'proud_topic_teaser_list', // Base ID
+      __( 'Topic list', 'wp-proud-core' ), // Name
+      array( 'description' => __( 'List of topics', 'wp-proud-core' ), ), // Args
+      get_class($this)
+    );
+
+    $this->post_type = 'proud-topic';
+    $this->display_modes = [ 'cards', 'media', 'icons', 'table' ];
+
+    // Sort options
+    $this->display_sort = true;
+    $this->sort_by_options += [
+      'menu_order' => 'Menu Order',
+    ];
+    $this->sort_by_default = 'menu_order'; // Sort by
+    $this->sort_order_default = 'ASC'; // Sort direction
+
+  }
+
+  function initialize() {
+    parent::initialize();
+
+    // Add some hiding options
+    $hide_if_specific = ['pager', 'post_count'];
+    foreach ($hide_if_specific as $value) {
+      $rule = [
+        'use_specific' => [
+          'operator' => '==',
+          'value' => ['1'],
+          'glue' => '||'
+        ],
+      ];
+      if( empty( $this->settings[$value]['#states'] ) ) {
+        $this->settings[$value]['#states'] = ['hidden' => []];
+      }
+      if( empty( $this->settings[$value]['#states']['hidden']) ) {
+        $this->settings[$value]['#states']['hidden'] = $rule;
+      }
+      else {
+        $this->settings[$value]['#states']['hidden'] = array_merge( 
+          $this->settings[$value]['#states']['hidden'], $rule 
+        );
+      }
+    }
+
+    $topic_list = [];
+
+    // Don't load when not in admin
+    if ( is_admin() ) {
+	    // Build list of agencies
+	    $query = new \WP_Query( [
+		    'post_type'      => 'proud-topic',
+		    'post_status'    => 'publish',
+		    'posts_per_page' => 100,
+	    ] );
+	    foreach ( $query->posts as $key => $topic ) {
+		    $topic_list[ $topic->ID ] = $topic->post_title;
+	    }
+    }
+
+    $this->settings += [
+      'use_specific' => [
+        '#type' => 'checkbox',
+        '#title' => 'Specific Topics',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Display specific topics instead of listing them?',
+        '#default_value' => false
+      ],
+      'specific_ids' => [
+        '#title' => __('To display', 'proud-teaser'),
+        '#description' => __('Select the topic to display', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => array_combine( array_keys( $topic_list ), array_keys( $topic_list ) ),
+        '#options' => $topic_list,
+        '#states' => [
+          'visible' => [
+            'use_specific' => [
+              'operator' => '==',
+              'value' => ['1'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+      'proud_teaser_hide' => [
+        '#title' => __('Hide Columns', 'proud-teaser'),
+        '#description' => __('Select columns that you would not like to appear in your table', 'proud-teaser'),
+        '#type' => 'checkboxes',
+        '#default_value' => [],
+        '#options' => [
+          'person' => __( 'Person', 'proud-teaser' ),
+          'social' => __( 'Social', 'proud-teaser' ),
+        ],
+        '#states' => [
+          'hidden' => [
+            'proud_teaser_display' => [
+              'operator' => '!=',
+              'value' => ['table'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
+    ];
+  }
+
+}
+
 
 // Agency
 class AgencyTeaserListWidget extends TeaserListWidget {

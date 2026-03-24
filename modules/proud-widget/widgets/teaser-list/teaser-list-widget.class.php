@@ -473,6 +473,7 @@ function register_teaser_list_widget()
     register_widget('JobTeaserListWidget');
     register_widget('ContactTeaserListWidget');
     register_widget('AgencyTeaserListWidget');
+    register_widget('TopicTeaserListWidget');
     register_widget('QuestionTeaserListWidget');
     register_widget('MeetingTeaserListWidget');
     //register_widget( 'PastMeetingTeaserListWidget' );
