@@ -146,6 +146,15 @@ if ( !class_exists( 'ProudLayout' ) ) {
                                && $pageInfo['parent_post_type'] === 'agency';
               }
               // Sidebar specific call
+              // parent should be proud-topic
+              elseif ( $req === 'proud-topic' ) {
+                $display = (bool) !empty( $pageInfo['parent_post'] )
+                               && !$this->post_has_full_breadcrumb()
+                               && !$this->post_has_full_jumbotron_header()
+                               && !empty( $pageInfo['parent_post_type'] )
+                               && $pageInfo['parent_post_type'] === 'proud-topic';
+              }
+              // Sidebar specific call
               // parent should NOT be agency
               elseif ( $req === 'noagency' ) {
                 $display = (bool) !empty( $pageInfo['parent_link'] )

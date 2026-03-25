@@ -440,7 +440,16 @@ class Proudcore extends \ProudPlugin
                             $pageInfo['menu']
                         ));
                         if (!empty($pageInfo['parent_post'])) {
-                            $pageInfo['parent_post_type'] = 'agency';
+                            $pageInfo['parent_post_type'] = get_post_type($pageInfo['parent_post']);
+                        } else {
+                            // Fallback: look for a proud-topic whose slug matches the menu slug
+                            $pageInfo['parent_post'] = $wpdb->get_var($wpdb->prepare(
+                                "SELECT ID FROM {$wpdb->posts} WHERE post_name = %s AND post_type = 'proud-topic' AND post_status = 'publish'",
+                                $pageInfo['menu']
+                            ));
+                            if (!empty($pageInfo['parent_post'])) {
+                                $pageInfo['parent_post_type'] = 'proud-topic';
+                            }
                         }
                     }
                 }
