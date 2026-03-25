@@ -402,10 +402,10 @@ class Proudcore extends \ProudPlugin
         return $sources;
     }
 
-    // If this post is a page, get the menu information
+    // If this post is a page or proud-topic, get the menu information
     public function getPageInfo()
     {
-        if (is_page()) {
+        if (is_page() || is_singular('proud-topic')) {
             global $pageInfo;
             global $wpdb;
             if (empty($pageInfo)) {

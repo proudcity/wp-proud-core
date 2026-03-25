@@ -120,8 +120,15 @@ if ( !class_exists( 'ProudLayout' ) ) {
         function page_parent_info( $req = false ) {
 
           $display = false;
-          
-          if ( is_page() ) {
+
+          // proud-topic posts are CPTs, not pages — handle them separately
+          if ( is_singular( 'proud-topic' ) ) {
+            if ( $req === false || $req === 'proud-topic' ) {
+              $display = (bool) !$this->post_has_full_breadcrumb()
+                             && !$this->post_has_full_jumbotron_header();
+            }
+          }
+          elseif ( is_page() ) {
             // $pageInfo is set in wp-proud-core on init
             global $pageInfo;
             if ( !empty( $pageInfo['parent_post'] ) || !empty( $pageInfo['parent_link'] ) ) {

@@ -322,8 +322,8 @@ class ProudBreadcrumb
                     }
                 }
                 if (! empty($pageInfo['parent_post_type'])) {
-                    // If we're an agency, prepend the agency title
-                    if ($pageInfo['parent_post_type'] === 'agency') {
+                    // If we're an agency or proud-topic, prepend the parent title
+                    if ($pageInfo['parent_post_type'] === 'agency' || $pageInfo['parent_post_type'] === 'proud-topic') {
                         array_unshift($active_trail, [
                             'url'   => get_permalink($pageInfo['parent_post']),
                             'title' => get_the_title($pageInfo['parent_post'])
