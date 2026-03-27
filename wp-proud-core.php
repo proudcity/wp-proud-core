@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2026.03.25.1601
+Version:            2026.03.27.0924
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -69,6 +69,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-seo/proud-wo
 require_once plugin_dir_path(__FILE__) . 'plugin_override/general.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/simple-staff-list/simple-staff-list.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-media-folder/proud-wp-media-folder.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-faq-manager/proud-wordpress-faq-manager.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 

@@ -1,3 +1,11 @@
+## 2026-03-27
+
+### Deregister wordpress-faq-manager widgets
+References: https://github.com/proudcity/wp-proudcity/issues/2777
+
+- `plugin_override/wordpress-faq-manager/proud-wordpress-faq-manager.php` — new file; deregisters all five widgets provided by the wordpress-faq-manager plugin (`Search_FAQ_Widget`, `Random_FAQ_Widget`, `Recent_FAQ_Widget`, `Topics_FAQ_Widget`, `Cloud_FAQ_Widget`) at `widgets_init` priority 20 so they are unavailable on the ProudCity platform without modifying the upstream plugin
+- `wp-proud-core.php` — added `require_once` for the new faq-manager override file
+
 ## 2026-03-25
 
 ### Topic subpage sidebar/breadcrumb support
