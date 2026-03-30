@@ -1,4 +1,11 @@
-<div class="<?php print implode( ' ', $classes ) ?>" id="<?php print $random_id ?>" style="<?php print implode( '', $arr_styles ) ?>">
+<?php
+$jumbotronClass = "jumbotron-full";
+if ( isset($resp_img)){
+    $jumbotronClass = 'jumbotron-image';
+}
+?>
+
+<div class="<?php print implode( ' ', $classes ) ?> <?php echo sanitize_html_class($jumbotronClass); ?>" id="<?php print $random_id ?>" style="<?php print implode( '', $arr_styles ) ?>"><!-- wp-proud-core/modules/proud-widget/widgets/jumbotron-header/templates/jumbotron-full.php -->
   <?php if( !empty( $resp_img ) ) { Proud\Core\print_responsive_image( $resp_img, $resp_img_classes ); } ?>
   <div class="container"><div class="full-container">
     <div class="<?php print implode( ' ', $boxclasses ) ?>"><div class="row"><div class="col-lg-7 col-md-8 col-sm-9">

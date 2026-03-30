@@ -1,4 +1,4 @@
-<div id="<?php print $random_id ?>" class="carousel slide" data-ride="carousel">
+<div id="<?php print $random_id ?>" class="carousel slide jumbotron-slideshow" data-ride="carousel"><!-- wp-proud-core/modules/proud-widget/widgets/jumbotron-header/templates/jumbotron-slideshow.php -->
     <!-- Indicators -->
     <ol class="carousel-indicators">
         <?php foreach ($instance['slideshow'] as $key => $slide) : ?>
