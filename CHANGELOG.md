@@ -1,3 +1,13 @@
+## 2026-03-30
+
+### Jumbotron header class switch for full vs random image headers
+References: https://github.com/proudcity/wp-proudcity/issues/2779
+
+- `modules/widgets/jumbotron-header/templates/jumbotron-full.php` — added file label and class switch for full header
+- `modules/widgets/jumbotron-header/templates/jumbotron-header.php` — added class switch logic
+- `modules/widgets/jumbotron-header/templates/jumbotron-simple.php` — added class switch logic
+- `modules/widgets/jumbotron-header/templates/jumbotron-slideshow.php` — added class switch logic
+
 ## 2026-03-27
 
 ### Deregister wordpress-faq-manager widgets
