@@ -1,3 +1,10 @@
+## 2026-04-14
+
+### Fix box-shadow and hover state on action buttons
+References: https://github.com/proudcity/wp-proudcity/issues/2753
+
+- `modules/proud-widget/widgets/cta-widget/cta-button-widget.class.php` — removed box-shadow from `.card.card-btn.card-btn-action`; added matching border color to `.card.card-btn.action` so the card edge doesn't flash on hover; added `:focus` and `:hover` rules that switch the background to white while preserving the text color
+
 ## 2026-03-30
 
 ### Jumbotron header class switch for full vs random image headers
