@@ -70,7 +70,8 @@ class CTA extends Core\ProudWidget
         <style type="text/css">
         .card-wrap.action-button{width:33%;}
 
-            .card.card-btn.card-btn-action {
+        .card.card-btn.card-btn-action {
+                box-shadow:none ;
                 width: 33%;
                 min-width: 250px;
             }
@@ -93,10 +94,17 @@ class CTA extends Core\ProudWidget
             <style type="text/css">
                 .card.card-btn.action {
                     background-color: <?php echo esc_html($actionColor); ?>;
+                    border:1px solid <?php echo esc_html($actionColor); ?>;
                     color: <?php echo $textColor; ?> !important;
                 }
 
                 .card.card-btn.action .h4 {
+                    color: <?php echo $textColor; ?> !important;
+                }
+
+                .card.card-btn.action:focus,
+                .card.card-btn.action:hover {
+                    background-color:#fff;
                     color: <?php echo $textColor; ?> !important;
                 }
             </style>
