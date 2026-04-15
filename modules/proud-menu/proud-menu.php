@@ -31,42 +31,6 @@ class ProudMenuUtil
     }
 
     /**
-     * Helper attaches children onto menu
-     * http://stackoverflow.com/a/2447631/1327637
-     */
-    private static function insert_deep(&$array, array $keys, &$value, &$active_trail)
-    {
-        $last = array_pop($keys);
-        if (!empty($keys)) {
-            foreach ($keys as $key) {
-                if (
-                    !array_key_exists($key, $array) ||
-                    array_key_exists($key, $array) && !is_array($array[$key])
-                ) {
-                    $array[$key] = array();
-                    $array[$key]['children'] = array();
-                    if (!empty($value['active'])) {
-                        $active_trail[(string) $key] = '';
-                        $array[$key]['active_trail'] = true;
-                    }
-                }
-                $array = &$array[$key]['children'];
-            }
-        }
-        $array[$last] = $value;
-    }
-
-    /**
-     * Helper attaches children onto menu
-     */
-    private static function attach_link(&$menu_structure, $menu_depth_stack, $link_obj, &$active_trail)
-    {
-        $merge_arr = [];
-        self::insert_deep($merge_arr, $menu_depth_stack, $link_obj, $active_trail);
-        $menu_structure = array_merge_deep_array([$menu_structure, $merge_arr]);
-    }
-
-    /**
      * Takes WP flat menu and makes nested
      */
     public static function get_nested_menu($menu_id)
@@ -74,56 +38,79 @@ class ProudMenuUtil
         if (!empty(self::$menu_structures[$menu_id])) {
             return self::$menu_structures[$menu_id];
         }
-        // Track active trail hits
-        $active_trail = [];
-        // menu arr
+        $active_trail   = [];
         $menu_structure = [];
-        // grab menu info
-        global $proud_menu_util;
         $menu_items = self::get_menu_items($menu_id);
         if (!empty($menu_items)) {
             global $post;
 
-            // How deep we are into children
-            $menu_depth_stack = [];
+            // Build item data and a parent→children map (preserving menu_order within each level).
+            $items_data  = [];
+            $children_of = []; // parent nav_menu_item ID => [child IDs in menu_order]
 
             foreach ($menu_items as $menu_item) {
                 $link_obj = [
-                    'url' => $menu_item->url,
-                    'title' => $menu_item->title,
-                    'mid' => $menu_item->object_id,
-                    // add these so you can decide how to fetch excerpt/description
-                    'type'      => $menu_item->type,   // 'post_type', 'taxonomy', 'custom'
-                    'object'    => $menu_item->object, // e.g. 'page', 'post', 'category', custom taxonomy slug, etc.
-                    // new:
-                    'excerpt'   => \Proud\Core\pc_get_yoast_meta_or_excerpt(absint($menu_item->object_id)),
+                    'url'     => $menu_item->url,
+                    'title'   => $menu_item->title,
+                    'mid'     => $menu_item->object_id,
+                    'type'    => $menu_item->type,
+                    'object'  => $menu_item->object,
+                    'excerpt' => \Proud\Core\pc_get_yoast_meta_or_excerpt(absint($menu_item->object_id)),
                 ];
-                // Active?
                 if (!empty($menu_item->object_id) && $post->ID === (int) $menu_item->object_id) {
                     $link_obj['active'] = true;
                 }
-                // Top level
-                if (!$menu_item->menu_item_parent) {
-                    // Reset stack
-                    $menu_depth_stack = [$menu_item->ID];
-                } else {
-                    // Find the right parent item
-                    while (end($menu_depth_stack)) {
-                        // Found parent
-                        if (end($menu_depth_stack) === (int) $menu_item->menu_item_parent) {
+                $parent = (int) $menu_item->menu_item_parent;
+                if ($parent) {
+                    $link_obj['pid'] = $parent;
+                }
+                $items_data[$menu_item->ID]  = $link_obj;
+                $children_of[$parent][]      = $menu_item->ID;
+            }
+
+            // Recursively build the tree using explicit parent IDs so that nesting is
+            // correct regardless of menu_order values (the previous stack-based approach
+            // broke whenever an item's menu_order placed it after a sibling branch).
+            $build = function (int $parent_id) use (&$build, &$items_data, &$children_of, &$active_trail): array {
+                if (empty($children_of[$parent_id])) {
+                    return [];
+                }
+                $result = [];
+                foreach ($children_of[$parent_id] as $item_id) {
+                    $item     = $items_data[$item_id];
+                    $children = $build($item_id);
+
+                    if (!empty($children)) {
+                        $item['children'] = $children;
+                    }
+
+                    $is_active             = !empty($item['active']);
+                    $has_active_descendant = false;
+                    foreach ($children as $child) {
+                        if (!empty($child['active']) || !empty($child['active_trail'])) {
+                            $has_active_descendant = true;
                             break;
                         }
-                        array_pop($menu_depth_stack);
                     }
-                    array_push($menu_depth_stack, $menu_item->ID);
-                    $link_obj['pid'] = $menu_item->menu_item_parent;
+
+                    if ($is_active) {
+                        $active_trail[(string) $item_id] = '';
+                    }
+                    if ($has_active_descendant) {
+                        $active_trail[(string) $item_id] = '';
+                        $item['active_trail']             = true;
+                    }
+
+                    $result[$item_id] = $item;
                 }
-                self::attach_link($menu_structure, $menu_depth_stack, $link_obj, $active_trail);
-                // Add active
-                if (!empty($link_obj['active'])) {
-                    $active_trail[(string) $menu_item->ID] = '';
-                }
-            }
+                return $result;
+            };
+
+            $menu_structure = $build(0);
+            // $build() inserts active_trail entries leaf→root as the call stack unwinds.
+            // build_breadcrumb() relies on the active item being last (it breaks when
+            // end($active_trail) is non-empty), so reverse to root→leaf order.
+            $active_trail = array_reverse($active_trail, true);
         }
         // Cache
         self::$menu_structures[$menu_id] = $menu_structure;
@@ -204,6 +191,8 @@ class ProudMenu
      */
     public function build_recursive($current_menu, &$menus, &$active, $parent = false)
     {
+
+
         $count = count($menus) + 1;
         $menu_level = 'level-' . $count;
 
@@ -220,7 +209,7 @@ class ProudMenu
             $menus[$menu_level] .= ob_get_clean();
         }
 
-        foreach ($current_menu as $key => $item) {
+        foreach ($current_menu as $item) {
 
             $children = !empty($item['children']);
 
@@ -371,7 +360,7 @@ class ProudBreadcrumb
  * @param   array       $args               required            array of values that are getting saved in the menu
  * @uses    update_post_meta()                                  updates post meta given key, post_id, value
  */
-function proud_menu_fix($menu_id, $menu_item_db_id, $args)
+function proud_menu_fix($_menu_id, $menu_item_db_id, $args)
 {
 
     // if ID of the current item and ID of parent match we get recursion so correct that

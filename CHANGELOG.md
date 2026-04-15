@@ -1,3 +1,28 @@
+## 2026-04-15
+
+### Fix: Menu nesting lost after adding a page via Quick Menu
+
+The `get_nested_menu` algorithm used a depth-stack that assumed menu items were returned in strict depth-first `menu_order` sequence. Items added via Quick Menu received `menu_order = count($menu_items)`, which could collide with existing items and cause MySQL to return some child items after a sibling branch had already been processed. When that happened, those children's parents were no longer on the stack and they silently dropped to root level.
+
+Replaced the stack-based algorithm with a `parent_id → children` lookup map that recursively builds the tree using explicit parent IDs, so nesting is always correct regardless of `menu_order` values.
+
+Also fixed the `active_trail` insertion order: the recursive approach built the trail leaf→root, but `build_breadcrumb` requires root→leaf (it stops when `end($active_trail)` is non-empty, which must be the active item). Added `array_reverse` after the build to correct this — without it the breadcrumb crashed with "Cannot access offset of type string on string".
+
+**Files changed:**
+- `modules/proud-menu/proud-menu.php`
+
+**Changes:**
+- `get_nested_menu()`: replaced depth-stack loop with `$children_of` map + recursive `$build` closure
+- `get_nested_menu()`: added `array_reverse( $active_trail, true )` after build to restore root→leaf order
+- Removed dead `insert_deep()` and `attach_link()` methods (no longer called)
+- Removed unused `global $proud_menu_util` from `get_nested_menu()`
+- `build_recursive()`: removed unused `$key =>` from foreach
+- `proud_menu_fix()`: renamed `$menu_id` → `$_menu_id` (required by hook, intentionally unused)
+
+References: https://github.com/proudcity/wp-proudcity/issues/2776
+
+---
+
 ## 2026-04-14
 
 ### Fix box-shadow and hover state on action buttons
