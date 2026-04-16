@@ -68,9 +68,9 @@ class CTA extends Core\ProudWidget
     {
 ?>
         <style type="text/css">
-        .card-wrap.action-button{width:33%;}
+            .card-wrap.action-button{width:33%;}
 
-        .card.card-btn.card-btn-action {
+            .card.card-btn.card-btn-action {
                 box-shadow:none ;
                 width: 33%;
                 min-width: 250px;

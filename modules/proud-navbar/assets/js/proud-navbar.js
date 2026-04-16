@@ -177,6 +177,20 @@
       });
     });
 
+    // mobile menu open — header region button (mobile only)
+    $('#header-menu-button').once('proud-navbar', function() {
+      $(this).click(function(e) {
+        e.preventDefault();
+        if (menuItemTimer) {
+          clearTimeout(menuItemTimer);
+        }
+        if(!$body.hasClass('menu-nav-open')) {
+          $('#main-menu').children(":first").children().focus();
+        }
+        proudNav.toggleMenu();
+      });
+    });
+
     // On main menu focus (tabbing) open up menu
     $('#main-menu').once('proud-main-menu', function() {
       $('a', $(this)).on('focusin', function () {
@@ -186,6 +200,14 @@
         menuItemTimer = setTimeout(function() {
           proudNav.closeLayers(['menu']);
         }, 100);
+      });
+    });
+
+    // close button inside sliding menu (mobile)
+    $('#menu-close-button').once('proud-navbar', function() {
+      $(this).click(function(e) {
+        e.preventDefault();
+        proudNav.closeLayers(['menu']);
       });
     });
 

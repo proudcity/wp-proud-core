@@ -1,3 +1,19 @@
+## 2026-04-16
+
+### Feature: Mobile menu moved to header region (issue #2757)
+
+On mobile (< 911px), the hamburger button and action toolbar (`.menu-box`) now appear beside the logo in `.navbar-header-region` instead of being pinned to the bottom of the viewport.
+
+Changes in `navbar.php`:
+- Added `.header-region-menu-box` div inside `.navbar-header-region` containing a new `#header-menu-button` (hamburger with "Menu" label below it) and a copy of `.menu-box`
+- Added `#menu-close-button` (× button) inside `#navbar-external`, shown fixed at top-right when the menu is open
+
+Changes in `proud-navbar.js`:
+- Added click handler for `#header-menu-button` to toggle the menu
+- Added click handler for `#menu-close-button` to close the menu
+
+References: https://github.com/proudcity/wp-proudcity/issues/2757
+
 ## 2026-04-15
 
 ### Fix: Menu nesting lost after adding a page via Quick Menu
