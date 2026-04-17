@@ -120,6 +120,11 @@ function build_logo_meta($logo, $title_name)
             } else {
                 $image_meta = Core\build_retina_image_meta($media_id, 'proud-logo', 'proud-logo-retina');
             }
+            // wp_get_attachment_metadata() returns false for attachments with no
+            // registered metadata; normalize to an array before writing into it.
+            if (!is_array($image_meta['meta'])) {
+                $image_meta['meta'] = [];
+            }
             $image_meta['meta']['image_meta']['alt'] = 'Home';
             $image_meta['meta']['image_meta']['title'] = 'Home';
             $image_meta['meta']['image_meta']['class'] = 'logo';

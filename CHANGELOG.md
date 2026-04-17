@@ -1,5 +1,11 @@
 ## 2026-04-17
 
+- Fixed PHP 8.1 deprecation notice in `build_logo_meta()`: `wp_get_attachment_metadata()` returns `false` for attachments with no registered metadata (SVGs, pre-sized uploads); added `is_array()` guard in `build_retina_image_meta()` to normalize the `meta` key to an empty array before writing into it, preventing automatic `false`-to-array conversion
+
+References: https://github.com/proudcity/wp-proudcity/issues/2807
+
+## 2026-04-17
+
 - Fixed fatal `TypeError` in `ProudBreadcrumb::build_breadcrumb()` caused by non-sequential `menu_order` leaving trail slots as empty strings; removed fragile early `break`, added `array_filter` to drop unfilled slots, and used `array_key_last()` to mark the active item
 - Fixed second fatal `TypeError` in `build_breadcrumb()` when `reset($active_trail)` returned `false` on an empty trail after filtering; added `is_array($firstItem)` guard before accessing `['post_id']`
 - Fixed duplicate active-branch bug in `ProudMenuUtil::get_nested_menu()` when the same post appears more than once in a menu; added `$found_active` flag so only the first occurrence is marked active
