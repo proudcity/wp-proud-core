@@ -71,7 +71,11 @@ class ProudMenuUtil
             // Recursively build the tree using explicit parent IDs so that nesting is
             // correct regardless of menu_order values (the previous stack-based approach
             // broke whenever an item's menu_order placed it after a sibling branch).
-            $build = function (int $parent_id) use (&$build, &$items_data, &$children_of, &$active_trail): array {
+            //
+            // $found_active prevents a post that appears twice in the menu from creating
+            // two separate active branches — only the first occurrence wins.
+            $found_active = false;
+            $build = function (int $parent_id) use (&$build, &$items_data, &$children_of, &$active_trail, &$found_active): array {
                 if (empty($children_of[$parent_id])) {
                     return [];
                 }
@@ -84,7 +88,8 @@ class ProudMenuUtil
                         $item['children'] = $children;
                     }
 
-                    $is_active             = !empty($item['active']);
+                    // Only the first active occurrence is marked; duplicates are ignored.
+                    $is_active             = !$found_active && !empty($item['active']);
                     $has_active_descendant = false;
                     foreach ($children as $child) {
                         if (!empty($child['active']) || !empty($child['active_trail'])) {
@@ -95,6 +100,7 @@ class ProudMenuUtil
 
                     if ($is_active) {
                         $active_trail[(string) $item_id] = '';
+                        $found_active = true;
                     }
                     if ($has_active_descendant) {
                         $active_trail[(string) $item_id] = '';
@@ -108,8 +114,7 @@ class ProudMenuUtil
 
             $menu_structure = $build(0);
             // $build() inserts active_trail entries leaf→root as the call stack unwinds.
-            // build_breadcrumb() relies on the active item being last (it breaks when
-            // end($active_trail) is non-empty), so reverse to root→leaf order.
+            // Reverse so the trail is in root→leaf display order.
             $active_trail = array_reverse($active_trail, true);
         }
         // Cache
@@ -293,22 +298,27 @@ class ProudBreadcrumb
             $menu_items   = $proud_menu_util::get_menu_items($pageInfo['menu']);
             $active_trail = $proud_menu_util::get_active_trail($pageInfo['menu']);
             if (! empty($menu_items)) {
+                // Fill each trail slot with full item data. Iterate all items rather
+                // than breaking early — menu_order is not guaranteed to be root→leaf,
+                // so an early break could leave ancestor slots as empty strings.
                 foreach ($menu_items as $menu_item) {
                     $menu_id = (string) $menu_item->ID;
                     if (isset($active_trail[$menu_id])) {
                         $active_trail[$menu_id] = [
-                            'url'   => $menu_item->url,
-                            'title' => $menu_item->title,
-                            'menu_id' => $menu_id,
-                            'post_id' => (string) $menu_item->object_id,
+                            'url'      => $menu_item->url,
+                            'title'    => $menu_item->title,
+                            'menu_id'  => $menu_id,
+                            'post_id'  => (string) $menu_item->object_id,
                             'post_type' => $menu_item->object,
                         ];
-                        // We've filled it up
-                        if (! empty(end($active_trail))) {
-                            $active_trail[$menu_id]['active'] = true;
-                            break;
-                        }
                     }
+                }
+                // Drop slots that were never matched (post removed from menu, etc.).
+                $active_trail = array_filter($active_trail, 'is_array');
+                // Mark the deepest item (last in root→leaf trail) as the active page.
+                $last_key = array_key_last($active_trail);
+                if ($last_key !== null) {
+                    $active_trail[$last_key]['active'] = true;
                 }
                 if (! empty($pageInfo['parent_post_type'])) {
                     // If we're an agency or proud-topic, prepend the parent title
@@ -320,8 +330,9 @@ class ProudBreadcrumb
                     } else {
                         $firstItem = reset($active_trail);
 
-                        // Our parent item doesn't match top level, reset
-                        if ($firstItem['post_id'] !== (string) $pageInfo['parent_post']) {
+                        // Our parent item doesn't match top level, reset.
+                        // Guard against an empty trail (firstItem would be false).
+                        if (is_array($firstItem) && $firstItem['post_id'] !== (string) $pageInfo['parent_post']) {
                             $pageInfo['parent_link'] = $firstItem['menu_id'];
                             $pageInfo['parent_post'] = $firstItem['post_id'];
                             $pageInfo['parent_post_type'] = $firstItem['post_type'];
