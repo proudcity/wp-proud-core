@@ -11,7 +11,7 @@ jQuery(document).ready(function($) {
             var data = {
                 'action': 'my_action',
                 'title': $(this).val(),
-                'post_ID' : this_post_id,
+                'post_id' : this_post_id,
                 '_wpnonce': proud_title._wpnonce
             };
             // We can also pass the url value separately from ajaxurl for front end AJAX implementations

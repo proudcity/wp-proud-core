@@ -1,5 +1,10 @@
 ## 2026-04-17
 
+- Added PHPUnit 11 test suite with Brain\Monkey for WP function mocking; covers breadcrumb edge cases (non-sequential `menu_order`, duplicate menu items, empty trail) and navbar `build_logo_meta()` metadata fallback
+- Fixed secondary undefined array key warning on `$image_meta['meta']['height']` when attachment metadata is absent; guarded with `?? 0`
+
+## 2026-04-17
+
 - Fixed PHP 8.1 deprecation notice in `build_logo_meta()`: `wp_get_attachment_metadata()` returns `false` for attachments with no registered metadata (SVGs, pre-sized uploads); added `is_array()` guard in `build_retina_image_meta()` to normalize the `meta` key to an empty array before writing into it, preventing automatic `false`-to-array conversion
 
 References: https://github.com/proudcity/wp-proudcity/issues/2807

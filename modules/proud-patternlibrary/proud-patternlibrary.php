@@ -48,6 +48,11 @@ class ProudPatternLibrary {
             return;
         }
 
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( __( 'Sorry, you do not have permission to view this page.', 'wp-proud-core' ), 403 );
+            return; // wp_die() halts in production; return ensures tests don't reach require_once.
+        }
+
         require_once( plugin_dir_path(__FILE__) . 'templates/page.php' );
 
         exit;

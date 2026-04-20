@@ -131,7 +131,7 @@ function build_logo_meta($logo, $title_name)
             if (!get_theme_mod($title_name)) {
                 // try to maximize height @ 64px (and not divide by zero)
                 // 64 = max height, 32 = current horizontal padding
-                $custom_width = ($image_meta['meta']['height'] > 0) ? $image_meta['meta']['width'] / $image_meta['meta']['height'] * 64 + 32 : 140;
+                $custom_width = (($image_meta['meta']['height'] ?? 0) > 0) ? $image_meta['meta']['width'] / $image_meta['meta']['height'] * 64 + 32 : 140;
                 // 140 max width
                 $custom_width = $custom_width < 140 ? $custom_width : 140;
             }
