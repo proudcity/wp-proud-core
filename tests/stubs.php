@@ -67,6 +67,9 @@ namespace {
     if (!function_exists('get_post_meta')) {
         function get_post_meta() { return ''; }
     }
+    if (!function_exists('get_post')) {
+        function get_post() { return null; }
+    }
     if (!function_exists('get_the_excerpt')) {
         function get_the_excerpt() { return ''; }
     }
@@ -87,6 +90,34 @@ namespace {
     }
     if (!function_exists('add_rewrite_rule')) {
         function add_rewrite_rule() {}
+    }
+    if (!function_exists('update_post_meta')) {
+        function update_post_meta() { return true; }
+    }
+    if (!function_exists('wp_is_post_autosave')) {
+        function wp_is_post_autosave() { return false; }
+    }
+    if (!function_exists('wp_is_post_revision')) {
+        function wp_is_post_revision() { return false; }
+    }
+    if (!function_exists('wp_verify_nonce')) {
+        function wp_verify_nonce() { return false; }
+    }
+    if (!function_exists('wp_nonce_field')) {
+        function wp_nonce_field() { return ''; }
+    }
+    if (!function_exists('esc_attr')) {
+        function esc_attr($text) { return $text; }
+    }
+    if (!function_exists('esc_html')) {
+        function esc_html($text) { return $text; }
+    }
+    if (!function_exists('checked')) {
+        function checked($checked, $current = true, $echo = true) {
+            $result = ( (string) $checked === (string) $current ) ? ' checked="checked"' : '';
+            if ( $echo ) { echo $result; }
+            return $result;
+        }
     }
 }
 

@@ -13,8 +13,10 @@ if ( !class_exists( 'ProudLayout' ) ) {
         private $afterHead = false;
 
         function __construct(){
-          // Add option to hide featured image
-          add_filter( 'admin_post_thumbnail_html', array( $this, 'hide_featured_image' ) );
+          // Add option to hide featured image. Accept $post_id (arg 2) so the
+          // function works correctly in the AJAX context used when setting a
+          // featured image — global $post is not reliable there.
+          add_filter( 'admin_post_thumbnail_html', array( $this, 'hide_featured_image' ), 10, 2 );
           // Add save option
           add_action( 'save_post', array( $this, 'save_featured_image_meta' ), 10, 3 );
         }
@@ -184,18 +186,27 @@ if ( !class_exists( 'ProudLayout' ) ) {
 
         /**
          * Adds hide featured image to post meta
+         *
+         * @param string   $content The existing featured image box HTML.
+         * @param int|null $post_id Post ID passed by the filter (reliable in AJAX context).
          */
-        public function hide_featured_image( $content ){
-          global $post;
+        public function hide_featured_image( $content, $post_id = null ){
+          $post = get_post( $post_id );
+          if ( ! $post ) {
+            return $content;
+          }
           $add_featured_box = $post->post_type === 'post'
                            || $post->post_type === 'page'
                            || $post->post_type === 'agency';
-          if($add_featured_box) {
-            $text = __( 'Don\'t display image on individual page.', 'prefix' );
-            $id = 'hide_featured_image';
-            $value = esc_attr( get_post_meta( $post->ID, $id, true ) );
-            $label = '<label for="' . $id . '" class="selectit"><input name="' . $id . '" type="checkbox" id="' . $id . '" value="' . $value . ' "'. checked( $value, 1, false) .'> ' . $text .'</label>';
-            $content .= $label;
+          if ( $add_featured_box ) {
+            $text  = __( 'Don\'t display image on individual page.', 'prefix' );
+            $id    = 'hide_featured_image';
+            $saved = get_post_meta( $post->ID, $id, true );
+            // $echo = false — prevents output being sent directly into the AJAX
+            // response when the featured image is set via JavaScript.
+            $nonce = wp_nonce_field( 'save_hide_featured_image', 'hide_featured_image_nonce', true, false );
+            $label = '<label for="' . $id . '" class="selectit"><input name="' . $id . '" type="checkbox" id="' . $id . '" value="1"' . checked( $saved, 1, false ) . '> ' . esc_html( $text ) . '</label>';
+            $content .= $nonce . $label;
           }
           return $content;
         }
@@ -207,13 +218,18 @@ if ( !class_exists( 'ProudLayout' ) ) {
          * @param post $post the post.
          */
         function save_featured_image_meta( $post_id, $post, $update ) {
-          $value = 0;
-          if ( isset( $_REQUEST['hide_featured_image'] ) ) {
-              $value = 1;
+          // Skip autosaves — they don't carry meta box fields, so running here
+          // would reset a checked value to 0 before the real save can record it.
+          if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+            return;
           }
-          // Set meta value to either 1 or 0
+          // Only process submissions from the edit-screen form.
+          if ( ! isset( $_POST['hide_featured_image_nonce'] )
+               || ! wp_verify_nonce( $_POST['hide_featured_image_nonce'], 'save_hide_featured_image' ) ) {
+            return;
+          }
+          $value = isset( $_POST['hide_featured_image'] ) ? 1 : 0;
           update_post_meta( $post_id, 'hide_featured_image', $value );
-          
         }
 
     } // ProudLayout

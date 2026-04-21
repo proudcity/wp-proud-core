@@ -1,3 +1,10 @@
+## 2026-04-21
+
+- Fixed "Don't display image on individual page" checkbox disappearing after setting a featured image, causing it to never be submitted on first publish. Root cause: `hide_featured_image()` relied on `global $post`, which is null inside the WordPress AJAX handler that refreshes the featured image meta box after image selection. Fixed by receiving `$post_id` via the filter's second argument and calling `get_post($post_id)` instead. Also fixed `wp_nonce_field()` echoing directly into the AJAX response (corrupting it) by passing `false` as the 4th argument; added autosave/revision guards and nonce verification to `save_featured_image_meta()`; switched from `$_REQUEST` to `$_POST`; fixed checkbox `value` attribute to always be `"1"` instead of the current meta value
+- Added PHPUnit test suite for `proud-layout.php`: 11 tests covering checkbox rendering, AJAX context, nonce output, save guards, and value handling
+
+References: https://github.com/proudcity/wp-proudcity/issues/2804
+
 ## 2026-04-17
 
 - Added PHPUnit 11 test suite with Brain\Monkey for WP function mocking; covers breadcrumb edge cases (non-sequential `menu_order`, duplicate menu items, empty trail) and navbar `build_logo_meta()` metadata fallback

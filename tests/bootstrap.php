@@ -43,3 +43,7 @@ require_once __DIR__ . '/../modules/proud-pagetitle/proud-pagetitle.php';
 // proud-patternlibrary.php defines ProudPatternLibrary and instantiates it
 // once. The constructor calls add_action (stubbed, so no side effects).
 require_once __DIR__ . '/../modules/proud-patternlibrary/proud-patternlibrary.php';
+
+// proud-layout.php defines ProudLayout; constructor calls add_filter/add_action
+// (stubbed, so no side effects).
+require_once __DIR__ . '/../modules/proud-layout/proud-layout.php';
