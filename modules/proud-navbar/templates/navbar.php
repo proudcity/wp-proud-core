@@ -28,7 +28,6 @@
                 <span class="hamburger-bars"></span>
             </span>
         </a>
-        <button class="menu-close-btn" id="menu-close-button" aria-label="Close menu">&times;</button>
         <?php print get_nav_primary_menu(); ?>
         <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php endif; ?>">
             <?php if (!$topbar_has_action_toolbar): ?>
@@ -49,19 +48,6 @@
                         <a href="<?php echo get_site_name_link_url(); ?>" title="Home" rel="home" class="navbar-brand nav-text site-name"><strong><?php bloginfo('name'); ?></strong></a>
                     </li>
                 </ul>
-                <div class="header-region-menu-box">
-                    <a title="Toggle mobile menu" id="header-menu-button" href="#" class="btn navbar-btn menu-button header-menu-button" aria-controls="main-menu">
-                        <span class="hamburger">
-                            <span class="hamburger-bars"></span>
-                        </span>
-                        <span class="menu-button-label">Menu</span>
-                    </a>
-                    <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php endif; ?>">
-                        <?php if (!$topbar_has_action_toolbar): ?>
-                            <?php print get_nav_action_toolbar(); ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
