@@ -19,6 +19,8 @@ if ( !class_exists( 'ProudLayout' ) ) {
           add_filter( 'admin_post_thumbnail_html', array( $this, 'hide_featured_image' ), 10, 2 );
           // Add save option
           add_action( 'save_post', array( $this, 'save_featured_image_meta' ), 10, 3 );
+          // Wrap tables in a responsive container for mobile.
+          add_filter( 'the_content', array( $this, 'make_tables_responsive' ) );
         }
 
         /**
@@ -230,6 +232,35 @@ if ( !class_exists( 'ProudLayout' ) ) {
           }
           $value = isset( $_POST['hide_featured_image'] ) ? 1 : 0;
           update_post_meta( $post_id, 'hide_featured_image', $value );
+        }
+
+        /**
+         * Wrap <table> elements in post content with a Bootstrap 3 responsive
+         * container so they scroll horizontally on narrow viewports.
+         *
+         * @param string $content Post content passed through the_content filter.
+         * @return string Modified content with tables wrapped.
+         */
+        public function make_tables_responsive( string $content ): string {
+            if ( strpos( $content, '<table' ) === false ) {
+                return $content;
+            }
+
+            // Strip any existing wrappers first so the operation is idempotent.
+            $content = preg_replace(
+                '/<div\s+class="table-responsive">\s*(<table[\s\S]*?<\/table>)\s*<\/div>/i',
+                '$1',
+                $content
+            );
+
+            // Wrap every table.
+            $content = preg_replace(
+                '/(<table[\s\S]*?<\/table>)/i',
+                '<div class="table-responsive">$1</div>',
+                $content
+            );
+
+            return $content;
         }
 
     } // ProudLayout

@@ -268,3 +268,97 @@ class ProudLayoutTest extends TestCase
             'Checkbox value attribute must always be "1", not the meta value.');
     }
 }
+
+/**
+ * Tests for ProudLayout::make_tables_responsive().
+ *
+ * Covers issue #2266: tables in post content are not responsive on mobile.
+ * The fix wraps <table> elements in <div class="table-responsive"> (Bootstrap 3).
+ */
+class ProudLayoutTableTest extends TestCase
+{
+    private ProudLayout $layout;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Monkey\setUp();
+        $this->layout = new ProudLayout();
+    }
+
+    protected function tearDown(): void
+    {
+        Monkey\tearDown();
+        parent::tearDown();
+    }
+
+    /**
+     * Content with no tables must be returned unchanged.
+     */
+    public function test_content_without_tables_is_unchanged(): void
+    {
+        $content = '<p>No tables here.</p>';
+
+        $result = $this->layout->make_tables_responsive( $content );
+
+        $this->assertSame( $content, $result );
+    }
+
+    /**
+     * A plain <table> must be wrapped in <div class="table-responsive">.
+     */
+    public function test_plain_table_gets_wrapped(): void
+    {
+        $content = '<table><tr><td>Cell</td></tr></table>';
+
+        $result = $this->layout->make_tables_responsive( $content );
+
+        $this->assertSame(
+            '<div class="table-responsive"><table><tr><td>Cell</td></tr></table></div>',
+            $result
+        );
+    }
+
+    /**
+     * A table already wrapped in table-responsive must not be double-wrapped.
+     */
+    public function test_already_wrapped_table_is_not_double_wrapped(): void
+    {
+        $content = '<div class="table-responsive"><table><tr><td>Cell</td></tr></table></div>';
+
+        $result = $this->layout->make_tables_responsive( $content );
+
+        $this->assertSame( $content, $result );
+    }
+
+    /**
+     * Multiple tables must all be individually wrapped.
+     */
+    public function test_multiple_tables_all_get_wrapped(): void
+    {
+        $content = '<table><tr><td>One</td></tr></table><table><tr><td>Two</td></tr></table>';
+
+        $result = $this->layout->make_tables_responsive( $content );
+
+        $this->assertSame(
+            '<div class="table-responsive"><table><tr><td>One</td></tr></table></div>'
+            . '<div class="table-responsive"><table><tr><td>Two</td></tr></table></div>',
+            $result
+        );
+    }
+
+    /**
+     * HTML attributes on the <table> tag must be preserved after wrapping.
+     */
+    public function test_table_attributes_are_preserved(): void
+    {
+        $content = '<table class="data-table" id="mytable"><tr><td>Cell</td></tr></table>';
+
+        $result = $this->layout->make_tables_responsive( $content );
+
+        $this->assertSame(
+            '<div class="table-responsive"><table class="data-table" id="mytable"><tr><td>Cell</td></tr></table></div>',
+            $result
+        );
+    }
+}
