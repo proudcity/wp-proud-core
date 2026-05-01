@@ -610,6 +610,10 @@ Christmas Day: Wednesday, December 25 2026';
  */
 function getStatelessFileMeta($fid)
 {
+    if (!function_exists('ud_get_stateless_media')) {
+        return null;
+    }
+
     $url             = wp_get_attachment_url($fid);
     $upload_root_url = trailingslashit('https://storage.googleapis.com/' . \ud_get_stateless_media()->get('sm.bucket'));
 

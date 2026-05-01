@@ -1,5 +1,9 @@
 ## 2026-05-01
 
+- Fixed critical error when attaching a file to a Documents page on sites that do not run wp-stateless. `getStatelessFileMeta()` in `proud-helpers.php` called `\ud_get_stateless_media()` unconditionally, which fataled when the wp-stateless plugin was not active. Added a `function_exists('ud_get_stateless_media')` guard that returns `null` early so callers fall back to the standard attachment URL path.
+
+References: https://github.com/proudcity/saintra/issues/45
+
 - Fixed swapped "Older" / "Newer" pagination labels on the /news/ archive. Posts are sorted DESC by date, so the prev URL (page - 1) moves toward newer posts and the next URL (page + 1) moves toward older posts. The `case 'post':` branch in `TeaserList::print_pagination()` had the labels reversed; swapped them so `$prev_text` reads "« Newer" and `$next_text` reads "Older »". Removed the stale comment that flagged the labels as potentially needing a swap.
 
 References: https://github.com/proudcity/wp-proudcity/issues/2817
