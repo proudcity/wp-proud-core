@@ -1,3 +1,9 @@
+## 2026-05-01
+
+- Fixed swapped "Older" / "Newer" pagination labels on the /news/ archive. Posts are sorted DESC by date, so the prev URL (page - 1) moves toward newer posts and the next URL (page + 1) moves toward older posts. The `case 'post':` branch in `TeaserList::print_pagination()` had the labels reversed; swapped them so `$prev_text` reads "« Newer" and `$next_text` reads "Older »". Removed the stale comment that flagged the labels as potentially needing a swap.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2817
+
 ## 2026-04-21
 
 - Fixed "Don't display image on individual page" checkbox disappearing after setting a featured image, causing it to never be submitted on first publish. Root cause: `hide_featured_image()` relied on `global $post`, which is null inside the WordPress AJAX handler that refreshes the featured image meta box after image selection. Fixed by receiving `$post_id` via the filter's second argument and calling `get_post($post_id)` instead. Also fixed `wp_nonce_field()` echoing directly into the AJAX response (corrupting it) by passing `false` as the 4th argument; added autosave/revision guards and nonce verification to `save_featured_image_meta()`; switched from `$_REQUEST` to `$_POST`; fixed checkbox `value` attribute to always be `"1"` instead of the current meta value

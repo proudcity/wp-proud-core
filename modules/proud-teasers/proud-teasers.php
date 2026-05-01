@@ -983,10 +983,8 @@ if (!class_exists('TeaserList')) {
             // Match your old label logic
             switch ($this->get_post_type()) {
                 case 'post':
-                    $prev_text = '&laquo; Older';
-                    $next_text = 'Newer &raquo;';
-                    // If your “Older/Newer” semantics were tied to DESC ordering,
-                    // you may want to swap these depending on your actual sort.
+                    $prev_text = '&laquo; Newer';
+                    $next_text = 'Older &raquo;';
                     break;
 
                 case 'event':
