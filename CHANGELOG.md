@@ -1,3 +1,9 @@
+## 2026-05-27
+
+- Added inline search + preview picker to the Embed Document widget. Replaces the paste-an-admin-URL text field with a debounced search input, a results list (icon + filename), a hidden `post_id` field, and a preview pane. Two admin-only AJAX endpoints back the picker (`proud_document_search`, `proud_document_preview`) — both nonce- and `edit_posts`-gated, no `nopriv` registration. Preview reuses the existing `templates/content-embed-document.php` via `ob_start()` so the admin preview matches the frontend embed exactly. Back-compat preserved: legacy widgets storing a pasted edit URL continue to render; JS rewrites them to a clean numeric ID on next save. Hardened pre-existing unescaped outputs in the embed template (`$src`, `$filename` now use `esc_url`/`esc_attr`/`esc_html`). JS result rendering uses `.text()` + jQuery factory calls instead of `.html()` + string concatenation. Asset enqueue scoped to `widgets.php`, `customize.php`, `post.php`, and `post-new.php` (covers SiteOrigin Page Builder, where widgets render inside the post edit screen). JS rebinds on `widget-added`, `widget-updated`, and SiteOrigin's `panelsopen`/`panelsdone` events. PHPUnit tests added: `DocumentWidgetSearchTest.php`, `DocumentWidgetPreviewTest.php` — 8 new tests, 31/31 suite passing.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2744
+
 ## 2026-05-01
 
 - Fixed critical error when attaching a file to a Documents page on sites that do not run wp-stateless. `getStatelessFileMeta()` in `proud-helpers.php` called `\ud_get_stateless_media()` unconditionally, which fataled when the wp-stateless plugin was not active. Added a `function_exists('ud_get_stateless_media')` guard that returns `null` early so callers fall back to the standard attachment URL path.
