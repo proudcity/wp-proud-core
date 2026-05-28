@@ -47,3 +47,13 @@ require_once __DIR__ . '/../modules/proud-patternlibrary/proud-patternlibrary.ph
 // proud-layout.php defines ProudLayout; constructor calls add_filter/add_action
 // (stubbed, so no side effects).
 require_once __DIR__ . '/../modules/proud-layout/proud-layout.php';
+
+// Stub Proud\Document namespace helpers so document-widget-ajax.php can be
+// loaded without the wp-proud-document plugin present. Loaded via a separate
+// file so the namespace declaration is the first statement in that file.
+require_once __DIR__ . '/document-stubs.php';
+
+// document-widget-ajax.php defines proud_document_search_callback() and
+// proud_document_preview_callback(). Must be required after stubs so all
+// WP functions it calls at load time are already defined.
+require_once __DIR__ . '/../modules/proud-widget/widgets/document/document-widget-ajax.php';

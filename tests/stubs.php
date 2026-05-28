@@ -61,6 +61,12 @@ namespace {
     if (!function_exists('wp_enqueue_script')) {
         function wp_enqueue_script() {}
     }
+    if (!function_exists('wp_enqueue_style')) {
+        function wp_enqueue_style() {}
+    }
+    if (!function_exists('wp_localize_script')) {
+        function wp_localize_script() {}
+    }
     if (!function_exists('wp_kses_post')) {
         function wp_kses_post($content) { return $content; }
     }
@@ -84,6 +90,36 @@ namespace {
     }
     if (!function_exists('wp_die')) {
         function wp_die() {}
+    }
+    if (!function_exists('wp_send_json')) {
+        function wp_send_json($data) {}
+    }
+    if (!function_exists('wp_send_json_error')) {
+        function wp_send_json_error($data = null, $status_code = null) {}
+    }
+    if (!function_exists('check_ajax_referer')) {
+        function check_ajax_referer() { return false; }
+    }
+    if (!function_exists('wp_create_nonce')) {
+        function wp_create_nonce($action = -1) { return ''; }
+    }
+    if (!function_exists('admin_url')) {
+        function admin_url($path = '', $scheme = 'admin') { return ''; }
+    }
+    if (!function_exists('get_admin_url')) {
+        function get_admin_url($blog_id = null, $path = '', $scheme = 'admin') { return ''; }
+    }
+    if (!function_exists('is_customize_preview')) {
+        function is_customize_preview() { return false; }
+    }
+    if (!function_exists('wp_get_post_terms')) {
+        function wp_get_post_terms() { return []; }
+    }
+    if (!function_exists('esc_url')) {
+        function esc_url($url) { return $url; }
+    }
+    if (!function_exists('esc_url_raw')) {
+        function esc_url_raw($url) { return $url; }
     }
     if (!function_exists('__')) {
         function __($text, $domain = '') { return $text; }
@@ -117,6 +153,14 @@ namespace {
             $result = ( (string) $checked === (string) $current ) ? ' checked="checked"' : '';
             if ( $echo ) { echo $result; }
             return $result;
+        }
+    }
+
+    // WP_Query stub so plugin files can be loaded without a real DB.
+    if (!class_exists('WP_Query')) {
+        class WP_Query {
+            public array $posts = [];
+            public function __construct(array $args = []) {}
         }
     }
 }

@@ -35,15 +35,15 @@ if ( !empty($form_id) ) {
 ?>
 
 <h2 style="max-width:600px;">
-    <i aria-hidden="true" class="fa fa-fw <?php echo Document\get_document_icon( $id ) ?>"></i>
-    <a href="<?php echo $src; ?>" class="btn btn-primary btn-sm pull-right" download="<?php echo $filename; ?>"><i aria-hidden="true" class="fa fa-download"></i> Download</a>
-    <a href="<?php echo get_permalink( $id ); ?>"><?php echo get_the_title( $id ); ?></a>
+    <i aria-hidden="true" class="fa fa-fw <?php echo esc_attr( Document\get_document_icon( $id ) ) ?>"></i>
+    <a href="<?php echo esc_url( $src ); ?>" class="btn btn-primary btn-sm pull-right" download="<?php echo esc_attr( $filename ); ?>"><i aria-hidden="true" class="fa fa-download"></i> Download</a>
+    <a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php echo esc_html( get_the_title( $id ) ); ?></a>
 </h2>
 
 <?php if ($show_preview === 'office'): ?>
-    <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=<?php echo $src; ?>" style="width:100%; max-width:600px; height:400px;<?php if($show_preview === 2): ?>display:none<?php endif; ?>;" frameborder="0"></iframe>
+    <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=<?php echo esc_url( $src ); ?>" style="width:100%; max-width:600px; height:400px;<?php if($show_preview === 2): ?>display:none<?php endif; ?>;" frameborder="0"></iframe>
 <?php elseif ($show_preview): ?>
-    <iframe src="//docs.google.com/gview?url=<?php echo $src; ?>&embedded=true" id="doc-preview" style="width:100%; max-width:600px; height:400px;<?php if($show_preview === 2): ?>display:none<?php endif; ?>;" frameborder="0" ></iframe>
+    <iframe src="//docs.google.com/gview?url=<?php echo esc_url( $src ); ?>&embedded=true" id="doc-preview" style="width:100%; max-width:600px; height:400px;<?php if($show_preview === 2): ?>display:none<?php endif; ?>;" frameborder="0" ></iframe>
 <?php endif; ?>
 
 <?php if( !empty($form_id) ): ?>

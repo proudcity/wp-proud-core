@@ -8,7 +8,7 @@
                 <?php
                 if ($button['data_key'] && $button['data_key'] === 'google_translate') : ?>
                     <?php the_widget(
-                        'GoogleTranslate',
+                        class_exists('PCT_Widget') ? 'PCT_Widget' : 'GoogleTranslate',
                         [
                             'id' => 'navbar_translate',
                             'navbar' => true

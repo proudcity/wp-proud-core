@@ -1,0 +1,63 @@
+[data-proud-doc-picker] [data-results] {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-top: none;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+[data-proud-doc-picker] [data-results]:empty {
+	display: none;
+}
+
+[data-proud-doc-picker] .proud-doc-result {
+	padding: 6px 8px;
+	cursor: pointer;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+[data-proud-doc-picker] .proud-doc-result:last-child {
+	border-bottom: none;
+}
+
+[data-proud-doc-picker] .proud-doc-result:hover,
+[data-proud-doc-picker] .proud-doc-result:focus {
+	background: #f0f6fc;
+}
+
+[data-proud-doc-picker] .proud-doc-result .fa {
+	margin-right: 4px;
+	color: #666;
+}
+
+[data-proud-doc-picker] .proud-doc-filename {
+	color: #888;
+}
+
+[data-proud-doc-picker] .proud-doc-no-results {
+	padding: 6px 8px;
+	color: #888;
+	font-style: italic;
+}
+
+[data-proud-doc-picker] [data-preview] {
+	border: 1px solid #ddd;
+	padding: 8px;
+	background: #fafafa;
+	min-height: 40px;
+}
+
+[data-proud-doc-picker] [data-preview]:empty {
+	display: none;
+}
+
+[data-proud-doc-picker] [data-preview] iframe {
+	width: 100%;
+	height: 300px;
+	border: none;
+}
+
+[data-proud-doc-picker] [data-preview] h2 {
+	font-size: 14px;
+	margin: 0 0 6px;
+}
