@@ -274,12 +274,12 @@ if (! class_exists('FormHelper')) {
             include $this->template('select-list');
         }
 
-        public function printImageUpload($media_id, $url, $translate)
+        public function printImageUpload($media_id, $url, $translate, $field = [])
         {
             include $this->template('image-upload');
         }
 
-        public function printFileUpload($media_id, $url, $translate)
+        public function printFileUpload($media_id, $url, $translate, $field = [])
         {
             include $this->template('file-upload');
         }
@@ -385,9 +385,9 @@ if (! class_exists('FormHelper')) {
                     $this->printTextInput($field['#id'], $field['#name'], $media_id, $this->form_id, array('class' => 'visible-print-block'));
                     if ($field['#type'] === 'select_file') {
                         $url = wp_get_attachment_url($media_id);
-                        $this->printFileUpload($media_id, $url, $this->form_id);
+                        $this->printFileUpload($media_id, $url, $this->form_id, $field);
                     } else {
-                        $this->printImageUpload($media_id, $url, $this->form_id);
+                        $this->printImageUpload($media_id, $url, $this->form_id, $field);
                     }
                     if (!empty($field['#description']))
                         $this->printDescription($field['#description']);
