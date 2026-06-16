@@ -23,12 +23,12 @@
                         ]
                     ); ?>
                 <?php else : ?>
-                    <a title="<?php echo $button['title'] ?>" <?php if ($button['data_key']) : ?>data-proud-navbar="<?php echo $button['data_key'] ?>" <?php endif; ?><?php echo $button['data_attrs'] ?> href="<?php echo $button['href'] ?>" class="<?php echo $button['classes'] ?>"><i aria-hidden="true" class="fa <?php echo $button['icon'] ?>"></i> <?php echo $button['title'] ?></a>
+                    <a title="<?php echo esc_attr($button['title']) ?>" <?php if ($button['data_key']) : ?>data-proud-navbar="<?php echo esc_attr($button['data_key']) ?>" <?php endif; ?><?php echo $button['data_attrs'] ?> href="<?php echo esc_url($button['href']) ?>" class="<?php echo esc_attr($button['classes']) ?>"><i aria-hidden="true" class="fa <?php echo esc_attr($button['icon']) ?>"></i> <?php echo esc_html($button['title']) ?></a>
                 <?php endif; ?>
                 </li>
             <?php endforeach; ?>
         <?php endif; ?>
 </ul>
 <ul class="btn-toolbar pull-right list-unstyled clearfix">
-    <li><a title="<?php echo $search_button['title'] ?>" <?php if ($search_button['data_key']) : ?> data-proud-navbar="<?php echo $search_button['data_key'] ?>" <?php endif; ?><?php echo $search_button['data_attrs'] ?> href="<?php echo $search_button['href'] ?>" class="<?php echo $search_button['classes'] ?>"><i aria-hidden="true" class="fa <?php echo $search_button['icon'] ?>"></i> <?php echo $search_button['title'] ?></a></li>
+    <li><a title="<?php echo esc_attr($search_button['title']) ?>" <?php if ($search_button['data_key']) : ?> data-proud-navbar="<?php echo esc_attr($search_button['data_key']) ?>" <?php endif; ?><?php echo $search_button['data_attrs'] ?> href="<?php echo esc_url($search_button['href']) ?>" class="<?php echo esc_attr($search_button['classes']) ?>"><i aria-hidden="true" class="fa <?php echo esc_attr($search_button['icon']) ?>"></i> <?php echo esc_html($search_button['title']) ?></a></li>
 </ul>

@@ -1,10 +1,16 @@
 <header role="banner"><!-- /wp-proud-core/modules/proud-navbar/templates/navbar.php -->
-    <?php if ($topbar_active): ?>
-        <div id="navbar-topbar" class="navbar navbar-default navbar-topbar">
-            <?php print get_topbar_logo_area(); ?>
-            <?php print get_nav_topbar_menu(); ?>
+    <?php if ($topbar_active || $topbar_mobile_only): ?>
+        <div id="navbar-topbar" class="navbar navbar-default navbar-topbar<?php if ($topbar_mobile_only): ?> navbar-topbar-mobile-only<?php endif; ?>">
+            <?php if ($topbar_active): ?>
+                <?php print get_topbar_logo_area(); ?>
+                <?php print get_nav_topbar_menu(); ?>
+            <?php endif; ?>
             <?php if ($topbar_has_action_toolbar): ?>
                 <div class="container-fluid menu-box">
+                    <?php print get_nav_action_toolbar(); ?>
+                </div>
+            <?php elseif ($action_toolbar_mobile_only): ?>
+                <div class="container-fluid menu-box mobile-only-toolbar">
                     <?php print get_nav_action_toolbar(); ?>
                 </div>
             <?php endif; ?>
@@ -29,7 +35,7 @@
             </span>
         </a>
         <?php print get_nav_primary_menu(); ?>
-        <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php endif; ?>">
+        <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php elseif ($action_toolbar_mobile_only): ?> desktop-only-toolbar<?php endif; ?>">
             <?php if (!$topbar_has_action_toolbar): ?>
                 <?php print get_nav_action_toolbar(); ?>
             <?php endif; ?>

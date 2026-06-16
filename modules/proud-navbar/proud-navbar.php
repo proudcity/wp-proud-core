@@ -44,9 +44,11 @@ function proud_navbar_transparent()
 function proud_navbar_body_class($classes)
 {
     $classes[] = 'proud-navbar-active';
-    // Do we have the topbar?
-    if (get_theme_mod('proud_topbar_enable', false)) {
+    $topbar_active = get_theme_mod('proud_topbar_enable', false);
+    if ($topbar_active) {
         $classes[] = 'proud-navbar-topbar-active';
+    } else {
+        $classes[] = 'proud-navbar-topbar-mobile-only-active';
     }
     // Do we have the navbar transparent?
     if (proud_navbar_transparent()) {
@@ -468,6 +470,8 @@ function print_proud_navbar()
     if (!$navbar) {
         $topbar_active = get_theme_mod('proud_topbar_enable', false);
         $topbar_has_action_toolbar = $topbar_active && get_theme_mod('proud_topbar_action_icons', false);
+        $topbar_mobile_only = !$topbar_active;
+        $action_toolbar_mobile_only = !$topbar_has_action_toolbar;
         ob_start();
         include plugin_dir_path(__FILE__) . 'templates/navbar.php';
         $navbar = ob_get_contents();
