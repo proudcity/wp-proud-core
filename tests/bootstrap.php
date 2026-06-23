@@ -57,3 +57,7 @@ require_once __DIR__ . '/document-stubs.php';
 // proud_document_preview_callback(). Must be required after stubs so all
 // WP functions it calls at load time are already defined.
 require_once __DIR__ . '/../modules/proud-widget/widgets/document/document-widget-ajax.php';
+
+// proud-wp-stateless.php defines proudcity_stateless_suffix_cache_bust() and
+// registers the stateless_skip_cache_busting filter (add_filter is stubbed).
+require_once __DIR__ . '/../plugin_override/wp-stateless/proud-wp-stateless.php';

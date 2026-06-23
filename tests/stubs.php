@@ -136,6 +136,9 @@ namespace {
     if (!function_exists('wp_is_post_revision')) {
         function wp_is_post_revision() { return false; }
     }
+    if (!function_exists('wp_rand')) {
+        function wp_rand($min = 0, $max = 0) { return rand($min ?: 0, $max ?: PHP_INT_MAX); }
+    }
     if (!function_exists('wp_verify_nonce')) {
         function wp_verify_nonce() { return false; }
     }
