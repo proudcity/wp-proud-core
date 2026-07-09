@@ -1,5 +1,11 @@
 ## 2026-07-09
 
+- Fixed authenticated path traversal / SSRF in `gf_hijack_download_export()` (`plugin_override/gravityforms/proud-gravityforms.php`). `rgget('export-id')` was passed only through `esc_attr()` (HTML escaping, not path validation) before being interpolated into a `storage.googleapis.com` URL and handed to `readfile()`, allowing an editor-or-above user to read arbitrary GCS bucket objects or trigger SSRF via traversal sequences or stream wrappers. Fix: added `Proud\Gform\proud_gform_valid_export_id()` (allowlist regex `^[A-Za-z0-9_-]+$`), called immediately after the capability check, exits with `error_log` on rejection. Also replaced `esc_attr($name)` with `rawurlencode($name)` for the db-name URL segment. The handler remains gated by `check_ajax_referer('gform_download_export')` + `current_user_can('edit_posts')`; legitimate export IDs are unaffected. Added 14 PHPUnit cases covering valid IDs, traversal sequences, scheme injection, null bytes, and array injection; suite 63/63 passing.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2859
+
+## 2026-07-09
+
 - Fixed PHP warning "Trying to access array offset on false" in `plugin_override/gravityforms/proud-gravityforms.php` firing on every `init` request when the WP-Stateless gravity-form module is not registered. Extracted a `Proud\Gform\proud_gform_stateless_active()` helper (defined outside the `GFCommon` class-exists guard so it is directly testable) that null-coalesces `$module['enabled'] ?? false` before passing to `filter_var()`; replaced the inline try/catch expression in `proud_gravityforms_init()` with a single call to the helper. Behavior unchanged: module absent or disabled keeps ProudCity's own download-gating path active. Added 5 PHPUnit cases in `tests/GravityFormsStatelessModuleTest.php` (false/enabled/disabled/missing-key/truthy-string) including an error-handler assertion confirming no PHP warning is emitted; new stubs in `tests/gravityforms-stubs.php`; `tests/bootstrap.php` updated to load both. Suite: 49/49 passing (was 44).
 
 References: https://github.com/proudcity/wp-proudcity/issues/2857
