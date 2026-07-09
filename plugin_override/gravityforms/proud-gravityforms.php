@@ -2,6 +2,15 @@
 
 namespace Proud\Gform;
 
+function proud_gform_stateless_active() {
+    try {
+        $module = \wpCloud\StatelessMedia\Module::get_module('gravity-form');
+        return filter_var($module['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    } catch (\Throwable $t) {
+        return false;
+    }
+}
+
 if (class_exists('GFCommon')) {
 
     // Load our downloading class
@@ -33,14 +42,7 @@ if (class_exists('GFCommon')) {
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
 
         // Only alter if gravityforms <> stateless not enabled
-        $statelessModuleActive = false;
-        try {
-            $statelessModuleActive = filter_var(\wpCloud\StatelessMedia\Module::get_module('gravity-form')['enabled'], FILTER_VALIDATE_BOOLEAN);
-        } catch (\Throwable $t) {
-            // don't care
-        }
-
-        if ($statelessModuleActive) {
+        if (proud_gform_stateless_active()) {
             // Let stateless handle
             return;
         }

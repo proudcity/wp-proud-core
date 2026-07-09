@@ -61,3 +61,14 @@ require_once __DIR__ . '/../modules/proud-widget/widgets/document/document-widge
 // proud-wp-stateless.php defines proudcity_stateless_suffix_cache_bust() and
 // registers the stateless_skip_cache_busting filter (add_filter is stubbed).
 require_once __DIR__ . '/../plugin_override/wp-stateless/proud-wp-stateless.php';
+
+// gravityforms-stubs.php defines the \wpCloud\StatelessMedia\Module stub that
+// proud_gform_stateless_active() calls, plus StatelessModuleStub for staging
+// its return value per test.
+require_once __DIR__ . '/gravityforms-stubs.php';
+
+// proud-gravityforms.php defines Proud\Gform\proud_gform_stateless_active() at
+// the top level (outside the class_exists('GFCommon') guard). GFCommon is not
+// present in tests, so the guarded hook wiring is skipped and only the helper
+// under test is defined.
+require_once __DIR__ . '/../plugin_override/gravityforms/proud-gravityforms.php';
