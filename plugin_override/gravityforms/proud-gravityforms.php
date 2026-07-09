@@ -11,6 +11,16 @@ function proud_gform_stateless_active() {
     }
 }
 
+/**
+ * Whether a Gravity Forms export-id is safe to interpolate into the export
+ * download URL. The id is concatenated into a storage.googleapis.com path that
+ * is handed to readfile(), so it must not carry path-traversal or scheme
+ * characters. Allow only the id charset GF actually uses.
+ */
+function proud_gform_valid_export_id($export_id) {
+    return is_string($export_id) && preg_match('/^[A-Za-z0-9_-]+$/', $export_id) === 1;
+}
+
 if (class_exists('GFCommon')) {
 
     // Load our downloading class
@@ -186,12 +196,18 @@ if (class_exists('GFCommon')) {
             $name = 'wwwproudcity';
         }
 
+        $export_id = rgget('export-id');
+        if (! proud_gform_valid_export_id($export_id)) {
+            error_log('invalid gf export-id');
+            exit;
+        }
+
         $form_id = rgget('form-id');
         $form = \GFAPI::get_form(absint($form_id));
         $form_title = $form['title'];
 
         $filename =  sanitize_title_with_dashes($form['title']) . '-' . gmdate('Y-m-d', \GFCommon::get_local_timestamp(time())) . '.csv';
-        $url = 'https://storage.googleapis.com/proudcity/' . esc_attr($name) . '/uploads/gravity_forms/export/export-' . esc_attr(rgget('export-id')) . '.csv';
+        $url = 'https://storage.googleapis.com/proudcity/' . rawurlencode($name) . '/uploads/gravity_forms/export/export-' . $export_id . '.csv';
 
         $charset = get_option('blog_charset');
         header('Content-Description: File Transfer');

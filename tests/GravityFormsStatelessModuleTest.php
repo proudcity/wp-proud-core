@@ -1,5 +1,6 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -82,5 +83,50 @@ class GravityFormsStatelessModuleTest extends TestCase
         StatelessModuleStub::$return = ['enabled' => 'true'];
 
         $this->assertTrue(\Proud\Gform\proud_gform_stateless_active());
+    }
+
+    /**
+     * Well-formed export ids (the charset GF actually emits) are accepted.
+     */
+    #[DataProvider('validExportIds')]
+    public function test_valid_export_id_is_accepted(string $id): void
+    {
+        $this->assertTrue(\Proud\Gform\proud_gform_valid_export_id($id));
+    }
+
+    public static function validExportIds(): array
+    {
+        return [
+            'hex hash'       => ['a1b2c3d4e5f6'],
+            'alphanumeric'   => ['Export123'],
+            'with dash'      => ['2026-07-09-export'],
+            'with underscore' => ['form_42_export'],
+        ];
+    }
+
+    /**
+     * Path-traversal, scheme, and separator payloads are rejected before the id
+     * ever reaches the readfile() URL (issue #2859).
+     */
+    #[DataProvider('maliciousExportIds')]
+    public function test_malicious_export_id_is_rejected($id): void
+    {
+        $this->assertFalse(\Proud\Gform\proud_gform_valid_export_id($id));
+    }
+
+    public static function maliciousExportIds(): array
+    {
+        return [
+            'dot-dot traversal'   => ['../../../../etc/passwd'],
+            'encoded traversal'   => ['..%2f..%2fsecret'],
+            'trailing extension'  => ['export.csv'],
+            'php wrapper'         => ['php://filter/resource=x'],
+            'remote url'          => ['https://evil.example/x'],
+            'null byte'           => ["abc\0.csv"],
+            'slash'               => ['a/b'],
+            'empty string'        => [''],
+            'not a string (null)' => [null],
+            'not a string (array)' => [['x']],
+        ];
     }
 }
