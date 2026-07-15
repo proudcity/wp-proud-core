@@ -199,6 +199,14 @@ abstract class ProudWidget extends \WP_Widget
      */
     public function update($new_instance, $old_instance)
     {
+        // The form is normally attached in attachAdminForm(), but that only runs
+        // under is_admin(). SiteOrigin's live editor (so_live_editor=1) renders
+        // the front-end template stack and calls update() during
+        // process_raw_widgets(), where is_admin() is false and $this->form is
+        // never set. Lazily instantiate it so update() is context-independent.
+        if (empty($this->form)) {
+            $this->form = new FormHelper($this->id_base, $this->settings);
+        }
         return $this->form->updateGroupsWeight($new_instance, $this->settings);
     }
 
