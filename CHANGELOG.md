@@ -1,3 +1,9 @@
+## 2026-07-20
+
+- Added a provider-neutral `_proud_html_preview` endpoint for durable Document and Meeting HTML previews. It validates provider state, preview token, current source identity, artifact paths, and exact trusted WordPress uploads/GCS base URLs; restores missing local artifacts from trusted storage; serves HTML with restrictive security headers; and falls back to the original document when an artifact is unavailable. A verified cleanup queue retries remote non-media deletion after provider uninstall. Conversion-provider code is not required on public requests.
+
+References: https://github.com/FileToWeb/filetoweb-integration/issues/12
+
 ## 2026-07-15
 
 - Fixed fatal error when opening the SiteOrigin Live Page Editor (`?so_live_editor=1`) on any page. `ProudWidget::update()` called `$this->form->updateGroupsWeight()`, but `$this->form` is only assigned inside `attachAdminForm()`, which is gated by `is_admin()`. The Live Page Editor renders through the front-end template stack where `is_admin()` is false; SiteOrigin's `generate_post_content` filter (hooked to `the_content`) calls `process_raw_widgets()` → `ProudWidget->update()` during that render, so `$this->form` was null and caused the fatal. A recent SiteOrigin hardening change made `update()` always run when the method exists (previously the client `raw` flag could skip it), which newly exposed this null-form path. Fix: lazily instantiate `FormHelper` inside `update()` when `$this->form` is not yet set, so the method no longer depends on `attachAdminForm()` having been called. `FormHelper::updateGroupsWeight()` is argument-only; the constructor's only side effect (admin library registration) is inert on front-end requests.

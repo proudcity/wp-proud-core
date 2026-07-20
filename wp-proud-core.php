@@ -53,6 +53,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytic
 require_once plugin_dir_path(__FILE__) . 'modules/proud-sitemap/proud-sitemap.php';
 require_once plugin_dir_path(__FILE__) . 'modules/notification-shut-down.php';
 require_once plugin_dir_path(__FILE__) . 'modules/filetoweb-widget-disable.php';
+require_once plugin_dir_path(__FILE__) . 'modules/proud-html-preview/proud-html-preview.php';
 
 
 // Override plugins
