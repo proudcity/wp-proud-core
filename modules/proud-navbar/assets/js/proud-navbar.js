@@ -118,6 +118,35 @@
       });
     };
 
+    // Align the fixed hamburger with the visible logo row.
+    //
+    // On topbar-enabled sites the action toolbar lives inside the topbar, whose
+    // height changes with viewport width: the official statement and action
+    // icons sit on one row when wide and wrap to two rows when narrow. The
+    // hamburger is position:fixed, so a static CSS top can't track that. Measure
+    // the logo row (.navbar-header-region) and centre the button on it. Using
+    // the rect also accounts for the admin bar automatically. Non-topbar sites
+    // keep their CSS offset untouched.
+    self.positionMenuButton = function() {
+      if (!$body || !$body.hasClass('proud-navbar-topbar-active')) {
+        return;
+      }
+      var $button = $('#menu-button');
+      var region = document.querySelector('.navbar-header-region');
+      if (!$button.length || !region) {
+        return;
+      }
+      // Only when the mobile hamburger is showing; clear our override otherwise
+      // so the desktop layout is unaffected.
+      if ($button.css('display') === 'none') {
+        $button.css('top', '');
+        return;
+      }
+      var r = region.getBoundingClientRect();
+      var top = r.top + window.pageYOffset + (r.height - $button.outerHeight()) / 2;
+      $button.css('top', Math.round(top) + 'px');
+    };
+
     $(document).ready(function() {
       $body = $('body');
 
@@ -132,7 +161,13 @@
             }
           });
         }
-      }); 
+      });
+
+      self.positionMenuButton();
+      $(window).on(
+        'resize.proudNavbarButton orientationchange.proudNavbarButton load.proudNavbarButton',
+        function() { self.positionMenuButton(); }
+      );
     })
 
     return self;

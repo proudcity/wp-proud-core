@@ -33,6 +33,7 @@
             <span class="hamburger">
                 <span class="hamburger-bars"></span>
             </span>
+            <span class="menu-button-label">Menu</span>
         </a>
         <?php print get_nav_primary_menu(); ?>
         <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php elseif ($action_toolbar_mobile_only): ?> desktop-only-toolbar<?php endif; ?>">
