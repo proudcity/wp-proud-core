@@ -62,6 +62,9 @@ require_once __DIR__ . '/../modules/proud-widget/widgets/document/document-widge
 // registers the stateless_skip_cache_busting filter (add_filter is stubbed).
 require_once __DIR__ . '/../plugin_override/wp-stateless/proud-wp-stateless.php';
 
+// Provider-neutral HTML preview endpoint used by Document and Meeting templates.
+require_once __DIR__ . '/../modules/proud-html-preview/proud-html-preview.php';
+
 // gravityforms-stubs.php defines the \wpCloud\StatelessMedia\Module stub that
 // proud_gform_stateless_active() calls, plus StatelessModuleStub for staging
 // its return value per test.
