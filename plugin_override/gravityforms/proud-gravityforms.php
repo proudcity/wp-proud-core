@@ -338,7 +338,16 @@ if (class_exists('GFCommon')) {
             // Try to randomize filename to avoid conflicts
             $info = pathinfo($file);
             if (! empty($info['basename'])) {
-                $file = trailingslashit($info['dirname']) . \wpCloud\StatelessMedia\Utility::randomize_filename($info['basename']);
+                // Signal the cache-bust filter that this randomize_filename() call
+                // is for a GF upload, so it bypasses the idempotency guards and
+                // always mints a fresh unique suffix (issue #2876).
+                $GLOBALS['proudcity_gform_upload_context'] = true;
+                try {
+                    $randomized = \wpCloud\StatelessMedia\Utility::randomize_filename($info['basename']);
+                } finally {
+                    unset( $GLOBALS['proudcity_gform_upload_context'] );
+                }
+                $file = trailingslashit($info['dirname']) . $randomized;
             }
             // Gform upload dir (/var/www/html/wp-content/uploads/gravity_forms)
             $gform_upload = \GFFormsModel::get_upload_root();

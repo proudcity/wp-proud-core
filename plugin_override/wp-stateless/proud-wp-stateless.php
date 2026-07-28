@@ -17,6 +17,31 @@
  */
 
 /**
+ * Returns true when a Gravity Forms file upload is currently in progress.
+ *
+ * Two signals are checked so both of our GF integration paths are covered:
+ *
+ * 1. Explicit flag ($GLOBALS['proudcity_gform_upload_context']) — set by
+ *    gform_get_gcloud_file() in proud-gravityforms.php around the direct
+ *    Utility::randomize_filename() call. Deterministic for our active path.
+ *
+ * 2. doing_filter('gform_save_field_value') fallback — covers the WP-Stateless
+ *    GF add-on path, where randomize_filename() is called via sanitize_file_name
+ *    while the gform_save_field_value hook is on the stack.
+ *
+ * @return bool
+ */
+function proudcity_stateless_is_gform_upload() {
+    if ( ! empty( $GLOBALS['proudcity_gform_upload_context'] ) ) {
+        return true;
+    }
+    if ( function_exists( 'doing_filter' ) && doing_filter( 'gform_save_field_value' ) ) {
+        return true;
+    }
+    return false;
+}
+
+/**
  * Replace the upstream prefix hash with a suffix hash on file upload.
  *
  * @param string|null $return  Value set by an earlier filter; respected if non-null.
@@ -32,6 +57,21 @@ function proudcity_stateless_suffix_cache_bust( $return, $filename ) {
     $info = pathinfo( $filename );
     $name = isset( $info['filename'] ) ? $info['filename'] : '';
     $ext  = empty( $info['extension'] ) ? '' : '.' . strtolower( $info['extension'] );
+
+    // In a GF-upload context every submission is a genuinely new file, so we
+    // bypass both idempotency guards and always mint a fresh unique suffix.
+    // This prevents multiple applicants uploading the same pre-named form from
+    // colliding onto the same GCS object (issue #2876).
+    if ( proudcity_stateless_is_gform_upload() ) {
+        $rand = substr( md5( (string) time() . wp_rand() ), 0, 8 );
+
+        if ( false !== strpos( $name, '@' ) ) {
+            list( $clean, $retina ) = explode( '@', $name, 2 );
+            return strtolower( $clean ) . '-' . $rand . '@' . strtolower( $retina ) . $ext;
+        }
+
+        return strtolower( $name ) . '-' . $rand . $ext;
+    }
 
     // Idempotency: already suffixed with -[8 hex chars] before the extension.
     if ( preg_match( '/-[a-f0-9]{8}$/', $name ) ) {
