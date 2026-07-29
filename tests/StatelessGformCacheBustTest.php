@@ -274,4 +274,94 @@ class StatelessGformCacheBustTest extends TestCase
             $result
         );
     }
+
+    // -------------------------------------------------------------------------
+    // proudcity_stateless_gform_naming_upload() — backtrace detector
+    // -------------------------------------------------------------------------
+
+    /**
+     * Detector returns true when GFFormsModel::get_file_upload_path is present
+     * in the supplied frame list (the production case at forms_model.php:6185).
+     */
+    public function test_gform_naming_upload_true_when_get_file_upload_path_on_stack(): void
+    {
+        $frames = [
+            [ 'function' => 'sanitize_file_name' ],
+            [ 'class' => 'GFFormsModel', 'function' => 'get_file_upload_path' ],
+            [ 'class' => 'GF_Field_FileUpload', 'function' => 'upload_file' ],
+        ];
+
+        $this->assertTrue( proudcity_stateless_gform_naming_upload( $frames ) );
+    }
+
+    /**
+     * Detector returns false when GFFormsModel::get_file_upload_path is absent
+     * from the frame list (non-GF context, e.g. media library).
+     */
+    public function test_gform_naming_upload_false_when_absent(): void
+    {
+        $frames = [
+            [ 'function' => 'sanitize_file_name' ],
+            [ 'class' => 'WP_HTTP', 'function' => 'request' ],
+        ];
+
+        $this->assertFalse( proudcity_stateless_gform_naming_upload( $frames ) );
+    }
+
+    /**
+     * GFExport carve-out: if GFExport is also on the stack alongside
+     * GFFormsModel::get_file_upload_path, detector returns false to avoid
+     * treating an export as an upload.
+     */
+    public function test_gform_naming_upload_false_during_gfexport(): void
+    {
+        $frames = [
+            [ 'function' => 'sanitize_file_name' ],
+            [ 'class' => 'GFFormsModel', 'function' => 'get_file_upload_path' ],
+            [ 'class' => 'GFExport', 'function' => 'start_export' ],
+        ];
+
+        $this->assertFalse( proudcity_stateless_gform_naming_upload( $frames ) );
+    }
+
+    /**
+     * proudcity_stateless_is_gform_upload() returns true when the backtrace
+     * signal fires, even with the explicit flag unset and doing_filter false.
+     * Exercises the third OR branch added to is_gform_upload().
+     */
+    public function test_is_gform_upload_true_via_backtrace_signal(): void
+    {
+        // Neither of the existing two signals.
+        Functions\when('doing_filter')->justReturn( false );
+
+        // Inject a frame list that matches get_file_upload_path.
+        $frames = [
+            [ 'class' => 'GFFormsModel', 'function' => 'get_file_upload_path' ],
+        ];
+
+        $this->assertTrue( proudcity_stateless_is_gform_upload( $frames ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Regression lock: plain media-library upload still gets its suffix
+    // -------------------------------------------------------------------------
+
+    /**
+     * NON-GF context with a plain filename: the normal cache-bust suffix is
+     * still minted. Ensures the backtrace branch does not short-circuit the
+     * normal path for media-library uploads.
+     */
+    public function test_plain_media_name_still_gets_suffix_outside_gform(): void
+    {
+        Functions\when('doing_filter')->justReturn( false );
+        Functions\when('wp_rand')->justReturn( 66666 );
+
+        $result = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+
+        $this->assertMatchesRegularExpression(
+            '/^report-[a-f0-9]{8}\.pdf$/',
+            $result,
+            'Normal media-library upload must still receive a cache-bust suffix.'
+        );
+    }
 }

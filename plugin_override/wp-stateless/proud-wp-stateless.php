@@ -17,25 +17,73 @@
  */
 
 /**
+ * Returns true when GFFormsModel::get_file_upload_path is on the call stack,
+ * meaning we are at the authoritative GF destination-naming point
+ * (forms_model.php:6185). Returns false when GFExport is also present (export
+ * path should not be treated as an upload).
+ *
+ * Accepts an optional $frames parameter so tests can pass a synthetic backtrace
+ * without needing to stub debug_backtrace() (which is a language construct that
+ * Brain Monkey cannot intercept). Production callers pass no argument.
+ *
+ * Precedent: the WP-Stateless GF add-on uses the same technique in its own
+ * skip_cache_busting() (class-gravity-forms.php:289).
+ *
+ * @param array|null $frames Synthetic frame list for testing; null = live backtrace.
+ * @return bool
+ */
+function proudcity_stateless_gform_naming_upload( ?array $frames = null ) {
+    if ( null === $frames ) {
+        $frames = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
+    }
+
+    $has_upload_path = false;
+    $has_gfexport    = false;
+
+    foreach ( $frames as $frame ) {
+        if ( isset( $frame['class'] ) && $frame['class'] === 'GFExport' ) {
+            $has_gfexport = true;
+        }
+        if ( isset( $frame['class'], $frame['function'] )
+            && $frame['class'] === 'GFFormsModel'
+            && $frame['function'] === 'get_file_upload_path' ) {
+            $has_upload_path = true;
+        }
+    }
+
+    return $has_upload_path && ! $has_gfexport;
+}
+
+/**
  * Returns true when a Gravity Forms file upload is currently in progress.
  *
- * Two signals are checked so both of our GF integration paths are covered:
+ * Three signals are checked so all GF integration paths are covered:
  *
  * 1. Explicit flag ($GLOBALS['proudcity_gform_upload_context']) — set by
  *    gform_get_gcloud_file() in proud-gravityforms.php around the direct
- *    Utility::randomize_filename() call. Deterministic for our active path.
+ *    Utility::randomize_filename() call. Deterministic for our direct path.
  *
  * 2. doing_filter('gform_save_field_value') fallback — covers the WP-Stateless
- *    GF add-on path, where randomize_filename() is called via sanitize_file_name
- *    while the gform_save_field_value hook is on the stack.
+ *    GF add-on path when the flag above is never set.
  *
+ * 3. Backtrace detector (proudcity_stateless_gform_naming_upload()) — the
+ *    primary signal for production. GFFormsModel::get_file_upload_path() at
+ *    forms_model.php:6185 is the single authoritative destination-naming point
+ *    for BOTH integration paths. When it is on the call stack, we are at the
+ *    exact moment the on-disk name is minted and must ensure uniqueness.
+ *
+ * @param array|null $frames Synthetic frame list forwarded to the backtrace
+ *                           detector for testing; null = live backtrace.
  * @return bool
  */
-function proudcity_stateless_is_gform_upload() {
+function proudcity_stateless_is_gform_upload( ?array $frames = null ) {
     if ( ! empty( $GLOBALS['proudcity_gform_upload_context'] ) ) {
         return true;
     }
     if ( function_exists( 'doing_filter' ) && doing_filter( 'gform_save_field_value' ) ) {
+        return true;
+    }
+    if ( proudcity_stateless_gform_naming_upload( $frames ) ) {
         return true;
     }
     return false;
