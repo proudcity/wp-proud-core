@@ -128,7 +128,13 @@
     // the rect also accounts for the admin bar automatically. Non-topbar sites
     // keep their CSS offset untouched.
     self.positionMenuButton = function() {
-      if (!$body || !$body.hasClass('proud-navbar-topbar-active')) {
+      // Run for both topbar layouts: the full topbar (proud-navbar-topbar-active)
+      // and the default mobile-only top bar (proud-navbar-topbar-mobile-only-active).
+      // The latter relied on static CSS offsets that ignored the WordPress admin
+      // bar, so the fixed button drifted off the logo row when logged in.
+      if (!$body ||
+          (!$body.hasClass('proud-navbar-topbar-active') &&
+           !$body.hasClass('proud-navbar-topbar-mobile-only-active'))) {
         return;
       }
       var $button = $('#menu-button');
