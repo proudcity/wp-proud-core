@@ -36,11 +36,15 @@
             <span class="menu-button-label">Menu</span>
         </a>
         <?php print get_nav_primary_menu(); ?>
-        <div class="container-fluid menu-box<?php if ($topbar_has_action_toolbar): ?> topbar-has-toolbar<?php elseif ($action_toolbar_mobile_only): ?> desktop-only-toolbar<?php endif; ?>">
-            <?php if (!$topbar_has_action_toolbar): ?>
+        <?php // When the topbar owns the action toolbar the bottom menu-box is
+        // empty, yet at mobile widths it still renders as a full-width fixed
+        // bottom bar (position:fixed; bottom; background). Only emit it when it
+        // actually holds the toolbar. ?>
+        <?php if (!$topbar_has_action_toolbar): ?>
+            <div class="container-fluid menu-box desktop-only-toolbar">
                 <?php print get_nav_action_toolbar(); ?>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
     </div>
     <div class="navbar navbar-header-region navbar-default <?php echo get_proud_logo_wrapper_class(); ?>">
         <div class="navbar-header">
