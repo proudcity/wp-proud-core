@@ -19,6 +19,12 @@ namespace {
     if (!function_exists('add_filter')) {
         function add_filter() { return true; }
     }
+    if (!function_exists('remove_all_actions')) {
+        function remove_all_actions() { return true; }
+    }
+    if (!function_exists('get_current_user_id')) {
+        function get_current_user_id() { return 0; }
+    }
     if (!function_exists('add_image_size')) {
         function add_image_size() {}
     }

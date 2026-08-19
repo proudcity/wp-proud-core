@@ -62,6 +62,10 @@ require_once __DIR__ . '/../modules/proud-widget/widgets/document/document-widge
 // registers the stateless_skip_cache_busting filter (add_filter is stubbed).
 require_once __DIR__ . '/../plugin_override/wp-stateless/proud-wp-stateless.php';
 
+// proud-wp-media-folder.php defines the folder-upload guard and the admin CSS
+// that hides WPMF's "Upload folder" button (add_action is stubbed).
+require_once __DIR__ . '/../plugin_override/wp-media-folder/proud-wp-media-folder.php';
+
 // Provider-neutral HTML preview endpoint used by Document and Meeting templates.
 require_once __DIR__ . '/../modules/proud-html-preview/proud-html-preview.php';
 
