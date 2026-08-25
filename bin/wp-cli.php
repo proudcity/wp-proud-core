@@ -98,7 +98,7 @@ class ProudCore_CLI {
 		$rows = $this->get_candidates();
 
 		if ( ! $rows ) {
-			WP_CLI::success( 'No recurring event occurrences found — nothing to do.' );
+			WP_CLI::success( 'No event slugs carry accumulated dates — nothing to do.' );
 			return;
 		}
 
