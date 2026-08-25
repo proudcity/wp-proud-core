@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2026.08.25.1002
+Version:            2026.08.25.1110
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -73,6 +73,11 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/general.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/simple-staff-list/simple-staff-list.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-faq-manager/proud-wordpress-faq-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-stateless/proud-wp-stateless.php';
+
+// WP-CLI commands
+// -------------------------
+// The file returns early when WP_CLI is undefined, so web requests do not pay for it.
+require_once plugin_dir_path(__FILE__) . 'bin/wp-cli.php';
 
 use Proud\Core\ProudLibraries as ProudLibraries;
 
