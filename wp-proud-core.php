@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2026.08.21.1617
+Version:            2026.08.25.1002
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -53,6 +53,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/proud-analytics/proud-analytic
 require_once plugin_dir_path(__FILE__) . 'modules/proud-sitemap/proud-sitemap.php';
 require_once plugin_dir_path(__FILE__) . 'modules/notification-shut-down.php';
 require_once plugin_dir_path(__FILE__) . 'modules/filetoweb-widget-disable.php';
+require_once plugin_dir_path(__FILE__) . 'modules/events-manager-recurrence-slug.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-html-preview/proud-html-preview.php';
 
 

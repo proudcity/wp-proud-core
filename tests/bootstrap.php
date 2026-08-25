@@ -65,6 +65,11 @@ require_once __DIR__ . '/../plugin_override/wp-stateless/proud-wp-stateless.php'
 // Provider-neutral HTML preview endpoint used by Document and Meeting templates.
 require_once __DIR__ . '/../modules/proud-html-preview/proud-html-preview.php';
 
+// events-manager-recurrence-slug.php defines
+// proudcity_em_strip_accumulated_recurrence_dates() and registers the
+// em_event_save_events_slug filter (add_filter is stubbed).
+require_once __DIR__ . '/../modules/events-manager-recurrence-slug.php';
+
 // gravityforms-stubs.php defines the \wpCloud\StatelessMedia\Module stub that
 // proud_gform_stateless_active() calls, plus StatelessModuleStub for staging
 // its return value per test.
