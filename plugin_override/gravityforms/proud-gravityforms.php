@@ -12,6 +12,38 @@ function proud_gform_stateless_active() {
 }
 
 /**
+ * Whether WP-Stateless is installed and pointed at a bucket, i.e. whether the
+ * Google Cloud Storage bridge in this file can run at all.
+ *
+ * Distinct from proud_gform_stateless_active(), which asks the narrower question
+ * of whether WP-Stateless' own gravity-form module is switched on. That helper
+ * returns false both when Stateless is present with the module off (our legacy
+ * bridge should run) and when Stateless is absent entirely (nothing here can
+ * run). Conflating those two states is what fataled the DigitalOcean sites on
+ * every file-upload submission — see issue #55.
+ *
+ * The bucket check matters as much as the function check: Stateless installed
+ * but unconfigured would otherwise build https://storage.googleapis.com//... and
+ * hand back a broken download instead of falling through to Gravity Forms'
+ * native local file handling.
+ */
+function proud_gform_stateless_available() {
+    if (! function_exists('ud_get_stateless_media')) {
+        return false;
+    }
+
+    try {
+        $bucket = \ud_get_stateless_media()->get('sm.bucket');
+    } catch (\Throwable $t) {
+        // A half-initialised Stateless can raise a TypeError rather than an
+        // Exception here, so catch broadly and degrade to the local path.
+        return false;
+    }
+
+    return is_string($bucket) && trim($bucket) !== '';
+}
+
+/**
  * Whether a Gravity Forms export-id is safe to interpolate into the export
  * download URL. The id is concatenated into a storage.googleapis.com path that
  * is handed to readfile(), so it must not carry path-traversal or scheme
@@ -37,12 +69,6 @@ if (class_exists('GFCommon')) {
         // Enable ability to controll label visibilit
         add_filter('gform_enable_field_label_visibility_settings', '__return_true');
 
-        // dealing with entry export
-        add_action('gform_post_export_entries', __NAMESPACE__ . '\\sync_entry_export_file', 10, 5);
-        //add_action( 'wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export' );
-        remove_all_filters('wp_ajax_gf_download_export', 10);
-        add_filter('wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1);
-
         add_filter('gform_enable_legacy_markup', '__return_false');
         add_filter('gform_form_theme_slug', __NAMESPACE__ . '\\proud_force_orbital_theme', 10, 2);
 
@@ -50,6 +76,25 @@ if (class_exists('GFCommon')) {
 
         add_filter('gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1);
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
+
+        // Everything below here bridges Gravity Forms uploads and entry exports
+        // to Google Cloud Storage. Without WP-Stateless there is no bucket and
+        // none of it can work, so registering it is not merely pointless, it
+        // breaks the site two ways: gform_secure_file_download_url() fatals on
+        // the undefined ud_get_stateless_media(), and the export hijack below
+        // strips Gravity Forms' own handler in favour of a bucket URL that does
+        // not exist. Bail and leave GF's native local handling in place.
+        if (! proud_gform_stateless_available()) {
+            return;
+        }
+
+        // dealing with entry export
+        add_action('gform_post_export_entries', __NAMESPACE__ . '\\sync_entry_export_file', 10, 5);
+        //add_action( 'wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export' );
+        // GF registers its own handler at the default priority 10
+        // (gravityforms.php:644); drop it so ours serves from the bucket instead.
+        remove_all_filters('wp_ajax_gf_download_export', 10);
+        add_filter('wp_ajax_gf_download_export', __NAMESPACE__ . '\\gf_hijack_download_export', 1);
 
         // Only alter if gravityforms <> stateless not enabled
         if (proud_gform_stateless_active()) {
@@ -295,6 +340,14 @@ if (class_exists('GFCommon')) {
     function gform_secure_file_download_url($file, $form)
     {
 
+        // proud_gravityforms_init() already refuses to register this filter
+        // without WP-Stateless. Guard anyway so the function can never fatal if
+        // anything else attaches it — gform_handle_file_upload() below has
+        // carried the same guard all along (issue #55).
+        if (! proud_gform_stateless_available()) {
+            return $file;
+        }
+
         $bucketLink = trailingslashit('https://storage.googleapis.com/' . ud_get_stateless_media()->get('sm.bucket'));
         if (strpos($file, $bucketLink) !== false) {
             // Take out google storage
@@ -377,7 +430,7 @@ if (class_exists('GFCommon')) {
     function gform_handle_file_upload($value, $lead, $field, $form)
     {
 
-        if (! function_exists('ud_get_stateless_media')) {
+        if (! proud_gform_stateless_available()) {
             return $value;
         }
 
