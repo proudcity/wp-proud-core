@@ -91,6 +91,12 @@ class ImageSet extends Core\ProudWidget {
             '#type' => 'text',
             '#default_value' => '',
             '#description' => 'Text to display.  Best if ALL or NONE have text, and are of similar length',
+          ],
+          'external' => [
+            '#type' => 'checkbox',
+            '#title' => 'Open in new tab',
+            '#return_value' => '1',
+            '#default_value' => false
           ]
         ],
       ]

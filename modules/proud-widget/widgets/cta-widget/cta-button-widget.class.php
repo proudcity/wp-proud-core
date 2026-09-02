@@ -113,7 +113,7 @@ class CTA extends Core\ProudWidget
 
         ?>
         <div class="card-wrap action-button">
-            <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-btn-action card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
+            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url']); ?>" class="card text-center card-btn card-btn-action card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
                 <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
             </a>
         </div>

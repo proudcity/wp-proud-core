@@ -32,9 +32,9 @@ class SocialLinksWidget extends Core\ProudWidget {
       ];
       foreach ($social as $value) {
         $account = Core\extractSocialData($value);
-        $options[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
-          $account['url'],  
-          $account['service']
+        $options[$value] = esc_html( $account['account'] ) . sprintf( ' (<a href="%s" target="_blank" rel="noopener">%s</a>)',
+          esc_url( $account['url'] ),
+          esc_html( $account['service'] )
         );
       }
       $this->settings += [

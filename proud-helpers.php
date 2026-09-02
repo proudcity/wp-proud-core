@@ -353,6 +353,50 @@ function print_retina_image($resp_img, $classes = [], $skip_media = false, $alt 
 
 
 /**
+ * Escapes a free-text link_url value for output in an href attribute.
+ *
+ * esc_url() prepends "http://" to any value with no recognizable protocol
+ * that doesn't already start with "/", "#" or "?" -- which silently rewrites
+ * a legitimate relative link like "topics/homelessness/" into a broken
+ * absolute URL. A value with no ":" at all has no protocol for esc_url() to
+ * strip in the first place, so treating it as attribute text rather than a
+ * URL is both safe and behavior-preserving.
+ *
+ * This is not a security downgrade: an entity-encoded colon such as
+ * "javascript&#58;alert(1)" is not a bypass. esc_attr() is deliberately not
+ * used for this branch -- it calls WordPress's _wp_specialchars() with
+ * double_encode = false, which preserves an existing character reference
+ * like "&#58;" instead of re-encoding its "&". The HTML parser then decodes
+ * that preserved reference back into a literal ":" inside the attribute
+ * value, resurrecting the scheme. htmlspecialchars() is used instead with
+ * double_encode = true, which encodes the "&" itself, so no character
+ * reference can survive into the rendered attribute and this branch cannot
+ * produce a scheme. Any value containing a literal ":" -- including
+ * obfuscated variants like "java\tscript:" -- still takes the esc_url()
+ * branch below.
+ *
+ * @param string $value The raw link_url value.
+ * @return string Escaped value, safe to echo inside an href attribute.
+ */
+function esc_link_url($value)
+{
+    // Strip the full C0 control range (not just the characters trim()
+    // strips by default) so a leading control character such as "\x0C"
+    // can't dodge the "/", "#" or "?" anchor check below.
+    $value = trim((string) $value, " \x00..\x1F");
+
+    if ('' === $value) {
+        return '';
+    }
+
+    if (false === strpos($value, ':') && !preg_match('~^(/|#|\?)~', $value)) {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', true);
+    }
+
+    return esc_url($value);
+}
+
+/**
  * Helper function returns url to social acount
  */
 function socialAccountUrl($service, $account)

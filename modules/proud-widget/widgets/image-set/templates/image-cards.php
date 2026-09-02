@@ -11,7 +11,7 @@ if (!empty($imageset)) :
             <div class="card-wrap"><div class="card">
                 <?php if (!empty($image['image']) && is_numeric($image['image'])) : ?>
                     <div class="card-img-top text-center">
-                        <a href="<?php print $image['link_url'] ?>">
+                        <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
                             <?php
                             $meta = Core\build_responsive_image_meta($image['image'], 'card-thumb', 'card-thumb');
                             Core\print_responsive_image($meta, [], true);
@@ -22,7 +22,7 @@ if (!empty($imageset)) :
 
                 <div class="card-block">
                     <div class="h3 margin-top-none">
-                        <a href="<?php print $image['link_url'] ?>">
+                        <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
                             <?php print $image['link_title'] ?>
                         </a>
                     </div>

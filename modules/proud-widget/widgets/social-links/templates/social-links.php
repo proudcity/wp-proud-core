@@ -9,6 +9,6 @@
          */
         if (!isset($account)) continue;
         ?>
-        <li><a title="<?php echo $account['service'] ?>" href="<?php echo $account['url'] ?>" target="_blank"><i aria-hidden="true" class="fa icon-even-width fa-<?php echo strtolower($account['service']) ?>"></i><?php echo $account['service'] ?></a></li>
+        <li><a title="<?php echo esc_attr($account['service']) ?>" href="<?php echo esc_url($account['url']) ?>" target="_blank" rel="noopener"><i aria-hidden="true" class="fa icon-even-width fa-<?php echo esc_attr(strtolower($account['service'])) ?>"></i><?php echo esc_html($account['service']) ?></a></li>
     <?php endforeach; ?>
 </ul>

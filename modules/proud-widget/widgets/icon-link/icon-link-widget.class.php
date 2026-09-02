@@ -95,7 +95,7 @@ class IconLink extends Core\ProudWidget
 
         ?>
         <div class="card-wrap">
-            <a href="<?php echo esc_url($instance['link_url']); ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if ($instance['external']): ?>target="_blank" <?php endif; ?>>
+            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url']); ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
                 <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
                 <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
             </a>

@@ -15,7 +15,7 @@
     <?php if( !empty( $image['link_title'] ) && !empty( $image['link_url'] ) && !empty( $image['image'] ) ): ?>
       <div class="media-left">
         <?php if( !empty( $image['image'] ) && is_numeric( $image['image'] ) ): ?>
-          <a href="<?php print $image['link_url'] ?>">
+          <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
             <?php
               $meta = Core\build_responsive_image_meta( $image['image'], array( 64, 64 ), array( 64, 64 ) );
               Core\print_responsive_image( $meta, [], true );
@@ -25,7 +25,7 @@
       </div>
       <div class="media-body">
         <div class="h3 media-heading">
-          <a href="<?php print $image['link_url'] ?>">
+          <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
             <?php print $image['link_title'] ?>
           </a>
         </div>
