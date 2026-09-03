@@ -39,6 +39,39 @@ if (!is_readable($kses)) {
     fwrite(STDERR, "Cannot read {$kses}.\nThese tests load the real kses.php and must be run from inside a WordPress install.\n");
     exit(1);
 }
+
+// Since WordPress 7.0, wp_kses_hair() parses attributes with the HTML API
+// rather than by regex, so kses.php no longer stands alone once an allowed
+// element declares attributes. Allowlists with no attributes -- esc_widget_title()
+// and friends -- return before that point, which is why this was not needed
+// until proud_document_preview_allowed_html() (#2917) arrived.
+//
+// Load order follows wp-settings.php: the token map the character-reference
+// table is built on, then spans and replacements, then the decoder and its
+// table, then the attribute token type, then the processor.
+$tokenMap = __DIR__ . '/../../../../wp-includes/class-wp-token-map.php';
+if (!is_readable($tokenMap)) {
+    fwrite(STDERR, "Cannot read {$tokenMap}.\nThe HTML API needs WP_Token_Map.\n");
+    exit(1);
+}
+require_once $tokenMap;
+
+$htmlApi = __DIR__ . '/../../../../wp-includes/html-api/';
+foreach ([
+    'class-wp-html-span.php',
+    'class-wp-html-text-replacement.php',
+    'html5-named-character-references.php',
+    'class-wp-html-decoder.php',
+    'class-wp-html-attribute-token.php',
+    'class-wp-html-tag-processor.php',
+] as $htmlApiFile) {
+    if (!is_readable($htmlApi . $htmlApiFile)) {
+        fwrite(STDERR, "Cannot read {$htmlApi}{$htmlApiFile}.\nwp_kses() needs the HTML API to parse attributes.\n");
+        exit(1);
+    }
+    require_once $htmlApi . $htmlApiFile;
+}
+
 require_once $kses;
 require_once __DIR__ . '/stubs.php';
 

@@ -578,10 +578,45 @@ function proud_html_preview_current_source($source_post_id)
 function proud_html_preview_original_attachment_url($attachment_id)
 {
     ++$GLOBALS['proud_html_preview_resolving_source'];
-    $url = wp_get_attachment_url(absint($attachment_id));
-    --$GLOBALS['proud_html_preview_resolving_source'];
+
+    try {
+        $url = wp_get_attachment_url(absint($attachment_id));
+    } finally {
+        --$GLOBALS['proud_html_preview_resolving_source'];
+    }
 
     return $url ? esc_url_raw($url) : '';
+}
+
+/**
+ * Read a Proud Document's original source URL with providers stood down.
+ *
+ * Callers that hand the URL to something which fetches the file itself -- a
+ * download link, or a third-party viewer like Google Docs Viewer -- need the
+ * real document, not a provider's HTML rendition of it. Rendering providers
+ * replace `document` meta on the front end for every page except the
+ * Document's own single view, so an unguarded read gives those callers an
+ * HTML URL.
+ *
+ * This goes through get_post_meta() rather than reading postmeta directly so
+ * that filters which are not rendering providers still run. WP-Stateless hooks
+ * get_post_metadata at priority 2 to rewrite stored upload paths to bucket
+ * URLs; a raw query would skip it and hand out a stale local path.
+ *
+ * @param int $post_id Document post ID.
+ * @return string Original document URL, or '' when there is not one.
+ */
+function proud_document_original_url($post_id)
+{
+    ++$GLOBALS['proud_html_preview_resolving_source'];
+
+    try {
+        $url = get_post_meta(absint($post_id), 'document', true);
+    } finally {
+        --$GLOBALS['proud_html_preview_resolving_source'];
+    }
+
+    return is_string($url) ? $url : '';
 }
 
 /**

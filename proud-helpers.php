@@ -865,3 +865,55 @@ function document_icon_map($filetype)
             return 'fa-file-text-o';
     }
 }
+
+/**
+ * Allowed HTML for a document preview supplied by a third-party plugin.
+ *
+ * The `proud_document_embed_preview` filter lets a conversion provider swap
+ * ProudCity's third-party viewer iframe for its own preview. Whatever it
+ * returns is plugin-authored markup rendered on a public page, so it goes
+ * through wp_kses() with this list rather than being echoed as-is.
+ *
+ * Deliberately narrow: an iframe and the attributes a preview iframe actually
+ * needs. wp_kses_post() is not an option -- it strips <iframe> entirely, which
+ * would silently blank every provider preview. Widen this only when a provider
+ * has a concrete need, and re-review when it happens.
+ *
+ * `srcdoc` is left out on purpose. It carries arbitrary HTML inside an
+ * attribute, so allowing it would hand a provider the whole page back.
+ *
+ * Two limits worth knowing before widening this list:
+ *
+ * - kses constrains the `src` *scheme* via wp_allowed_protocols(), not its
+ *   *origin*. A protocol-relative "//example.test/x" passes. There is no
+ *   same-origin enforcement here and adding one is not possible through kses.
+ * - `style` is filtered by safecss_filter_attr(), which still permits
+ *   position, top/left, width/height, z-index and opacity -- enough to place
+ *   an invisible full-viewport overlay. `width` and `height` cover the
+ *   legitimate sizing need on their own; `style` is kept only because
+ *   providers size previews that way today. Drop it if that stops being true.
+ *
+ * Both are defence-in-depth gaps against a careless provider, not a boundary
+ * against a hostile one: any plugin that can hook this filter already runs PHP.
+ *
+ * @return array Allowed HTML in wp_kses() format.
+ */
+function proud_document_preview_allowed_html()
+{
+    return [
+        'iframe' => [
+            'src'            => true,
+            'id'             => true,
+            'class'          => true,
+            'title'          => true,
+            'style'          => true,
+            'width'          => true,
+            'height'         => true,
+            'frameborder'    => true,
+            'loading'        => true,
+            'sandbox'        => true,
+            'referrerpolicy' => true,
+            'aria-label'     => true,
+        ],
+    ];
+}

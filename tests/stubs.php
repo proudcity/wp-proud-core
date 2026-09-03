@@ -195,6 +195,15 @@ namespace {
     if (!function_exists('esc_url_raw')) {
         function esc_url_raw($url) { return $url; }
     }
+    // Faithful enough for the component the callers ask for. WordPress adds
+    // scheme-relative handling on top of parse_url(); "//docs.google.com/x.pdf"
+    // must report host "docs.google.com" and path "/x.pdf", which bare
+    // parse_url() only gets right on PHP 5.4.7+ -- it does, so delegate.
+    if (!function_exists('wp_parse_url')) {
+        function wp_parse_url($url, $component = -1) {
+            return parse_url((string) $url, $component);
+        }
+    }
     if (!function_exists('__')) {
         function __($text, $domain = '') { return $text; }
     }
