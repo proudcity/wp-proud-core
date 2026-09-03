@@ -86,15 +86,15 @@ class CTA extends Core\ProudWidget
         <?php
 
 
-        if ($instance['classname'] == 'action') {
-            $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
+        if (($instance['classname'] ?? '') === 'action') {
+            $actionColor = \Proud\Core\action_button_color();
             $textColor   = \Proud\Core\proud_contrast_color($actionColor);
 
         ?>
             <style type="text/css">
                 .card.card-btn.action {
-                    background-color: <?php echo esc_html($actionColor); ?>;
-                    border:1px solid <?php echo esc_html($actionColor); ?>;
+                    background-color: <?php echo $actionColor; ?>;
+                    border:1px solid <?php echo $actionColor; ?>;
                     color: <?php echo $textColor; ?> !important;
                 }
 
@@ -113,8 +113,8 @@ class CTA extends Core\ProudWidget
 
         ?>
         <div class="card-wrap action-button">
-            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url']); ?>" class="card text-center card-btn card-btn-action card-block <?php echo sanitize_html_class(@$instance['classname']); ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
-                <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
+            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url'] ?? ''); ?>" class="card text-center card-btn card-btn-action card-block <?php echo \Proud\Core\sanitize_html_classes($instance['classname'] ?? ''); ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
+                <div class="h4"><?php echo \Proud\Core\esc_widget_title($instance['link_title'] ?? ''); ?></div>
             </a>
         </div>
 <?php

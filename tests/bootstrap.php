@@ -21,6 +21,25 @@
 // its stream wrapper is in place when stubs.php and the plugin files are loaded.
 require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
 require_once __DIR__ . '/../vendor/autoload.php';
+// Real wp-includes/kses.php, loaded BEFORE stubs.php (whose definitions are all
+// function_exists-guarded, so nothing shadows it).
+//
+// Proud\Core\esc_widget_title() is a thin wrapper over wp_kses(), so a stub
+// would mean the tests measure the stub rather than WordPress. A hand-written
+// model of kses was tried first and diverged from the real function on 22 of 78
+// adversarial inputs -- HTML comments, "</ x>" bogus-comment tokens, NUL bytes
+// and numeric character references were all wrong -- in both directions. Some
+// of those divergences were in the dangerous direction, where a template test
+// would pass while real WordPress emitted raw markup.
+//
+// kses.php loads standalone; the only things it needs at call time are
+// wp_allowed_protocols() and the `pre_kses` filter, both provided in stubs.php.
+$kses = __DIR__ . '/../../../../wp-includes/kses.php';
+if (!is_readable($kses)) {
+    fwrite(STDERR, "Cannot read {$kses}.\nThese tests load the real kses.php and must be run from inside a WordPress install.\n");
+    exit(1);
+}
+require_once $kses;
 require_once __DIR__ . '/stubs.php';
 
 // proud-helpers.php provides build_retina_image_meta (used by build_logo_meta)
@@ -80,3 +99,18 @@ require_once __DIR__ . '/gravityforms-stubs.php';
 // present in tests, so the guarded hook wiring is skipped and only the helper
 // under test is defined.
 require_once __DIR__ . '/../plugin_override/gravityforms/proud-gravityforms.php';
+
+// icon-link-stubs.php provides a bare Proud\Core\ProudWidget so the IconLink
+// widget class can be loaded without the WP_Widget/form-helper stack.
+// IconLink::printWidget() is the unit under test (issue #2916).
+// Shared trait wiring the `pre_kses` filter through Brain Monkey so wp_kses()
+// behaves as it does on a real site. See the trait for why.
+require_once __DIR__ . '/AppliesPreKsesFilter.php';
+
+require_once __DIR__ . '/icon-link-stubs.php';
+require_once __DIR__ . '/../modules/proud-widget/widgets/icon-link/icon-link-widget.class.php';
+
+// cta-button-widget.class.php defines CTA, the sibling of IconLink. It uses the
+// same stubbed Proud\Core\ProudWidget base, so it loads on the back of the
+// require above. CTA::printWidget() is covered by CtaButtonWidgetTest (#2916).
+require_once __DIR__ . '/../modules/proud-widget/widgets/cta-widget/cta-button-widget.class.php';

@@ -23,13 +23,13 @@
                                         <div class="jumbotron-bg-mask"></div>
                                         <div class="carousel-caption-jumbotron">
                                             <?php if (!empty($slide['slide_title'])) : ?>
-                                                <h2 class="h1"><?php print $slide['slide_title']; ?></h2>
+                                                <h2 class="h1"><?php print \Proud\Core\esc_widget_title($slide['slide_title']); ?></h2>
                                             <?php endif; ?>
                                             <?php if (!empty($slide['description'])) : ?>
-                                                <p class="lead"><?php print $slide['description']; ?></p>
+                                                <p class="lead"><?php print \Proud\Core\esc_widget_title($slide['description']); ?></p>
                                             <?php endif; ?>
                                             <?php if (!empty($slide['link_url'])) : ?>
-                                                <a class="btn btn-primary" href="<?php print $slide['link_url']; ?>"><?php print $slide['link_title']; ?></a>
+                                                <a class="btn btn-primary" href="<?php print \Proud\Core\esc_link_url($slide['link_url']); ?>"><?php print \Proud\Core\esc_widget_title($slide['link_title'] ?? ''); ?></a>
                                             <?php endif; ?>
                                         </div>
                                     </div>

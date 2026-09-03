@@ -23,11 +23,11 @@ if (!empty($imageset)) :
                 <div class="card-block">
                     <div class="h3 margin-top-none">
                         <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
-                            <?php print $image['link_title'] ?>
+                            <?php print Core\esc_widget_title( $image['link_title'] ) ?>
                         </a>
                     </div>
                         <?php if (!empty($image['text'])) : ?>
-                            <p class="margin-bottom-none"><?php echo $image['text']; ?></p>
+                            <p class="margin-bottom-none"><?php echo esc_html( $image['text'] ); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>

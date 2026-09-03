@@ -2,7 +2,7 @@
   <div class="panel-heading" role="tab" id="<?php echo $field['#id']; ?>-heading-<?php echo $key; ?>">
     <h4 class="panel-title">
       <a role="button" data-bs-toggle="collapse" data-bs-parent="#<?php echo $field['#id']; ?>-accordion" href="#<?php echo $field['#id']; ?>-<?php echo $key; ?>" aria-expanded="true" aria-controls="<?php echo $field['#id']; ?>-<?php echo $key; ?>">
-        <?php echo $group_title ?>
+        <?php echo esc_html( $group_title ) ?>
       </a>
       <?php
         // Are we a weight-based or key based repeating field? 

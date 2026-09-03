@@ -75,14 +75,14 @@ class IconLink extends Core\ProudWidget
     public function printWidget($args, $instance)
     {
 
-        if ($instance['classname'] == 'action') {
-            $actionColor = get_theme_mod('color_action_button', '#e49c11'); // default fallback
+        if (($instance['classname'] ?? '') === 'action') {
+            $actionColor = \Proud\Core\action_button_color();
             $textColor   = \Proud\Core\proud_contrast_color($actionColor);
 
 ?>
             <style type="text/css">
                 .card.card-btn.action {
-                    background-color: <?php echo esc_html($actionColor); ?>;
+                    background-color: <?php echo $actionColor; ?>;
                     color: <?php echo $textColor ?>;
                 }
 
@@ -95,9 +95,9 @@ class IconLink extends Core\ProudWidget
 
         ?>
         <div class="card-wrap">
-            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url']); ?>" class="card text-center card-btn card-block <?php echo @$instance['classname']; ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
-                <i aria-hidden="true" class="fa <?php echo $instance['fa_icon']; ?> fa-3x"></i>
-                <div class="h4"><?php echo esc_html($instance['link_title']); ?></div>
+            <a href="<?php echo \Proud\Core\esc_link_url($instance['link_url'] ?? ''); ?>" class="card text-center card-btn card-block <?php echo \Proud\Core\sanitize_html_classes($instance['classname'] ?? ''); ?>" <?php if (!empty($instance['external'])): ?>target="_blank" rel="noopener" <?php endif; ?>>
+                <i aria-hidden="true" class="fa <?php echo \Proud\Core\sanitize_html_classes($instance['fa_icon'] ?? ''); ?> fa-3x"></i>
+                <div class="h4"><?php echo \Proud\Core\esc_widget_title($instance['link_title'] ?? ''); ?></div>
             </a>
         </div>
 <?php

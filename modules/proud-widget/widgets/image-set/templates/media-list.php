@@ -26,10 +26,10 @@
       <div class="media-body">
         <div class="h3 media-heading">
           <a href="<?php print Core\esc_link_url( $image['link_url'] ) ?>"<?php if ( !empty( $image['external'] ) ): ?> target="_blank" rel="noopener"<?php endif; ?>>
-            <?php print $image['link_title'] ?>
+            <?php print Core\esc_widget_title( $image['link_title'] ) ?>
           </a>
         </div>
-        <p><?php echo ( !empty( $image['text'] ) ? $image['text'] : '&nbsp' ) ?></p>
+        <p><?php echo ( !empty( $image['text'] ) ? esc_html( $image['text'] ) : '&nbsp' ) ?></p>
       </div>
     <?php endif; ?>
     </div>

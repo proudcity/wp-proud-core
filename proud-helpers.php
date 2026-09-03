@@ -397,6 +397,128 @@ function esc_link_url($value)
 }
 
 /**
+ * Sanitize a whitespace-separated list of HTML class names.
+ *
+ * sanitize_html_class() is built for a single class name: it strips every
+ * character outside [A-Za-z0-9_-], whitespace included. Handing it a
+ * multi-class string silently welds the names together --
+ * "fa-solid fa-leaf" becomes "fa-solidfa-leaf", which matches no stylesheet
+ * rule and makes the icon vanish. 171 of the 174 distinct fa_icon values on
+ * a production database copy are multi-class Font Awesome 6 strings, so that
+ * is the normal case here, not an edge case.
+ *
+ * Splitting on whitespace first and sanitizing each name individually keeps
+ * the list intact while still guaranteeing the result can only contain
+ * [A-Za-z0-9_-] and single spaces. That makes it safe to interpolate straight
+ * into a class="..." attribute -- there is no quote, angle bracket or equals
+ * sign left to break out with -- so callers do not need to wrap it in
+ * esc_attr() as well.
+ *
+ * Names that sanitize down to nothing are dropped rather than left as empty
+ * strings, so no double spaces or trailing space reach the attribute.
+ *
+ * That guarantee is inherited from core: sanitize_html_class() applies its
+ * [^A-Za-z0-9_-] filter without the /u modifier, so it strips byte-wise and no
+ * byte of a multibyte sequence can survive. It does, however, end in
+ * apply_filters('sanitize_html_class', ...) -- a plugin hooking that filter and
+ * returning unsafe characters would void the "no esc_attr() needed" contract
+ * above. Nothing hooks it on this install.
+ *
+ * @param string $value Whitespace-separated class names.
+ * @return string Sanitized class names, single-space separated. '' if none survive.
+ */
+function sanitize_html_classes($value)
+{
+    $classes = preg_split('~\s+~', (string) $value, -1, PREG_SPLIT_NO_EMPTY);
+
+    if (empty($classes)) {
+        return '';
+    }
+
+    $classes = array_filter(array_map('sanitize_html_class', $classes), 'strlen');
+
+    return implode(' ', $classes);
+}
+
+/**
+ * Escape a widget "Link title", allowing a line break and nothing else.
+ *
+ * These fields are plain-text inputs and were never meant to hold markup, so
+ * esc_html() looks like the obvious answer. It is not safe across the fleet:
+ * customers have authored thousands of pages on 100+ sites, and a <br> in a
+ * title is exactly what an editor reaches for to control wrapping. One
+ * published page on the San Rafael database copy already does it --
+ * #10131 stores "Report illegal <br> camping " -- and one local database is
+ * not evidence about the other sites. esc_html() would turn every such title
+ * into visible "&lt;br&gt;" text.
+ *
+ * wp_kses() with a br-only allowlist keeps the line break: other tags are
+ * removed (their text kept), any attribute on the <br> is stripped, and a bare
+ * ampersand is encoded exactly once so "Boards & Commissions" still renders as
+ * "Boards & Commissions".
+ *
+ * Precisely: <br> is the only element that can still RENDER. kses also passes
+ * HTML comments and bogus-comment tokens (<!-- x -->, </ x>) through raw, but
+ * they are inert -- kses recursively filters their contents, collapses --+ to -
+ * and always emits its own terminator, so they cannot escape this widget's
+ * output. A title of "a<!-- x --!>b" does hide the "b".
+ *
+ * TEXT NODES ONLY. kses does not encode quotes -- They're "quoted" comes back
+ * byte-for-byte -- so this is safe as element content and immediately
+ * exploitable inside title="...", alt="...", aria-label="..." or any other
+ * attribute. Use esc_attr() there. All eight current call sites are element
+ * content: link_title in image-cards.php, media-list.php, icon-set.php,
+ * icon-link-widget.class.php and cta-button-widget.class.php, plus slide_title,
+ * description and link_title in jumbotron-slideshow.php.
+ *
+ * Accepted cost: kses reads a bare "<" as a tag start and consumes through the
+ * next ">", so "Wait < 5 minutes > call us" loses text that esc_html() would
+ * have shown. That is inherent to kses and matches wp_kses_post() behaviour
+ * everywhere else in WordPress. No stored title hits it today.
+ *
+ * @param string|null $value Raw stored title.
+ * @return string Title with only <br> preserved.
+ */
+function esc_widget_title($value)
+{
+    // Widget instance values can be arrays after an import or a migration.
+    // A bare (string) cast would warn on an array and fatal on an object
+    // with no __toString(); action_button_color() guards the same way.
+    $value = (is_scalar($value) || $value === null) ? (string) $value : '';
+
+    return wp_kses($value, ['br' => []]);
+}
+/**
+ * The Customizer's Action Button colour, guaranteed to be a hex colour.
+ *
+ * The 'color_action_button' theme mod is registered without a
+ * sanitize_callback, and WP_Customize_Color_Control validates nothing server
+ * side, so the stored value is whatever was POSTed. It is interpolated into
+ * three <style> blocks (icon-link and cta-button widgets, plus the Gravity
+ * Forms submit button override), where esc_html() is the wrong tool: CSS
+ * injection needs none of the characters it encodes, and the Gravity Forms
+ * sink escapes nothing at all.
+ *
+ * sanitize_hex_color() returns null for anything that is not a 3- or 6-digit
+ * hex colour and '' for an empty string, so both cases fall back to the
+ * default rather than emitting "background-color: ;".
+ *
+ * @return string A hex colour, '#e49c11' if the stored value is unusable.
+ */
+function action_button_color()
+{
+    $default = '#e49c11';
+    $stored = get_theme_mod('color_action_button', $default);
+
+    // Core's sanitize_hex_color() passes its argument straight to
+    // preg_match(), so a non-string stored value is a TypeError on PHP 8
+    // (fatal) and a deprecation notice for null. A theme mod can hold an
+    // array via an import, a migration or the theme_mod_* filter.
+    $color = is_string($stored) ? sanitize_hex_color($stored) : null;
+
+    return empty($color) ? $default : $color;
+}
+/**
  * Helper function returns url to social acount
  */
 function socialAccountUrl($service, $account)
