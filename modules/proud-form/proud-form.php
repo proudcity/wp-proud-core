@@ -118,12 +118,54 @@ if (! class_exists('FormHelper')) {
         }
 
         /**
+         * Instance keys that are not declared widget fields but must survive a
+         * save.
+         *
+         * - `title` is rendered for every widget by ProudWidget::widget(), but
+         *   is only added to $settings by the ProudWidget constructor. Sixteen
+         *   widgets assign $this->settings wholesale in initialize(), which
+         *   runs later on `init`, so by update() time their declared fields no
+         *   longer contain it.
+         * - SiteOrigin Panels keeps its own bookkeeping on the instance.
+         *   `panels_info` holds the widget class. The sidebars emulator reads
+         *   `so_sidebar_emulator_id` and `option_name` off the persisted
+         *   instance on the front end (inc/sidebars-emulator.php:148,238).
+         *   Panels does regenerate the latter two after update() on its save
+         *   paths, but preserving them here avoids depending on that ordering.
+         */
+        const RESERVED_INSTANCE_KEYS = [
+            'title',
+            'panels_info',
+            'so_sidebar_emulator_id',
+            'option_name',
+        ];
+
+        /**
          * Takes instance setting on submit and deals with draggable weights
+         *
+         * Keys the widget does not declare are dropped (#2918). Widget
+         * templates are rendered after extract( $instance ), so a key that
+         * reaches the saved instance becomes a variable in template scope --
+         * that is how an unescaped `print $form;` in the Embed Document
+         * template was reachable from a crafted widget save.
+         *
+         * The allowlist only applies when the caller declares fields.
+         * FormHelper::formValues() defaults $fields to [] and callers such as
+         * proud-teasers.php rely on that, where filtering against an empty
+         * allowlist would discard the whole submission.
+         *
+         * @param array $new_instance Values just submitted.
+         * @param array $fields       Widget field definitions, keyed by name.
          *
          * @return $instance object Widget instance
          */
         public static function updateGroupsWeight($new_instance, $fields = [])
         {
+            if (!empty($fields)) {
+                $allowed = array_merge(array_keys($fields), self::RESERVED_INSTANCE_KEYS);
+                $new_instance = array_intersect_key($new_instance, array_flip($allowed));
+            }
+
             $instance = [];
             foreach ($new_instance as $key => $value) {
                 // Array based value

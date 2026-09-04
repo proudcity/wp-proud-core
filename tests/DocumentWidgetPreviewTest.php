@@ -101,6 +101,7 @@ class DocumentWidgetPreviewTest extends TestCase
         Functions\when('wp_get_post_terms')->justReturn([]);
         Functions\when('get_the_title')->justReturn('Budget Report 2024');
         Functions\when('get_permalink')->justReturn('https://example.com/doc/budget');
+        Functions\when('get_post_type')->justReturn('document');
         Functions\when('esc_url')->returnArg();
         Functions\when('esc_attr')->returnArg();
         Functions\when('esc_html')->returnArg();
@@ -120,6 +121,75 @@ class DocumentWidgetPreviewTest extends TestCase
         $this->assertNotEmpty($capturedPayload, 'wp_send_json must be called for a valid post_id.');
         $this->assertArrayHasKey('html', $capturedPayload, 'Response must contain an "html" key.');
         $this->assertIsString($capturedPayload['html'], 'html value must be a string.');
+
+        \Patchwork\restoreAll();
+        unset($_GET['post_id']);
+    }
+
+    /**
+     * A post ID that is not a Document must be rejected before the template
+     * is included, so the endpoint cannot be used to read titles and
+     * permalinks of arbitrary post types.
+     */
+    public function test_preview_rejects_non_document_post_type(): void
+    {
+        $_GET['post_id'] = '99';
+
+        Functions\when('check_ajax_referer')->justReturn(true);
+        Functions\when('current_user_can')->justReturn(true);
+        Functions\when('get_post_type')->justReturn('post');
+        Functions\when('wp_die')->justReturn(null);
+
+        $capturedPayload = null;
+        Functions\when('wp_send_json_error')->alias(static function ($data) use (&$capturedPayload): void {
+            $capturedPayload = $data;
+        });
+
+        $rendered = false;
+        Functions\when('wp_send_json')->alias(static function ($data) use (&$rendered): void {
+            $rendered = true;
+        });
+
+        proud_document_preview_callback();
+
+        $this->assertNotNull($capturedPayload, 'A non-document post ID must return an error.');
+        $this->assertFalse($rendered, 'The template must not be rendered for a non-document post ID.');
+
+        \Patchwork\restoreAll();
+        unset($_GET['post_id']);
+    }
+
+    /**
+     * A Document the current user is not allowed to read (draft, private, or
+     * another author's) must be rejected even though they hold edit_posts.
+     */
+    public function test_preview_rejects_document_the_user_cannot_read(): void
+    {
+        $_GET['post_id'] = '42';
+
+        Functions\when('check_ajax_referer')->justReturn(true);
+        Functions\when('get_post_type')->justReturn('document');
+        Functions\when('wp_die')->justReturn(null);
+
+        // edit_posts passes, read_post does not.
+        Functions\when('current_user_can')->alias(static function ($capability, $id = null): bool {
+            return 'read_post' !== $capability;
+        });
+
+        $capturedPayload = null;
+        Functions\when('wp_send_json_error')->alias(static function ($data) use (&$capturedPayload): void {
+            $capturedPayload = $data;
+        });
+
+        $rendered = false;
+        Functions\when('wp_send_json')->alias(static function ($data) use (&$rendered): void {
+            $rendered = true;
+        });
+
+        proud_document_preview_callback();
+
+        $this->assertNotNull($capturedPayload, 'An unreadable document must return an error.');
+        $this->assertFalse($rendered, 'The template must not be rendered for an unreadable document.');
 
         \Patchwork\restoreAll();
         unset($_GET['post_id']);

@@ -84,6 +84,7 @@ class DocumentEmbedPreviewTest extends TestCase
         Functions\when('wp_get_post_terms')->justReturn([]);
         Functions\when('get_the_title')->justReturn('Budget Report 2024');
         Functions\when('get_permalink')->justReturn('https://example.test/documents/budget/');
+        Functions\when('get_post_type')->justReturn('document');
         Functions\when('esc_url')->returnArg();
         Functions\when('esc_attr')->returnArg();
         Functions\when('Proud\Document\get_document_icon')->justReturn('fa-file-pdf-o');
@@ -532,5 +533,67 @@ class DocumentEmbedPreviewTest extends TestCase
 
         $this->assertStringNotContainsString('Array', $html);
         $this->assertStringContainsString(self::BASELINE_GVIEW_IFRAME, $html);
+    }
+
+    /**
+     * Render exactly the way DocumentWidget::printWidget() does, including the
+     * extract() of the saved widget instance, so any variable a crafted
+     * instance can smuggle into template scope is exercised.
+     *
+     * @param array $instance Saved widget instance.
+     */
+    private function renderInstanceLikePrintWidget(array $instance): string
+    {
+        Functions\when('Proud\Document\get_document_type')->justReturn('pdf');
+
+        extract($instance);
+        $id = $instance['post_id'];
+        $id = preg_replace('/(.+?)(\/wp-admin\/post\.php\?post=)([0-9]+).*/', '$3', $id);
+
+        ob_start();
+        include __DIR__ . '/../modules/proud-widget/widgets/document/templates/content-embed-document.php';
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Issue #2918: the template used to end with an unescaped `print $form;`
+     * guarded only by `!empty($form_id)`. Neither variable is ever assigned by
+     * the template -- the Gravity Forms block that set them is commented out --
+     * so both could only arrive through printWidget()'s extract() of the saved
+     * widget instance, which FormHelper::updateGroupsWeight() populates from
+     * every POSTed key without an allowlist.
+     */
+    public function test_widget_instance_cannot_inject_markup_through_the_form_variable(): void
+    {
+        $payload = '<script>alert(1)</script>';
+
+        $html = $this->renderInstanceLikePrintWidget([
+            'post_id' => '42',
+            'form_id' => '1',
+            'form'    => $payload,
+        ]);
+
+        $this->assertStringNotContainsString(
+            $payload,
+            $html,
+            'A widget instance must not be able to place raw markup in the rendered template.'
+        );
+    }
+
+    /**
+     * The same instance must still render the document itself -- the guard is
+     * a deletion of dead code, not a bail-out that suppresses the widget.
+     */
+    public function test_document_still_renders_when_the_instance_carries_a_form_key(): void
+    {
+        $html = $this->renderInstanceLikePrintWidget([
+            'post_id' => '42',
+            'form_id' => '1',
+            'form'    => '<script>alert(1)</script>',
+        ]);
+
+        $this->assertStringContainsString('Budget Report 2024', $html, 'The document title must still render.');
+        $this->assertStringContainsString(self::BASELINE_GVIEW_IFRAME, $html, 'The preview must still render.');
     }
 }

@@ -76,6 +76,12 @@ if ( ! is_string( $filtered_preview_html ) ) {
 }
 
 // @todo: currently not showing gravity forms
+//
+// The `print $form;` that used to sit at the end of this file was removed for
+// #2918. Neither variable below is assigned outside this comment, so the only
+// way they reached template scope was DocumentWidget::printWidget()'s
+// extract() of the saved widget instance -- which carries whatever keys were
+// POSTed. If this is ever revived, assign $form here and escape at output.
 /*
  * $form_id = get_post_meta( $id, 'form', true );
 
@@ -107,7 +113,3 @@ if ( '' !== $filtered_preview_html ) {
         : wp_kses( $filtered_preview_html, \Proud\Core\proud_document_preview_allowed_html() ) ) . "\n";
 }
 ?>
-
-<?php if( !empty($form_id) ): ?>
-    <?php print $form; ?>
-<?php endif; ?>

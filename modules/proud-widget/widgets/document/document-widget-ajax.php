@@ -77,6 +77,15 @@ function proud_document_preview_callback() {
 		return;
 	}
 
+	// Only preview Documents the caller is allowed to see. Without this the
+	// endpoint hands back the title and permalink of any post ID it is given,
+	// including drafts, private posts and other post types.
+	if ( 'document' !== get_post_type( $id ) || ! current_user_can( 'read_post', $id ) ) {
+		wp_send_json_error( 'Invalid document ID.' );
+		wp_die();
+		return;
+	}
+
 	$template = plugin_dir_path( __FILE__ ) . 'templates/content-embed-document.php';
 
 	ob_start();

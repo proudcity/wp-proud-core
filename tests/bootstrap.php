@@ -147,3 +147,9 @@ require_once __DIR__ . '/../modules/proud-widget/widgets/icon-link/icon-link-wid
 // same stubbed Proud\Core\ProudWidget base, so it loads on the back of the
 // require above. CTA::printWidget() is covered by CtaButtonWidgetTest (#2916).
 require_once __DIR__ . '/../modules/proud-widget/widgets/cta-widget/cta-button-widget.class.php';
+
+// proud-form.php defines Proud\Core\FormHelper, whose updateGroupsWeight() is
+// the widget-instance sanitizer under test (issue #2918). The file guards its
+// Gravity Forms include behind class_exists('GFForms'), which is false here, so
+// it loads standalone.
+require_once __DIR__ . '/../modules/proud-form/proud-form.php';
