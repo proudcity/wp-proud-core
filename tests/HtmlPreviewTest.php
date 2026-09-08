@@ -4,6 +4,8 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use PHPUnit\Framework\TestCase;
 use function Proud\Core\proud_html_preview_artifact_key;
+use function Proud\Core\proud_html_preview_fallback_document;
+use function Proud\Core\proud_html_preview_is_servable;
 use function Proud\Core\proud_html_preview_local_path;
 use function Proud\Core\proud_html_preview_queue_cleanup;
 use function Proud\Core\proud_html_preview_record;
@@ -91,6 +93,23 @@ class HtmlPreviewTest extends TestCase
         Functions\when('add_query_arg')->alias(static function ($args, $url): string {
             return $url . '?' . http_build_query($args);
         });
+        // No WP Stateless: a single server, where the uploads directory is the
+        // durable store and every request sees the same files.
+        Functions\when('has_action')->justReturn(false);
+        Functions\when('get_bloginfo')->justReturn('en-US');
+    }
+
+    /**
+     * Point the record at shared object storage rather than local uploads.
+     */
+    private function useSharedStorage(): void
+    {
+        $base = 'https://storage.googleapis.com/proudcity-uploads';
+        $this->record['artifact_url'] = $base . '/' . $this->record['artifact_key'];
+
+        Functions\when('apply_filters')->alias(static function ($tag, $value) use ($base) {
+            return 'proud_html_preview_trusted_storage_base_urls' === $tag ? [$base] : $value;
+        });
     }
 
     protected function tearDown(): void
@@ -130,8 +149,87 @@ class HtmlPreviewTest extends TestCase
 
         $result = proud_html_preview_resolve_request(44, 'token-123', proud_html_preview_source_identity($this->record));
 
-        $this->assertSame('redirect', $result['status']);
+        $this->assertSame('fallback', $result['status']);
         $this->assertSame('https://example.test/uploads/replacement.pdf', $result['url']);
+    }
+
+    public function test_a_pod_local_artifact_is_not_offered_when_uploads_are_not_shared(): void
+    {
+        // WP Stateless is running, so uploads are a per-container scratch
+        // directory. The file being here proves nothing about the container
+        // that will serve the iframe.
+        Functions\when('has_action')->justReturn(1);
+
+        $path = proud_html_preview_local_path($this->record['artifact_key']);
+        mkdir(dirname($path), 0777, true);
+        file_put_contents($path, '<html><body>Agenda</body></html>');
+
+        $this->assertFalse(proud_html_preview_is_servable($this->record));
+        $this->assertSame('', proud_html_preview_url(44, $this->record['source_url']));
+    }
+
+    public function test_a_pod_local_artifact_is_offered_when_uploads_are_shared(): void
+    {
+        $path = proud_html_preview_local_path($this->record['artifact_key']);
+        mkdir(dirname($path), 0777, true);
+        file_put_contents($path, '<html><body>Agenda</body></html>');
+
+        $this->assertTrue(proud_html_preview_is_servable($this->record));
+        $this->assertStringContainsString('proud_html_preview=44', proud_html_preview_url(44, $this->record['source_url']));
+    }
+
+    public function test_a_missing_local_artifact_is_never_offered(): void
+    {
+        $this->assertFalse(proud_html_preview_is_servable($this->record));
+        $this->assertSame('', proud_html_preview_url(44, $this->record['source_url']));
+    }
+
+    public function test_a_shared_storage_artifact_is_offered_while_its_local_copy_is_absent(): void
+    {
+        $this->useSharedStorage();
+        Functions\when('has_action')->justReturn(1);
+
+        $this->assertTrue(proud_html_preview_is_servable($this->record));
+        $this->assertStringContainsString('proud_html_preview=44', proud_html_preview_url(44, $this->record['source_url']));
+    }
+
+    public function test_shared_uploads_detection_can_be_overridden_by_filter(): void
+    {
+        Functions\when('has_action')->justReturn(1);
+        Functions\when('apply_filters')->alias(static function ($tag, $value) {
+            return 'proud_html_preview_uploads_are_shared' === $tag ? true : $value;
+        });
+
+        $path = proud_html_preview_local_path($this->record['artifact_key']);
+        mkdir(dirname($path), 0777, true);
+        file_put_contents($path, '<html><body>Agenda</body></html>');
+
+        $this->assertTrue(proud_html_preview_is_servable($this->record));
+    }
+
+    public function test_the_fallback_document_offers_the_pdf_without_scripts_or_frames(): void
+    {
+        $html = proud_html_preview_fallback_document('https://example.test/uploads/agenda.pdf');
+
+        $this->assertStringContainsString('https://example.test/uploads/agenda.pdf', $html);
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('<iframe', $html);
+        $this->assertStringNotContainsString('<object', $html);
+        $this->assertStringNotContainsString('<embed', $html);
+        $this->assertStringNotContainsString('http-equiv="refresh"', $html);
+        $this->assertStringStartsWith('<!DOCTYPE html>', $html);
+    }
+
+    public function test_the_fallback_document_escapes_the_source_url_and_its_text(): void
+    {
+        Functions\when('esc_url')->alias(static fn ($url): string => 'ESCAPED_URL');
+        Functions\when('esc_html')->alias(static fn ($text): string => 'ESCAPED_TEXT');
+
+        $html = proud_html_preview_fallback_document('javascript:alert(1)');
+
+        $this->assertStringContainsString('ESCAPED_URL', $html);
+        $this->assertStringContainsString('ESCAPED_TEXT', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
     }
 
     public function test_path_traversal_and_untrusted_storage_are_rejected(): void
@@ -192,7 +290,11 @@ class HtmlPreviewTest extends TestCase
         Functions\when('wp_remote_retrieve_body')->justReturn('');
 
         $result = proud_html_preview_resolve_request(44, 'token-123', proud_html_preview_source_identity($this->record));
-        $this->assertSame('redirect', $result['status']);
+
+        // Deliberately not a redirect. This endpoint is fetched inside a
+        // sandboxed iframe, where a browser will not render a PDF at all, so a
+        // 302 to one produces a browser error page rather than the document.
+        $this->assertSame('fallback', $result['status']);
         $this->assertSame($this->record['source_url'], $result['url']);
     }
 

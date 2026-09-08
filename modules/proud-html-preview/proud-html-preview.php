@@ -34,7 +34,7 @@ function proud_html_preview_url($source_post_id, $source_url)
 {
     $record = proud_html_preview_record($source_post_id, $source_url);
 
-    if (!$record) {
+    if (!$record || !proud_html_preview_is_servable($record)) {
         return '';
     }
 
@@ -46,6 +46,72 @@ function proud_html_preview_url($source_post_id, $source_url)
         ],
         home_url('/')
     );
+}
+
+/**
+ * Can any process that might serve this request produce the artifact?
+ *
+ * An artifact reachable only through this site's own uploads base URL offers no
+ * recovery: `proud_html_preview_restore_artifact()` would re-fetch the very file
+ * the request could not read. Whether that matters depends on the deployment.
+ * On a single server the uploads directory is the durable store, so a readable
+ * file is proof enough. Where uploads are a per-container scratch directory it
+ * is not proof of anything -- the container that renders the page and the one
+ * that serves the iframe are frequently different -- and offering the preview
+ * makes the document a coin flip between the HTML rendition and a browser error.
+ *
+ * @param array $record Preview record.
+ * @return bool
+ */
+function proud_html_preview_is_servable(array $record)
+{
+    if (!proud_html_preview_artifact_is_local($record)) {
+        return true;
+    }
+
+    if (!proud_html_preview_uploads_are_shared()) {
+        return false;
+    }
+
+    $path = proud_html_preview_local_path($record['artifact_key']);
+
+    return $path && is_readable($path);
+}
+
+/**
+ * Does this record's artifact live under this site's own uploads base URL?
+ *
+ * @param array $record Preview record.
+ * @return bool
+ */
+function proud_html_preview_artifact_is_local(array $record)
+{
+    $uploads = wp_upload_dir();
+    $base_url = isset($uploads['baseurl']) ? $uploads['baseurl'] : '';
+    $artifact_key = proud_html_preview_artifact_key($record['artifact_key']);
+    $parts = parse_url(esc_url_raw($record['artifact_url']));
+
+    if (!$base_url || !$artifact_key || !is_array($parts)) {
+        return false;
+    }
+
+    return proud_html_preview_url_matches_base($parts, $base_url, $artifact_key);
+}
+
+/**
+ * Is the uploads directory shared by every process that serves this site?
+ *
+ * WP Stateless is the signal ProudCity has: a site running it keeps its durable
+ * copies in object storage, and its containers are replaced without warning, so
+ * anything that exists only under uploads is local to one of them.
+ *
+ * @return bool
+ */
+function proud_html_preview_uploads_are_shared()
+{
+    $shared = !(function_exists('has_action') && has_action('sm:sync::syncFile'));
+
+    return (bool) apply_filters('proud_html_preview_uploads_are_shared', $shared);
 }
 
 /**
@@ -190,8 +256,8 @@ function proud_html_preview_maybe_serve()
         : '';
     $result = proud_html_preview_resolve_request($source_post_id, $token, $source_identity);
 
-    if ('redirect' === $result['status']) {
-        wp_redirect($result['url'], 302, 'ProudCity HTML Preview');
+    if ('fallback' === $result['status']) {
+        proud_html_preview_serve_fallback($result['url']);
         exit;
     }
 
@@ -692,8 +758,77 @@ function proud_html_preview_fallback_result(array $record, $source = null)
     $scheme = strtolower((string) parse_url($source, PHP_URL_SCHEME));
 
     return $source && in_array($scheme, ['http', 'https'], true)
-        ? ['status' => 'redirect', 'url' => $source]
+        ? ['status' => 'fallback', 'url' => $source]
         : ['status' => 'not_found'];
+}
+
+/**
+ * Build the page shown when the HTML rendition cannot be produced.
+ *
+ * This endpoint is fetched inside an iframe a provider sandboxes, so nothing
+ * here can display the PDF: the browser's own viewer, `<object>` and Google
+ * Docs Viewer all need capabilities that sandbox withholds. Redirecting to the
+ * PDF therefore does not show the document, it shows a browser error page. A
+ * plain page that names the situation and links out is the honest answer, and
+ * the link works whenever the endpoint is opened directly.
+ *
+ * Deliberately self-contained: no scripts, no frames, no external assets, so it
+ * renders under the strictest policy the ready path uses.
+ *
+ * @param string $source_url Original document URL.
+ * @return string
+ */
+function proud_html_preview_fallback_document($source_url)
+{
+    $language = function_exists('get_bloginfo') ? (string) get_bloginfo('language') : 'en';
+    $language = $language ? $language : 'en';
+    $heading = __('The HTML version of this document is not available', 'wp-proud-core');
+    $body = __('The original file is still available to download.', 'wp-proud-core');
+    $link = __('Open the original document', 'wp-proud-core');
+
+    return '<!DOCTYPE html>' . "\n"
+        . '<html lang="' . esc_attr($language) . '">' . "\n"
+        . '<head>' . "\n"
+        . '<meta charset="utf-8">' . "\n"
+        . '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n"
+        . '<meta name="robots" content="noindex, nofollow">' . "\n"
+        . '<title>' . esc_html($heading) . '</title>' . "\n"
+        . '<style>'
+        . 'body{margin:0;padding:2rem;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;'
+        . 'line-height:1.5;color:#1a1a1a;background:#fff}'
+        . 'h1{font-size:1.125rem;margin:0 0 .5rem}'
+        . 'p{margin:0 0 1rem}'
+        . 'a{color:#1a4480}'
+        . '</style>' . "\n"
+        . '</head>' . "\n"
+        . '<body>' . "\n"
+        . '<h1>' . esc_html($heading) . '</h1>' . "\n"
+        . '<p>' . esc_html($body) . '</p>' . "\n"
+        . '<p><a href="' . esc_url($source_url) . '" target="_blank" rel="noopener noreferrer">'
+        . esc_html($link) . '</a></p>' . "\n"
+        . '</body>' . "\n"
+        . '</html>' . "\n";
+}
+
+/**
+ * Send the fallback page with the same hardening as the ready path.
+ *
+ * @param string $source_url Original document URL.
+ */
+function proud_html_preview_serve_fallback($source_url)
+{
+    nocache_headers();
+    header('Content-Type: text/html; charset=UTF-8');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: no-referrer');
+    header('X-Frame-Options: SAMEORIGIN');
+    header(
+        "Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; "
+        . "img-src 'none'; font-src 'none'; connect-src 'none'; object-src 'none'; media-src 'none'; "
+        . "frame-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
+    );
+
+    echo proud_html_preview_fallback_document($source_url); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 
 /**
