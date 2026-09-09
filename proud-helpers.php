@@ -917,3 +917,140 @@ function proud_document_preview_allowed_html()
         ],
     ];
 }
+
+/**
+ * Normalise incoming taxonomy filter values to term slugs.
+ *
+ * The ?filter_categories[] parameter has carried three different value types
+ * over its life and all three are still in the wild (issue #2720):
+ *
+ *   - term IDs, from contact-submenu-widget.class.php, which builds
+ *     "?filter_categories[]=" . $cat->term_id
+ *   - term names, which the Elasticsearch facet has emitted since the
+ *     aggregation was added -- "?filter_categories[]=Public+Works"
+ *   - term slugs, which the facet emits from #2720 onward
+ *
+ * Slugs are the normalised form because they are the only one of the three
+ * that survives a rename, is unique within a taxonomy, and is guaranteed by
+ * sanitize_title() to contain no character that could break out of the
+ * unescaped id="" and name="" attributes in
+ * modules/proud-form/templates/option-box.php.
+ *
+ * The name lookups deserve an explanation. WordPress stores term names
+ * HTML-encoded: the San Rafael database holds "Arts &amp; Culture", not
+ * "Arts & Culture". The value arriving from the facet has been decoded for
+ * display, so a single get_term_by('name', 'Arts & Culture') misses -- which
+ * is how four categories quietly stopped matching. We therefore try the value
+ * as given, then re-encoded, then decoded.
+ *
+ * htmlspecialchars() rather than htmlentities() for the re-encode: htmlentities()
+ * also converts non-ASCII to named entities, so a category named "Café" would
+ * be looked up as "Caf&eacute;" and never found. htmlspecialchars() touches
+ * only & < > " ', which is exactly the ampersand case we need.
+ *
+ * When nothing resolves, the sanitised values are returned rather than an
+ * empty array. A filter for a category that does not exist must produce zero
+ * results, and handing the caller [] invites it to drop the tax_query clause
+ * and show everything instead.
+ *
+ * @param mixed  $values   Raw filter values: a list, a keyed checkbox array, or a scalar.
+ * @param string $taxonomy Taxonomy to resolve against.
+ * @return string[] Slugs, deduplicated, in the order the values arrived.
+ */
+/**
+ * Most filter values resolve_taxonomy_filter_slugs() will look up in one call.
+ * Each value costs up to four uncached term lookups from unauthenticated input.
+ */
+const RESOLVE_TAXONOMY_FILTER_MAX_VALUES = 50;
+
+/**
+ * Slug returned when every submitted value sanitises to nothing.
+ *
+ * Must not be a valid slug for any real term, and must be non-empty so callers
+ * still build a tax_query rather than dropping the filter and showing
+ * everything. sanitize_title() cannot produce this string -- it strips the
+ * leading and trailing dashes -- so no term can ever collide with it.
+ */
+const RESOLVE_TAXONOMY_FILTER_NO_MATCH = '--proud-no-match--';
+
+function resolve_taxonomy_filter_slugs($values, $taxonomy)
+{
+    if (empty($taxonomy) || !is_string($taxonomy)) {
+        return [];
+    }
+
+    $raw = [];
+    foreach ((array) $values as $value) {
+        if (!is_scalar($value)) {
+            continue;
+        }
+        $value = trim((string) $value);
+        if ('' !== $value) {
+            $raw[] = $value;
+        }
+    }
+
+    if (empty($raw)) {
+        return [];
+    }
+
+    // Dedupe and cap before doing any lookups. Each value costs up to four
+    // uncached get_term_by() calls, this is unauthenticated GET input, and the
+    // URL varies per request so page caching does not absorb it. PHP's default
+    // max_input_vars is 1000, and query_alter() calls this a second time on the
+    // same page load, so an uncapped list is a query amplifier. The cap sits
+    // far above any real facet selection -- San Rafael's busiest taxonomy has
+    // 120 terms in total.
+    $raw = array_slice(array_values(array_unique($raw)), 0, RESOLVE_TAXONOMY_FILTER_MAX_VALUES);
+
+    $slugs = [];
+    foreach ($raw as $value) {
+        // Slug first, term ID second. A bare number is ambiguous -- the contact
+        // submenu widget means a term ID by it, the filter form means a slug,
+        // and WordPress permits a fully numeric slug (a category named "2024"
+        // gets the slug "2024"). The form is by far the busier source, so the
+        // slug wins. This costs the ID path nothing: no slug matches a bare ID
+        // unless someone deliberately created one, so every ID still resolves.
+        $term = get_term_by('slug', $value, $taxonomy);
+
+        if (!$term && ctype_digit($value)) {
+            $term = get_term_by('id', (int) $value, $taxonomy);
+        }
+
+        if (!$term) {
+            foreach ([
+                $value,
+                htmlspecialchars($value, ENT_QUOTES, 'UTF-8'),
+                html_entity_decode($value, ENT_QUOTES, 'UTF-8'),
+            ] as $candidate) {
+                $term = get_term_by('name', $candidate, $taxonomy);
+                if ($term) {
+                    break;
+                }
+            }
+        }
+
+        if ($term && !empty($term->slug)) {
+            $slugs[] = $term->slug;
+        }
+    }
+
+    if (empty($slugs)) {
+        // Nothing matched. Return slug-shaped versions of what was asked for so
+        // the query still runs and still matches nothing.
+        $slugs = array_filter(array_map('sanitize_title', $raw), 'strlen');
+    }
+
+    if (empty($slugs)) {
+        // Every value sanitised away -- sanitize_title() returns '' for "-",
+        // "%" and "&" among others. Returning [] here would be actively unsafe:
+        // both call sites guard with if (!empty($terms)) and would drop the
+        // tax_query altogether, serving every published post. The old (int)
+        // cast produced term_id 0 and matched nothing, and that is the
+        // behaviour to preserve. RESOLVE_TAXONOMY_FILTER_NO_MATCH is not a
+        // valid slug for any real term, so the query runs and returns nothing.
+        $slugs = [RESOLVE_TAXONOMY_FILTER_NO_MATCH];
+    }
+
+    return array_values(array_unique($slugs));
+}

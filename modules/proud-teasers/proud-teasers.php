@@ -294,7 +294,27 @@ if (!class_exists('TeaserList')) {
 
                         if (!$terms || in_array($cat->term_id, $terms)) {
 
-                            $options[$cat->term_id] = $cat->name;
+                            // Keyed by slug, not term_id (#2720). The option key
+                            // becomes the submitted value, and option-box.php
+                            // decides whether a box is ticked by comparing it
+                            // against form_instance -- which process_post() now
+                            // normalises to slugs. Leaving term_id keys here
+                            // would make every box render unticked on a site
+                            // with no Elastic, since in_array(248, ['public-works'])
+                            // is false. The key is also interpolated into an
+                            // unescaped id="" and name="" by that template, and
+                            // a slug is safe there where a name is not.
+                            // get_categories() always supplies a slug; the
+                            // proud-teaser-filter-categories filter is an open
+                            // extension point, so fall back rather than key on
+                            // an empty string if something else ever supplies
+                            // these. sanitize_title() on the way in makes the
+                            // attribute-safety guarantee hold for whatever that
+                            // filter returns, rather than depending on it to
+                            // behave -- option-box.php echoes this key into
+                            // id="" and name="" without escaping.
+                            $key = !empty($cat->slug) ? sanitize_title($cat->slug) : (int) $cat->term_id;
+                            $options[$key] = $cat->name;
                         }
                     };
                     $this->filters['filter_categories'] = [
@@ -371,20 +391,31 @@ if (!class_exists('TeaserList')) {
                     switch ($key) {
                         // taxonomies
                         case 'filter_categories':
+                            $terms    = [];
                             $taxonomy = $this->get_taxonomy();
                             if ($taxonomy) {
-                                $terms = [];
-                                foreach ($req_val as $cat_key) {
-                                    $terms[] = (int) sanitize_text_field($cat_key);
+                                // This used to cast every value to an int, which
+                                // works for the term IDs the contact submenu
+                                // widget emits and turns the term names the
+                                // Elastic facet emits into 0 -- a filter that
+                                // matches nothing. It was invisible because
+                                // query_alter() overwrites tax_query whenever
+                                // Elastic is running; with Elastic down or
+                                // unconfigured the filter silently returned no
+                                // results instead of falling back to the
+                                // database (#2720). Resolving to slugs accepts
+                                // all three historical value types.
+                                $terms = \Proud\Core\resolve_taxonomy_filter_slugs($req_val, $taxonomy);
+                                if (!empty($terms)) {
+                                    $args['tax_query'] = [
+                                        [
+                                            'taxonomy' => $taxonomy,
+                                            'field'    => 'slug',
+                                            'terms'    => $terms,
+                                            'operator' => 'IN',
+                                        ]
+                                    ];
                                 }
-                                $args['tax_query'] = [
-                                    [
-                                        'taxonomy' => $taxonomy,
-                                        'field'    => 'term_id',
-                                        'terms'    => $terms,
-                                        'operator' => 'IN',
-                                    ]
-                                ];
                             }
                             break;
 
@@ -415,7 +446,18 @@ if (!class_exists('TeaserList')) {
                                 )
                             );
                     }
-                    $this->form_instance[$key] = $req_val;
+                    // Hand the form the normalised slugs rather than the raw
+                    // request values. option-box.php decides whether a checkbox
+                    // is checked with in_array($value, $field['#value']), and
+                    // the option keys are slugs from #2720 on -- so a visitor
+                    // arriving on an older ?filter_categories[]=Public+Works
+                    // link would otherwise get the right results with every box
+                    // unticked. resolve_taxonomy_filter_slugs() is idempotent,
+                    // so re-running it on values that are already slugs is a
+                    // no-op.
+                    $this->form_instance[$key] = ('filter_categories' === $key && !empty($terms))
+                        ? $terms
+                        : $req_val;
                 } else {
                     $this->form_instance[$key] = isset($filter['#default_value'])
                         ? $filter['#default_value']
