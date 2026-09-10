@@ -407,14 +407,30 @@ if (!class_exists('TeaserList')) {
                                 // all three historical value types.
                                 $terms = \Proud\Core\resolve_taxonomy_filter_slugs($req_val, $taxonomy);
                                 if (!empty($terms)) {
-                                    $args['tax_query'] = [
-                                        [
-                                            'taxonomy' => $taxonomy,
-                                            'field'    => 'slug',
-                                            'terms'    => $terms,
-                                            'operator' => 'IN',
-                                        ]
+                                    $visitor = [
+                                        'taxonomy' => $taxonomy,
+                                        'field'    => 'slug',
+                                        'terms'    => $terms,
+                                        'operator' => 'IN',
                                     ];
+
+                                    // AND onto the widget's own restriction
+                                    // rather than replacing it (#2923, PCD379).
+                                    // The constructor puts the admin-configured
+                                    // categories in tax_query at line 88; this
+                                    // used to overwrite that wholesale, so a
+                                    // visitor selecting a category the widget
+                                    // excludes was served it anyway. Both
+                                    // constraints have to hold: the widget says
+                                    // which categories the page may ever show,
+                                    // the visitor narrows within that.
+                                    $args['tax_query'] = !empty($args['tax_query'])
+                                        ? [
+                                            'relation' => 'AND',
+                                            $args['tax_query'],
+                                            $visitor,
+                                        ]
+                                        : [$visitor];
                                 }
                             }
                             break;

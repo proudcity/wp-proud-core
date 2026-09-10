@@ -347,7 +347,8 @@ class TaxonomyFilterSlugsTest extends TestCase
     // Lookup amplification
     //
     // Security review finding 2. Each value costs up to four uncached
-    // get_term_by() calls and the parameter is unauthenticated GET input, so
+    // get_term_by() calls -- slug, term ID, three name candidates -- and the
+    // parameter is unauthenticated GET input, so
     // an uncapped list is a query amplifier on a URL that also bypasses page
     // caching. PHP's default max_input_vars is 1000.
     // ---------------------------------------------------------------------
@@ -384,6 +385,109 @@ class TaxonomyFilterSlugsTest extends TestCase
         $this->assertSame(
             ['public-works', 'everything-traffic'],
             $this->resolve(['public-works', 'everything-traffic'])
+        );
+    }
+
+    // ---------------------------------------------------------------------
+    // The cap tracks the size of the taxonomy (#2923)
+    //
+    // A flat 50 had to be both high enough not to truncate a real selection
+    // and low enough to bound the amplifier. On a site with 91 categories
+    // those are different numbers: ticking every box is a legitimate request
+    // that came back silently truncated. What the cap defends against is an
+    // unbounded list, and a list longer than the taxonomy cannot be anything
+    // else.
+    // ---------------------------------------------------------------------
+
+    /**
+     * @param int $terms Terms the taxonomy reports.
+     */
+    private function withTermCount(int $terms): void
+    {
+        Functions\when('wp_count_terms')->justReturn($terms);
+        Functions\when('is_wp_error')->justReturn(false);
+    }
+
+    public function testCapRisesWithTheNumberOfTermsInTheTaxonomy(): void
+    {
+        $this->withTermCount(91);
+
+        $this->assertSame(91, \Proud\Core\resolve_taxonomy_filter_max_values('category'));
+    }
+
+    public function testCapNeverFallsBelowTheFloor(): void
+    {
+        $this->withTermCount(4);
+
+        $this->assertSame(
+            \Proud\Core\RESOLVE_TAXONOMY_FILTER_MAX_VALUES,
+            \Proud\Core\resolve_taxonomy_filter_max_values('category'),
+            'a small taxonomy must not shrink the cap below its historical value'
+        );
+    }
+
+    public function testCapIsBoundedByTheCeiling(): void
+    {
+        $this->withTermCount(50000);
+
+        $this->assertSame(
+            \Proud\Core\RESOLVE_TAXONOMY_FILTER_MAX_VALUES_CEILING,
+            \Proud\Core\resolve_taxonomy_filter_max_values('category')
+        );
+    }
+
+    public function testCapFallsBackToTheFloorWhenTheCountIsUnavailable(): void
+    {
+        Functions\when('wp_count_terms')->justReturn(new \stdClass());
+        Functions\when('is_wp_error')->justReturn(true);
+
+        $this->assertSame(
+            \Proud\Core\RESOLVE_TAXONOMY_FILTER_MAX_VALUES,
+            \Proud\Core\resolve_taxonomy_filter_max_values('category'),
+            'a miscount must restore the old behaviour, never break the filter'
+        );
+    }
+
+    public function testResolvesEveryBoxOnALargeTaxonomyWithoutTruncating(): void
+    {
+        $this->withTermCount(91);
+
+        $values   = [];
+        $expected = [];
+        for ($i = 1; $i <= 91; $i++) {
+            $values[]   = 'cat-' . $i;
+            $expected[] = 'cat-' . $i;
+        }
+
+        Functions\when('get_term_by')->alias(function ($field, $value, $taxonomy = '') {
+            return ('category' === $taxonomy && 'slug' === $field)
+                ? (object) ['term_id' => 1, 'slug' => (string) $value, 'name' => (string) $value]
+                : false;
+        });
+
+        $this->assertSame(
+            $expected,
+            $this->resolve($values),
+            'ticking every box on a 91-category site must not be truncated'
+        );
+    }
+
+    public function testStillCapsAListLongerThanTheTaxonomy(): void
+    {
+        $this->withTermCount(91);
+
+        $calls = 0;
+        Functions\when('get_term_by')->alias(function () use (&$calls) {
+            $calls++;
+            return false;
+        });
+
+        $this->resolve(range(1, 5000));
+
+        $this->assertLessThanOrEqual(
+            91 * 5,
+            $calls,
+            'a list longer than the taxonomy is not a real selection and must still be cut'
         );
     }
 }

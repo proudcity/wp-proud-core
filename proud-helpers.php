@@ -958,10 +958,69 @@ function proud_document_preview_allowed_html()
  * @return string[] Slugs, deduplicated, in the order the values arrived.
  */
 /**
- * Most filter values resolve_taxonomy_filter_slugs() will look up in one call.
- * Each value costs up to four uncached term lookups from unauthenticated input.
+ * Floor for how many filter values resolve_taxonomy_filter_slugs() will look
+ * up in one call. Each value costs up to five uncached term lookups from
+ * unauthenticated input: slug, term ID, and three name candidates. The effective cap rises with the size of the taxonomy
+ * -- see resolve_taxonomy_filter_max_values().
  */
 const RESOLVE_TAXONOMY_FILTER_MAX_VALUES = 50;
+
+/**
+ * Ceiling on that cap. A request longer than this is not a person ticking
+ * boxes, whatever the taxonomy holds.
+ *
+ * 500 is sized from the fleet rather than picked: the largest taxonomy on the
+ * San Rafael database is faq-tags at 347 terms, with faq-topic at 323 behind
+ * it. That leaves headroom for growth while keeping the worst case bounded.
+ *
+ * The trade-off is deliberate and worth stating. Raising the cap from a flat
+ * 50 raises the worst-case cost of a hostile request in the same proportion:
+ * 500 distinct values that all miss cost five uncached lookups each, and
+ * query_alter() runs the resolver twice per page load. That is a real increase
+ * over the previous ceiling and the reason this is not simply uncapped. It is
+ * accepted because the flat cap was returning silently wrong results for
+ * ordinary use -- a visitor ticking every box on a 91-category site got 50 of
+ * them -- and a wrong answer for real users is worse than a bounded cost for a
+ * hostile one. PHP's max_input_vars (default 1000) is the outer bound on how
+ * many values can arrive at all.
+ */
+const RESOLVE_TAXONOMY_FILTER_MAX_VALUES_CEILING = 500;
+
+/**
+ * How many filter values we will look up for one taxonomy.
+ *
+ * A flat cap had to be simultaneously high enough not to truncate a real
+ * selection and low enough to bound the amplifier, and on a site with 91
+ * categories those are not the same number: ticking every box was a legitimate
+ * request that came back silently truncated (#2923). Sizing the cap to the
+ * taxonomy resolves that -- a list longer than the taxonomy cannot be a real
+ * selection, so it is still cut.
+ *
+ * wp_count_terms() is cached, and the floor means a miscount can only ever
+ * restore the old behaviour rather than break the filter outright.
+ *
+ * @param string $taxonomy Taxonomy being filtered.
+ * @return int
+ */
+function resolve_taxonomy_filter_max_values($taxonomy)
+{
+    $count = 0;
+
+    if (function_exists('wp_count_terms')) {
+        $counted = wp_count_terms([
+            'taxonomy'   => $taxonomy,
+            'hide_empty' => false,
+        ]);
+        if (!is_wp_error($counted)) {
+            $count = (int) $counted;
+        }
+    }
+
+    return (int) max(
+        RESOLVE_TAXONOMY_FILTER_MAX_VALUES,
+        min($count, RESOLVE_TAXONOMY_FILTER_MAX_VALUES_CEILING)
+    );
+}
 
 /**
  * Slug returned when every submitted value sanitises to nothing.
@@ -994,14 +1053,24 @@ function resolve_taxonomy_filter_slugs($values, $taxonomy)
         return [];
     }
 
-    // Dedupe and cap before doing any lookups. Each value costs up to four
-    // uncached get_term_by() calls, this is unauthenticated GET input, and the
+    // Dedupe and cap before doing any lookups. Each value costs up to five
+    // uncached get_term_by() calls -- slug, term ID, then three name
+    // candidates -- this is unauthenticated GET input, and the
     // URL varies per request so page caching does not absorb it. PHP's default
     // max_input_vars is 1000, and query_alter() calls this a second time on the
-    // same page load, so an uncapped list is a query amplifier. The cap sits
-    // far above any real facet selection -- San Rafael's busiest taxonomy has
-    // 120 terms in total.
-    $raw = array_slice(array_values(array_unique($raw)), 0, RESOLVE_TAXONOMY_FILTER_MAX_VALUES);
+    // same page load, so an uncapped list is a query amplifier.
+    //
+    // The cap tracks how many terms the taxonomy actually holds rather than
+    // sitting at a flat 50 (#2923). A visitor ticking every box on a site with
+    // 91 categories is making a legitimate request, and truncating it returned
+    // a silently wrong result set. What the cap is defending against is an
+    // *unbounded* list of junk values, and a list longer than the taxonomy
+    // cannot be anything else.
+    $raw = array_slice(
+        array_values(array_unique($raw)),
+        0,
+        resolve_taxonomy_filter_max_values($taxonomy)
+    );
 
     $slugs = [];
     foreach ($raw as $value) {
