@@ -267,3 +267,29 @@ namespace {
 // Proud\Core functions (pc_get_yoast_meta_or_excerpt, build_retina_image_meta,
 // etc.) are provided by proud-helpers.php, which bootstrap.php loads after
 // this file. No stubs needed here.
+
+namespace {
+    /**
+     * Bare WP_Widget so modules/proud-widget/widget-base.class.php can be
+     * loaded for real. ProudWidget::widget() -- the render path covered by
+     * WidgetBaseRenderTest -- touches only these members.
+     */
+    if (!class_exists('WP_Widget')) {
+        class WP_Widget {
+            public $id_base;
+            public $name;
+            public $option_name;
+            public $id;
+            public $number;
+            public $widget_options = [];
+            public $control_options = [];
+            public function __construct($id_base = '', $name = '', $widget_options = [], $control_options = []) {
+                $this->id_base        = $id_base;
+                $this->name           = $name;
+                $this->option_name    = 'widget_' . $id_base;
+                $this->widget_options = $widget_options;
+                $this->control_options = $control_options;
+            }
+        }
+    }
+}

@@ -140,6 +140,12 @@ require_once __DIR__ . '/../plugin_override/gravityforms/proud-gravityforms.php'
 // behaves as it does on a real site. See the trait for why.
 require_once __DIR__ . '/AppliesPreKsesFilter.php';
 
+// The real ProudWidget/WidgetContentCache. Loaded BEFORE icon-link-stubs.php,
+// whose stand-in is class_exists-guarded and so steps aside. widget-base.class.php
+// loads standalone on the back of the WP_Widget stub in stubs.php.
+// ProudWidget::widget() is the render path under test in WidgetBaseRenderTest.
+require_once __DIR__ . '/../modules/proud-widget/widget-base.class.php';
+
 require_once __DIR__ . '/icon-link-stubs.php';
 require_once __DIR__ . '/../modules/proud-widget/widgets/icon-link/icon-link-widget.class.php';
 

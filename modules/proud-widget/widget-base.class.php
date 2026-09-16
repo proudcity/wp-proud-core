@@ -16,7 +16,18 @@ class WidgetContentCache
     static public function getKey($args, $className)
     {
         try {
-            return hash('md4', $className . json_encode($args));
+            $json = json_encode($args);
+            // json_encode() does not throw with default flags -- it returns
+            // false on invalid UTF-8, recursion or depth overflow. Falling
+            // through would concatenate false as '' and hash to a key shared by
+            // every instance of the class, which is exactly the collision the
+            // post-hasContent() key ordering exists to prevent. getCached() and
+            // setCached() both no-op on an empty key, so returning null here
+            // degrades to "do not cache" instead of "cache everything together".
+            if ($json === false) {
+                return null;
+            }
+            return hash('md4', $className . $json);
         } catch (\Exception $e) {
             return null;
         }
@@ -269,18 +280,25 @@ abstract class ProudWidget extends \WP_Widget
             $args['after_title']   = '</h2>';
         }
 
-        // Try to grab cached version
-        $key = WidgetContentCache::getKey($instance, get_class($this));
-        $cache = WidgetContentCache::getCached($key);
-
-        // do we print??
-        $has_content = !empty($cache['has_content'])
-            ? $cache['has_content']
-            : $this->hasContent($args, $instance);
+        // hasContent() takes $instance by reference and is what populates it
+        // for the meta-driven widgets (AgencyContact, AgencySocial and friends
+        // read their content from post meta). The cache key therefore has to be
+        // computed AFTER it runs: keying on the pre-hasContent $instance means
+        // every instance of a class carrying only a title hashes alike, and the
+        // second one rendered in a request serves the first one's markup.
+        //
+        // The cost is that hasContent() is no longer short-circuited by the
+        // cache. It is a handful of get_post_meta() calls against WordPress's
+        // own per-request meta cache; the expensive half, printWidget(), is
+        // still cached.
+        $has_content = $this->hasContent($args, $instance);
 
         if (!$has_content) {
             return;
         }
+
+        $key   = WidgetContentCache::getKey($instance, get_class($this));
+        $cache = WidgetContentCache::getCached($key);
 
         if (isset($cache['content'])) {
             // Have cached content?
@@ -300,7 +318,10 @@ abstract class ProudWidget extends \WP_Widget
 ?>
         <?php echo $args['before_widget'] ?>
             <?php if (!empty($instance['title'])) : ?>
-                <?php echo $args['before_title'] ?><?php echo $instance['title']; ?><?php echo $args['after_title'] ?>
+                <?php // SiteOrigin instances live in panels_data post meta, so the title is
+                      // settable by anyone who can edit the page. esc_widget_title() is the
+                      // br-only allowlist agreed in #2916. ?>
+                <?php echo $args['before_title'] ?><?php echo esc_widget_title($instance['title']); ?><?php echo $args['after_title'] ?>
             <?php endif; ?>
             <?php echo $content; ?>
         <?php echo $args['after_widget'] ?>
