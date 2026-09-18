@@ -3,7 +3,7 @@
 Plugin Name:        Proud Core
 Plugin URI:         http://getproudcity.com
 Description:        ProudCity distribution
-Version:            2026.09.16.1359
+Version:            2026.09.18.1209
 Author:             ProudCity
 Author URI:         http://getproudcity.com
 
@@ -314,6 +314,11 @@ class Proudcore extends \ProudPlugin
     {
         // Post sizes
         add_image_size('card-thumb', 300, 170, true);
+        // 2x card-thumb, so wp_calculate_image_srcset() will offer it as a
+        // candidate alongside card-thumb -- it only includes sources whose
+        // aspect ratio matches the requested size. Before this, card-thumb was
+        // the only registered size at 1.7647 and card srcsets came back empty.
+        add_image_size('card-thumb-lg', 600, 340, true);
         add_image_size('featured-teaser', 500, 250, true);
         add_image_size('full-screen', 2000, 1333, true);
     }
