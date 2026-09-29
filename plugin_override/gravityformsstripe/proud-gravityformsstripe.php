@@ -15,6 +15,8 @@ class ProudGravityformsStripe {
 
   add_filter( 'gform_stripe_payment_intent_pre_create', [ $this, 'add_transfer_meta' ], 10, 2 );
 
+  add_filter( 'gform_get_form_filter', [ $this, 'payment_element_on_behalf_of' ], 10, 2 );
+
   add_filter( 'gform_stripe_connect_enabled', [ $this, '__return_false' ] );
   // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
   // add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
@@ -67,7 +69,7 @@ class ProudGravityformsStripe {
 	update_option( 'proud_log_payments_ran', time(), false );
 
 	// Stripe connect destination so payments are sent to customers directly
-	$transfer_account = get_option( 'proudcity_payments_account', false );
+	$transfer_account = self::get_transfer_account();
 
 	do_action( 'proud_gfstripe_pre_payment_fees', $transfer_account, $data, $feed );
 
@@ -109,6 +111,77 @@ class ProudGravityformsStripe {
   return $data;
 
  }
+
+ /**
+  * Connected account payments are transferred to, or false when there isn't one
+  *
+  * Shared by add_transfer_meta() and payment_element_on_behalf_of() so the
+  * server-side on_behalf_of and the client-side onBehalfOf can't drift apart.
+  *
+  * @since 2026.09.29
+  * @author Curtis
+  *
+  * @return string|false
+  */
+ public static function get_transfer_account(){
+
+	if ( "https://proudcity.com" === site_url() ){ return false; }
+
+	return get_option( 'proudcity_payments_account', false );
+
+ } // get_transfer_account
+
+ /**
+  * Passes our connected account to the Stripe Payment Element as onBehalfOf
+  *
+  * The Payment Element initializes Stripe Elements client-side before the
+  * PaymentIntent exists. add_transfer_meta() then sets on_behalf_of on the
+  * PaymentIntent, and Stripe rejects confirmation unless both match:
+  * "The provided on_behalf_of (acct_...) does not match the expected on_behalf_of (null)."
+  *
+  * Uses the gform/stripe/elements/config/ JS filter added in GF Stripe 7.0.
+  * Only applies in payment mode. add_transfer_meta() hooks PaymentIntents,
+  * not subscriptions, so subscriptions carry no on_behalf_of to match.
+  *
+  * @since 2026.09.29
+  * @author Curtis
+  * @link https://docs.gravityforms.com/gform-stripe-elements-config
+  * @link https://github.com/proudcity/wp-proudcity/issues/2947
+  *
+  * @param  string  $form_string  required  The form markup
+  * @param  array   $form         required  The form object
+  * @return string
+  */
+ public static function payment_element_on_behalf_of( $form_string, $form ){
+
+	if ( ! function_exists( 'gf_stripe' ) || ! gf_stripe()->is_payment_element_enabled( $form ) ){
+	 return $form_string;
+	}
+
+	$transfer_account = self::get_transfer_account();
+
+	if ( empty( $transfer_account ) ){
+	 return $form_string;
+	}
+
+	$account = wp_json_encode( (string) $transfer_account );
+
+	$script = "<script>
+	gform.initializeOnLoaded( function() {
+	 if ( window.proudStripeOnBehalfOf || ! window.gform.utils || ! window.gform.utils.addAsyncFilter ) { return; }
+	 window.proudStripeOnBehalfOf = true;
+	 window.gform.utils.addAsyncFilter( 'gform/stripe/elements/config/', function( config ) {
+	  if ( config && 'payment' === config.mode ) {
+	   config.onBehalfOf = {$account};
+	  }
+	  return config;
+	 } );
+	} );
+	</script>";
+
+	return $form_string . $script;
+
+ } // payment_element_on_behalf_of
 
  function __return_false($stripe_connect_enabled) {
   if (get_option('proudcity_payments_gravityformsstripe_legacy_settings', false)) {

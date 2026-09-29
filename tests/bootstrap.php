@@ -133,6 +133,11 @@ require_once __DIR__ . '/gravityforms-stubs.php';
 // under test is defined.
 require_once __DIR__ . '/../plugin_override/gravityforms/proud-gravityforms.php';
 
+// proud-gravityformsstripe.php instantiates itself at include time; the
+// add_filter() calls in its constructor hit the no-op stubs. The static
+// methods are what GravityformsStripeOnBehalfOfTest exercises (issue #2947).
+require_once __DIR__ . '/../plugin_override/gravityformsstripe/proud-gravityformsstripe.php';
+
 // icon-link-stubs.php provides a bare Proud\Core\ProudWidget so the IconLink
 // widget class can be loaded without the WP_Widget/form-helper stack.
 // IconLink::printWidget() is the unit under test (issue #2916).
