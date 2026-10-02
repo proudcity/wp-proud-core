@@ -132,6 +132,15 @@ function proudcity_stateless_suffix_cache_bust( $return, $filename ) {
         return $filename;
     }
 
+    // sanitize_file_name() must be deterministic within a request: Gravity Forms
+    // 3.1.2 sanitizes a temp filename twice in get_tmp_file_details(), once to
+    // store it and once to HMAC it, then silently drops the upload when the two
+    // differ (issue #2950). Reuse the name minted for this input earlier in the
+    // request. Separate requests still get fresh hashes for #2232.
+    if ( isset( $GLOBALS['proudcity_stateless_minted_names'][ $filename ] ) ) {
+        return $GLOBALS['proudcity_stateless_minted_names'][ $filename ];
+    }
+
     // Mix wp_rand() into the seed so two uploads in the same second get
     // different hashes. md5(time()) alone collides within the same second,
     // which is the latent upstream bug that caused issue #2232.
@@ -141,9 +150,13 @@ function proudcity_stateless_suffix_cache_bust( $return, $filename ) {
     // position so WordPress srcset handling continues to work correctly.
     if ( false !== strpos( $name, '@' ) ) {
         list( $clean, $retina ) = explode( '@', $name, 2 );
-        return strtolower( $clean ) . '-' . $rand . '@' . strtolower( $retina ) . $ext;
+        $minted = strtolower( $clean ) . '-' . $rand . '@' . strtolower( $retina ) . $ext;
+    } else {
+        $minted = strtolower( $name ) . '-' . $rand . $ext;
     }
 
-    return strtolower( $name ) . '-' . $rand . $ext;
+    $GLOBALS['proudcity_stateless_minted_names'][ $filename ] = $minted;
+
+    return $minted;
 }
 add_filter( 'stateless_skip_cache_busting', 'proudcity_stateless_suffix_cache_bust', 10, 2 );

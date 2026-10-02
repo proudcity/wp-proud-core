@@ -24,11 +24,13 @@ class StatelessGformCacheBustTest extends TestCase
         Monkey\setUp();
         // Always clear the GF flag before each test.
         unset( $GLOBALS['proudcity_gform_upload_context'] );
+        unset( $GLOBALS['proudcity_stateless_minted_names'] );
     }
 
     protected function tearDown(): void
     {
         unset( $GLOBALS['proudcity_gform_upload_context'] );
+        unset( $GLOBALS['proudcity_stateless_minted_names'] );
         Monkey\tearDown();
         parent::tearDown();
     }
@@ -150,6 +152,27 @@ class StatelessGformCacheBustTest extends TestCase
             $second,
             'Two GF uploads of the same prefixed filename in one second must be distinct.'
         );
+    }
+
+    /**
+     * Names reused within a request for #2950 must not reach the GF final
+     * naming point, which always mints a fresh name for #2876. A plain name
+     * minted earlier in the request (e.g. as a temp/uploaded filename) must not
+     * be handed back when GF names the stored file.
+     */
+    public function test_gf_context_ignores_names_reused_in_request(): void
+    {
+        Functions\when('doing_filter')->justReturn( false );
+        Functions\expect('wp_rand')
+            ->twice()
+            ->andReturn( 0, PHP_INT_MAX );
+
+        $outside = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+
+        $GLOBALS['proudcity_gform_upload_context'] = true;
+        $inside = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+
+        $this->assertNotSame( $outside, $inside );
     }
 
     // -------------------------------------------------------------------------

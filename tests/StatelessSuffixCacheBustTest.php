@@ -17,10 +17,12 @@ class StatelessSuffixCacheBustTest extends TestCase
     {
         parent::setUp();
         Monkey\setUp();
+        unset( $GLOBALS['proudcity_stateless_minted_names'] );
     }
 
     protected function tearDown(): void
     {
+        unset( $GLOBALS['proudcity_stateless_minted_names'] );
         Monkey\tearDown();
         parent::tearDown();
     }
@@ -130,7 +132,12 @@ class StatelessSuffixCacheBustTest extends TestCase
             ->twice()
             ->andReturn( 0, PHP_INT_MAX );
 
-        $first  = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+        $first = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+
+        // Names are reused within a request (#2950), so model the second upload
+        // as a separate request.
+        unset( $GLOBALS['proudcity_stateless_minted_names'] );
+
         $second = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
 
         $this->assertNotSame(
@@ -138,5 +145,78 @@ class StatelessSuffixCacheBustTest extends TestCase
             $second,
             'Different wp_rand() values must yield different hashes — proves it is part of the md5 seed.'
         );
+    }
+
+    /**
+     * Issue #2950: within one request the same input must always map to the
+     * same name. Gravity Forms 3.1.2 sanitizes a temp filename twice in
+     * get_tmp_file_details() (once to store it, once to HMAC it) and silently
+     * drops the upload when the two differ.
+     */
+    public function test_same_name_in_one_request_is_minted_once(): void
+    {
+        Functions\expect('wp_rand')
+            ->once()
+            ->andReturn( 0 );
+
+        $first  = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+        $second = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+
+        $this->assertSame( $first, $second );
+    }
+
+    /**
+     * Mirrors GF_Field_FileUpload::get_tmp_file_details(): the stored
+     * temp_filename and the name passed to the HMAC go through separate
+     * sanitize calls, and the hash must still verify against the stored name.
+     */
+    public function test_gravity_forms_temp_file_hash_verifies(): void
+    {
+        Functions\expect('wp_rand')
+            ->once()
+            ->andReturn( 4242 );
+
+        $raw    = '6abff3cc57f5f_input_11_0inoyyl1qnipslau_03f50b3aef744ae2be9b3401b15d5335.txt';
+        $stored = proudcity_stateless_suffix_cache_bust( null, $raw );
+        $hashed = proudcity_stateless_suffix_cache_bust( null, $raw );
+
+        $this->assertTrue( hash_equals(
+            hash_hmac( 'sha256', $hashed . '|delta-upload.txt', 'salt' ),
+            hash_hmac( 'sha256', $stored . '|delta-upload.txt', 'salt' )
+        ) );
+    }
+
+    /**
+     * Reusing names is per input, so different files in one request still get
+     * their own hashes.
+     */
+    public function test_different_names_in_one_request_get_their_own_hash(): void
+    {
+        Functions\expect('wp_rand')
+            ->twice()
+            ->andReturn( 0, PHP_INT_MAX );
+
+        $report = proudcity_stateless_suffix_cache_bust( null, 'report.pdf' );
+        $agenda = proudcity_stateless_suffix_cache_bust( null, 'agenda.pdf' );
+
+        $this->assertMatchesRegularExpression( '/^report-[a-f0-9]{8}\.pdf$/', $report );
+        $this->assertMatchesRegularExpression( '/^agenda-[a-f0-9]{8}\.pdf$/', $agenda );
+        $this->assertNotSame( substr( $report, 7, 8 ), substr( $agenda, 7, 8 ) );
+    }
+
+    /**
+     * A reused retina name keeps the hash before the @2x marker.
+     */
+    public function test_retina_name_is_reused_in_one_request(): void
+    {
+        Functions\expect('wp_rand')
+            ->once()
+            ->andReturn( 55555 );
+
+        $first  = proudcity_stateless_suffix_cache_bust( null, 'photo@2x.png' );
+        $second = proudcity_stateless_suffix_cache_bust( null, 'photo@2x.png' );
+
+        $this->assertSame( $first, $second );
+        $this->assertMatchesRegularExpression( '/^photo-[a-f0-9]{8}@2x\.png$/', $first );
     }
 }
