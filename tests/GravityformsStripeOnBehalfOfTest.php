@@ -134,4 +134,48 @@ class GravityformsStripeOnBehalfOfTest extends TestCase
         $this->assertSame('acct_1TestAccount', $data['on_behalf_of']);
         $this->assertStringContainsString('config.onBehalfOf = ' . json_encode($data['on_behalf_of']) . ';', $out);
     }
+
+    /**
+     * GF Stripe 7.0's Card Element sends neither payment_method_types nor
+     * automatic_payment_methods, so Stripe defaulted to automatic payment
+     * methods against on_behalf_of and rejected the intent (issue #2951).
+     */
+    public function test_card_element_intent_gets_card_payment_method_type(): void
+    {
+        $data = ProudGravityformsStripe::add_transfer_meta(['amount' => 10000], ['form_id' => 1]);
+
+        $this->assertSame(['card'], $data['payment_method_types']);
+        $this->assertArrayNotHasKey('automatic_payment_methods', $data);
+    }
+
+    public function test_card_element_intent_gets_card_type_on_proudcity_site(): void
+    {
+        $this->siteUrl = 'https://proudcity.com';
+
+        $data = ProudGravityformsStripe::add_transfer_meta(['amount' => 10000], ['form_id' => 1]);
+
+        $this->assertSame(['card'], $data['payment_method_types']);
+        $this->assertArrayNotHasKey('on_behalf_of', $data);
+    }
+
+    public function test_payment_element_automatic_payment_methods_are_untouched(): void
+    {
+        $data = ProudGravityformsStripe::add_transfer_meta(
+            ['amount' => 10000, 'automatic_payment_methods' => ['enabled' => true]],
+            ['form_id' => 1]
+        );
+
+        $this->assertSame(['enabled' => true], $data['automatic_payment_methods']);
+        $this->assertArrayNotHasKey('payment_method_types', $data);
+    }
+
+    public function test_payment_element_explicit_payment_method_types_are_untouched(): void
+    {
+        $data = ProudGravityformsStripe::add_transfer_meta(
+            ['amount' => 10000, 'payment_method_types' => ['card', 'us_bank_account']],
+            ['form_id' => 1]
+        );
+
+        $this->assertSame(['card', 'us_bank_account'], $data['payment_method_types']);
+    }
 }

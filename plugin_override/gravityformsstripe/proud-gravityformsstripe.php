@@ -63,6 +63,15 @@ class ProudGravityformsStripe {
   */
  public static function add_transfer_meta( $data, $feed ){
 
+	// GF Stripe 7.0 stopped sending payment_method_types for the Card Element, so
+	// Stripe fell back to automatic payment methods evaluated against on_behalf_of
+	// and rejected the intent with "No valid payment method types". The Payment
+	// Element always sets one of these, so this only restores the 6.x Card Element value.
+	// https://github.com/proudcity/wp-proudcity/issues/2951
+	if ( empty( $data['payment_method_types'] ) && empty( $data['automatic_payment_methods'] ) ){
+	 $data['payment_method_types'] = [ 'card' ];
+	}
+
 	// skip all this stuff if we're on proudcity
 	if ( "https://proudcity.com" === site_url() ){ return $data; }
 
