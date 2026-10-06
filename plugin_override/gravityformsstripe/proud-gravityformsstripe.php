@@ -13,7 +13,15 @@ class ProudGravityformsStripe {
  private static $stashed_live_secret_key = null;
 
  /**
-  * Whether use_platform_secret_for_connect() has stashed a key this request.
+  * Original live_publishable_key stashed by use_platform_secret_for_connect()
+  * so restore_stored_secret() can put it back before settings are saved.
+  *
+  * @since 2026.10.06
+  */
+ private static $stashed_live_publishable_key = null;
+
+ /**
+  * Whether use_platform_secret_for_connect() has stashed keys this request.
   *
   * @since 2026.10.06
   */
@@ -258,8 +266,34 @@ class ProudGravityformsStripe {
  } // get_platform_secret
 
  /**
-  * Swaps GF Stripe's stored live_secret_key for our platform secret when the
-  * add-on is connected via "Connect with Stripe" (GF Stripe 7.0).
+  * Our platform's live Stripe publishable key, from the PROUDCITY_PAYMENTS_PUBLIC
+  * env var. No proudcity_payments_* option fallback exists for this one.
+  *
+  * Only ever returns a live key (pk_live_), never a test key, for the same
+  * reason as get_platform_secret().
+  *
+  * @since 2026.10.06
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2951
+  *
+  * @return string
+  */
+ public static function get_platform_publishable_key(){
+
+	$key = getenv( 'PROUDCITY_PAYMENTS_PUBLIC' );
+
+	if ( is_string( $key ) && str_starts_with( $key, 'pk_live_' ) ){
+	 return $key;
+	}
+
+	return '';
+
+ } // get_platform_publishable_key
+
+ /**
+  * Swaps GF Stripe's stored live_secret_key AND live_publishable_key for our
+  * platform's key pair when the add-on is connected via "Connect with
+  * Stripe" (GF Stripe 7.0).
   *
   * Connect mode signs every request with GF's own OAuth access token
   * (live_secret_key, set alongside live_auth_token), which makes our
@@ -268,6 +302,14 @@ class ProudGravityformsStripe {
   * in our platform secret at read time makes GF sign requests with our key
   * instead, with no change to how the token is stored. Interim fix until
   * #2955, which replaces Connect mode entirely.
+  *
+  * live_publishable_key has to move with it: GF also stores the OAuth-issued
+  * publishable key and Stripe.js in the browser confirms the PaymentIntent
+  * with whatever pk GF outputs. Swapping only the secret leaves the browser
+  * acting as GF's app while the PaymentIntent belongs to our platform, and
+  * Stripe rejects the confirm ("client_secret ... does not match"). The pair
+  * is swapped all-or-nothing -- if either platform key is missing, nothing
+  * is swapped, since a mismatched pair is exactly this bug.
   *
   * Skipped on wp-admin page loads that aren't AJAX: GF renders
   * live_secret_key into a hidden field on its own settings page in Connect
@@ -300,8 +342,9 @@ class ProudGravityformsStripe {
 	}
 
 	$platform_secret = self::get_platform_secret();
+	$platform_publishable_key = self::get_platform_publishable_key();
 
-	if ( '' === $platform_secret ){
+	if ( '' === $platform_secret || '' === $platform_publishable_key ){
 	 return $settings;
 	}
 
@@ -314,18 +357,28 @@ class ProudGravityformsStripe {
 	}
 
 	self::$stashed_live_secret_key = $settings['live_secret_key'] ?? null;
+	self::$stashed_live_publishable_key = $settings['live_publishable_key'] ?? null;
 	self::$stash_active = true;
 
 	$settings['live_secret_key'] = $platform_secret;
+	$settings['live_publishable_key'] = $platform_publishable_key;
 
 	return $settings;
 
  } // use_platform_secret_for_connect
 
  /**
-  * Restores the stored live_secret_key before gravityformsaddon_gravityformsstripe_settings
-  * is written to the DB, so the platform secret swapped in by
-  * use_platform_secret_for_connect() is never persisted.
+  * Restores the stored live_secret_key and live_publishable_key before
+  * gravityformsaddon_gravityformsstripe_settings is written to the DB, so
+  * the platform key pair swapped in by use_platform_secret_for_connect() is
+  * never persisted.
+  *
+  * Each key is restored independently: live_secret_key is put back only if
+  * it still carries the platform secret, and likewise live_publishable_key
+  * against the platform publishable key. That way an admin who updated one
+  * key (or GF's own deauthorize flow, which clears live_secret_key) while
+  * the other still carries the swapped-in value doesn't get the untouched
+  * key clobbered.
   *
   * $old_value isn't reliable here: update_option() builds it by calling
   * get_option(), which already runs through use_platform_secret_for_connect()
@@ -349,11 +402,13 @@ class ProudGravityformsStripe {
 	 return $value;
 	}
 
-	if ( ( $value['live_secret_key'] ?? null ) !== self::get_platform_secret() ){
-	 return $value;
+	if ( ( $value['live_secret_key'] ?? null ) === self::get_platform_secret() ){
+	 $value['live_secret_key'] = self::$stashed_live_secret_key;
 	}
 
-	$value['live_secret_key'] = self::$stashed_live_secret_key;
+	if ( ( $value['live_publishable_key'] ?? null ) === self::get_platform_publishable_key() ){
+	 $value['live_publishable_key'] = self::$stashed_live_publishable_key;
+	}
 
 	return $value;
 

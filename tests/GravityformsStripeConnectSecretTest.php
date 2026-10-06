@@ -26,6 +26,9 @@ class GravityformsStripeConnectSecretTest extends TestCase
         Monkey\setUp();
 
         putenv('PROUDCITY_PAYMENTS_SECRET');
+        // Default platform publishable key so existing secret-swap tests still
+        // swap; tests for the publishable-missing/non-live cases override this.
+        putenv('PROUDCITY_PAYMENTS_PUBLIC=pk_live_PLATFORMPUBLICTEST');
 
         $this->options = [];
 
@@ -50,6 +53,7 @@ class GravityformsStripeConnectSecretTest extends TestCase
     protected function tearDown(): void
     {
         putenv('PROUDCITY_PAYMENTS_SECRET');
+        putenv('PROUDCITY_PAYMENTS_PUBLIC');
         unset($_REQUEST['action']);
         $this->resetStash();
         Monkey\tearDown();
@@ -69,6 +73,10 @@ class GravityformsStripeConnectSecretTest extends TestCase
         $stashed->setAccessible(true);
         $stashed->setValue(null, null);
 
+        $stashedPublishable = $ref->getProperty('stashed_live_publishable_key');
+        $stashedPublishable->setAccessible(true);
+        $stashedPublishable->setValue(null, null);
+
         $active = $ref->getProperty('stash_active');
         $active->setAccessible(true);
         $active->setValue(null, false);
@@ -78,9 +86,12 @@ class GravityformsStripeConnectSecretTest extends TestCase
     {
         return array_merge([
             'live_secret_key'   => 'sk_live_GFOAUTHTOKEN',
+            'live_publishable_key' => 'pk_live_GFOAUTHPUBLIC',
             'live_auth_token'   => ['acct_1GfConnect', 'refresh_token_abc', '2026-10-06'],
             'test_secret_key'   => 'sk_test_UNTOUCHED',
             'sandbox_secret_key' => 'sk_test_SANDBOXUNTOUCHED',
+            'test_publishable_key' => 'pk_test_PUBLISHABLEUNTOUCHED',
+            'sandbox_publishable_key' => 'pk_test_SANDBOXPUBLISHABLEUNTOUCHED',
             'some_other_setting' => 'untouched',
         ], $overrides);
     }
@@ -253,7 +264,9 @@ class GravityformsStripeConnectSecretTest extends TestCase
     /**
      * GF's deauthorize flow (gfstripe_deauthorize) clears live_secret_key
      * entirely. restore_stored_secret() must not reinject the stashed
-     * original in that case -- the key is meant to stay gone.
+     * original in that case -- the key is meant to stay gone. The two keys
+     * are restored independently, so live_publishable_key -- untouched here,
+     * still carrying the platform value -- is restored on its own.
      */
     public function test_restore_does_not_reinject_key_unset_by_deauthorize(): void
     {
@@ -266,7 +279,11 @@ class GravityformsStripeConnectSecretTest extends TestCase
         $result = ProudGravityformsStripe::restore_stored_secret($swapped, []);
 
         $this->assertArrayNotHasKey('live_secret_key', $result);
-        $this->assertSame($swapped, $result);
+        $this->assertSame('pk_live_GFOAUTHPUBLIC', $result['live_publishable_key']);
+
+        $expected = $swapped;
+        $expected['live_publishable_key'] = 'pk_live_GFOAUTHPUBLIC';
+        $this->assertSame($expected, $result);
     }
 
     /**
@@ -290,5 +307,102 @@ class GravityformsStripeConnectSecretTest extends TestCase
 
         $this->assertArrayHasKey('live_secret_key', $result);
         $this->assertNull($result['live_secret_key']);
+    }
+
+    /**
+     * Tests for the key-pair swap added for #2951's live bug: the browser
+     * confirms with whatever live_publishable_key GF Stripe outputs, so
+     * swapping the secret without it leaves Stripe.js acting as GF's app
+     * while the PaymentIntent belongs to our platform.
+     */
+    public function test_both_keys_are_swapped_together_on_front_end(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        Functions\when('is_admin')->justReturn(false);
+
+        $settings = $this->connectSettings();
+        $result   = ProudGravityformsStripe::use_platform_secret_for_connect($settings);
+
+        $this->assertSame('sk_live_PLATFORMTEST', $result['live_secret_key']);
+        $this->assertSame('pk_live_PLATFORMPUBLICTEST', $result['live_publishable_key']);
+        $this->assertSame($settings['live_auth_token'], $result['live_auth_token']);
+        $this->assertSame($settings['test_secret_key'], $result['test_secret_key']);
+        $this->assertSame($settings['sandbox_secret_key'], $result['sandbox_secret_key']);
+        $this->assertSame($settings['test_publishable_key'], $result['test_publishable_key']);
+        $this->assertSame($settings['sandbox_publishable_key'], $result['sandbox_publishable_key']);
+        $this->assertSame($settings['some_other_setting'], $result['some_other_setting']);
+    }
+
+    public function test_secret_available_but_publishable_missing_swaps_nothing(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        putenv('PROUDCITY_PAYMENTS_PUBLIC');
+        Functions\when('is_admin')->justReturn(false);
+
+        $settings = $this->connectSettings();
+        $result   = ProudGravityformsStripe::use_platform_secret_for_connect($settings);
+
+        $this->assertSame($settings, $result);
+    }
+
+    public function test_publishable_available_but_secret_missing_swaps_nothing(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET');
+        Functions\when('is_admin')->justReturn(false);
+
+        $settings = $this->connectSettings();
+        $result   = ProudGravityformsStripe::use_platform_secret_for_connect($settings);
+
+        $this->assertSame($settings, $result);
+    }
+
+    public function test_non_live_publishable_key_swaps_nothing(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        putenv('PROUDCITY_PAYMENTS_PUBLIC=pk_test_NOTLIVE');
+        Functions\when('is_admin')->justReturn(false);
+
+        $settings = $this->connectSettings();
+        $result   = ProudGravityformsStripe::use_platform_secret_for_connect($settings);
+
+        $this->assertSame($settings, $result);
+    }
+
+    public function test_restore_puts_both_originals_back(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        Functions\when('is_admin')->justReturn(false);
+
+        $swapped  = ProudGravityformsStripe::use_platform_secret_for_connect($this->connectSettings());
+        $restored = ProudGravityformsStripe::restore_stored_secret($swapped, []);
+
+        $this->assertSame('sk_live_GFOAUTHTOKEN', $restored['live_secret_key']);
+        $this->assertSame('pk_live_GFOAUTHPUBLIC', $restored['live_publishable_key']);
+    }
+
+    public function test_restore_leaves_an_admin_entered_different_publishable_key_alone(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        Functions\when('is_admin')->justReturn(false);
+
+        ProudGravityformsStripe::use_platform_secret_for_connect($this->connectSettings());
+
+        $adminEntered = $this->connectSettings(['live_publishable_key' => 'pk_live_NEWLYENTEREDPUBLIC']);
+
+        $result = ProudGravityformsStripe::restore_stored_secret($adminEntered, []);
+
+        $this->assertSame($adminEntered, $result);
+    }
+
+    public function test_test_and_sandbox_publishable_keys_are_never_touched(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_SECRET=sk_live_PLATFORMTEST');
+        Functions\when('is_admin')->justReturn(false);
+
+        $settings = $this->connectSettings();
+        $result   = ProudGravityformsStripe::use_platform_secret_for_connect($settings);
+
+        $this->assertSame('pk_test_PUBLISHABLEUNTOUCHED', $result['test_publishable_key']);
+        $this->assertSame('pk_test_SANDBOXPUBLISHABLEUNTOUCHED', $result['sandbox_publishable_key']);
     }
 }
