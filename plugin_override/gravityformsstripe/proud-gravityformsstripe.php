@@ -5,6 +5,21 @@ namespace Proud\GravityformsStripe;
 class ProudGravityformsStripe {
 
  /**
+  * Original live_secret_key stashed by use_platform_secret_for_connect() so
+  * restore_stored_secret() can put it back before settings are saved.
+  *
+  * @since 2026.10.06
+  */
+ private static $stashed_live_secret_key = null;
+
+ /**
+  * Whether use_platform_secret_for_connect() has stashed a key this request.
+  *
+  * @since 2026.10.06
+  */
+ private static $stash_active = false;
+
+ /**
   * Constructor
   */
  public function __construct() {
@@ -18,6 +33,9 @@ class ProudGravityformsStripe {
   add_filter( 'gform_get_form_filter', [ $this, 'payment_element_on_behalf_of' ], 10, 2 );
 
   add_filter( 'gform_stripe_connect_enabled', [ $this, '__return_false' ] );
+
+  add_filter( 'option_gravityformsaddon_gravityformsstripe_settings', [ $this, 'use_platform_secret_for_connect' ] );
+  add_filter( 'pre_update_option_gravityformsaddon_gravityformsstripe_settings', [ $this, 'restore_stored_secret' ], 10, 2 );
   // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
   // add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
   // add_filter('gform_stripe_get_plan', [$this, 'gform_stripe_get_plan'], 10, 1);
@@ -210,6 +228,136 @@ class ProudGravityformsStripe {
   $secret = !empty($secret) ? $secret : getenv('PROUDCITY_PAYMENTS_SECRET');
   \Stripe\Stripe::setApiKey( $secret );
  }
+
+ /**
+  * Our platform's live Stripe secret, same source order as
+  * gform_stripe_post_include_api(): the proudcity_payments_secret option
+  * first, falling back to the PROUDCITY_PAYMENTS_SECRET env var.
+  *
+  * Only ever returns a live key (sk_live_ or rk_live_), never a test key, so
+  * a misconfigured test secret can't get swapped into a live GF settings
+  * read and break real payments.
+  *
+  * @since 2026.10.06
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2951
+  *
+  * @return string
+  */
+ public static function get_platform_secret(){
+
+	$secret = get_option( 'proudcity_payments_secret', false );
+	$secret = ! empty( $secret ) ? $secret : getenv( 'PROUDCITY_PAYMENTS_SECRET' );
+
+	if ( is_string( $secret ) && ( str_starts_with( $secret, 'sk_live_' ) || str_starts_with( $secret, 'rk_live_' ) ) ){
+	 return $secret;
+	}
+
+	return '';
+
+ } // get_platform_secret
+
+ /**
+  * Swaps GF Stripe's stored live_secret_key for our platform secret when the
+  * add-on is connected via "Connect with Stripe" (GF Stripe 7.0).
+  *
+  * Connect mode signs every request with GF's own OAuth access token
+  * (live_secret_key, set alongside live_auth_token), which makes our
+  * platform a connected account of GF's Stripe app rather than our own.
+  * That rejects the destination charges add_transfer_meta() builds. Swapping
+  * in our platform secret at read time makes GF sign requests with our key
+  * instead, with no change to how the token is stored. Interim fix until
+  * #2955, which replaces Connect mode entirely.
+  *
+  * Skipped on wp-admin page loads that aren't AJAX: GF renders
+  * live_secret_key into a hidden field on its own settings page in Connect
+  * mode (gravityformsstripe/class-gf-stripe.php:1192-1195), so without this
+  * skip the platform secret would be printed into admin HTML and saved back
+  * to the DB as the new live_secret_key.
+  *
+  * Also skipped for the 'gfstripe_configure_webhooks' AJAX action
+  * (gravityformsstripe/includes/webhooks/class-admin.php:168-197): that
+  * handler lists/deletes this site's webhook endpoints on the Stripe account
+  * and recreates one at GF's own API version, overwriting
+  * live_signing_secret -- with the platform key that would undo our webhook
+  * consolidation (#2339/#2849 onto 2026-06-24.dahlia).
+  *
+  * @since 2026.10.06
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2951
+  *
+  * @param  mixed  $settings  required  The gravityformsaddon_gravityformsstripe_settings option value
+  * @return mixed
+  */
+ public static function use_platform_secret_for_connect( $settings ){
+
+	if ( ! is_array( $settings ) ){
+	 return $settings;
+	}
+
+	if ( empty( $settings['live_auth_token'] ) ){
+	 return $settings;
+	}
+
+	$platform_secret = self::get_platform_secret();
+
+	if ( '' === $platform_secret ){
+	 return $settings;
+	}
+
+	if ( is_admin() && ! wp_doing_ajax() ){
+	 return $settings;
+	}
+
+	if ( wp_doing_ajax() && 'gfstripe_configure_webhooks' === sanitize_key( wp_unslash( $_REQUEST['action'] ?? '' ) ) ){
+	 return $settings;
+	}
+
+	self::$stashed_live_secret_key = $settings['live_secret_key'] ?? null;
+	self::$stash_active = true;
+
+	$settings['live_secret_key'] = $platform_secret;
+
+	return $settings;
+
+ } // use_platform_secret_for_connect
+
+ /**
+  * Restores the stored live_secret_key before gravityformsaddon_gravityformsstripe_settings
+  * is written to the DB, so the platform secret swapped in by
+  * use_platform_secret_for_connect() is never persisted.
+  *
+  * $old_value isn't reliable here: update_option() builds it by calling
+  * get_option(), which already runs through use_platform_secret_for_connect()
+  * and so would already contain the platform secret, not the stored value.
+  *
+  * @since 2026.10.06
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2951
+  *
+  * @param  mixed  $value      required  The new option value about to be saved
+  * @param  mixed  $old_value  required  Unused, see above
+  * @return mixed
+  */
+ public static function restore_stored_secret( $value, $old_value ){
+
+	if ( ! is_array( $value ) ){
+	 return $value;
+	}
+
+	if ( ! self::$stash_active ){
+	 return $value;
+	}
+
+	if ( ( $value['live_secret_key'] ?? null ) !== self::get_platform_secret() ){
+	 return $value;
+	}
+
+	$value['live_secret_key'] = self::$stashed_live_secret_key;
+
+	return $value;
+
+ } // restore_stored_secret
 
 
  function gform_stripe_charge_pre_create($charge_meta, $feed, $submission_data, $form, $entry) {
