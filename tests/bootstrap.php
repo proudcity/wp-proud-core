@@ -164,3 +164,26 @@ require_once __DIR__ . '/../modules/proud-widget/widgets/cta-widget/cta-button-w
 // Gravity Forms include behind class_exists('GFForms'), which is false here, so
 // it loads standalone.
 require_once __DIR__ . '/../modules/proud-form/proud-form.php';
+
+// fullcalendar-stubs.php provides a bare WP_FullCalendar (the third-party
+// class FullcalendarWidget and MeetingCalendarWidget touch) plus faithful
+// wp_parse_id_list()/get_file_data() -- both widgets' version helpers and the
+// meeting feed's category sanitization depend on real behaviour, not a
+// passthrough. Loaded before the widget class files that call them.
+require_once __DIR__ . '/fullcalendar-stubs.php';
+
+// fullcalendar-widget.class.php defines FullcalendarWidget (issue #2768,
+// findings F1-F4) and registers it on widgets_init (stubbed, so no side
+// effects).
+require_once __DIR__ . '/../modules/proud-widget/widgets/fullcalendar/fullcalendar-widget.class.php';
+
+// meeting-calendar-ajax.php defines proud_meeting_calendar_feed() and
+// registers the wp_ajax(_nopriv)_proud_meeting_calendar hooks (stubbed, so no
+// side effects). meeting-calendar-widget.class.php requires this itself too,
+// but it's required directly here as well so MeetingCalendarAjaxTest doesn't
+// depend on widget-class load order to reach it.
+require_once __DIR__ . '/../modules/proud-widget/widgets/meeting-calendar/meeting-calendar-ajax.php';
+
+// meeting-calendar-widget.class.php defines MeetingCalendarWidget (issue
+// #2768) and registers it on widgets_init (stubbed, so no side effects).
+require_once __DIR__ . '/../modules/proud-widget/widgets/meeting-calendar/meeting-calendar-widget.class.php';

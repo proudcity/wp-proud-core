@@ -262,6 +262,38 @@ namespace {
             public function __construct(array $args = []) {}
         }
     }
+
+    if (!function_exists('get_option')) {
+        // Faithful enough: a real, unset option falls back to the caller's
+        // own default, which is exactly what MeetingCalendarWidget's wpfc_*
+        // reads rely on.
+        function get_option($option, $default = false) { return $default; }
+    }
+    if (!function_exists('wp_json_encode')) {
+        function wp_json_encode($data, $options = 0, $depth = 512) { return json_encode($data, $options, $depth); }
+    }
+    if (!function_exists('wp_unslash')) {
+        function wp_unslash($value) {
+            return is_array($value) ? array_map('wp_unslash', $value) : (is_string($value) ? stripslashes($value) : $value);
+        }
+    }
+    if (!function_exists('wp_strip_all_tags')) {
+        function wp_strip_all_tags($string, $remove_breaks = false) {
+            $string = (string) $string;
+            $string = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', $string);
+            $string = strip_tags($string);
+            if ($remove_breaks) {
+                $string = preg_replace('/[\r\n\t ]+/', ' ', $string);
+            }
+            return trim($string);
+        }
+    }
+    if (!function_exists('post_type_exists')) {
+        function post_type_exists($post_type) { return true; }
+    }
+    if (!function_exists('wp_timezone')) {
+        function wp_timezone() { return new \DateTimeZone('UTC'); }
+    }
 }
 
 // Proud\Core functions (pc_get_yoast_meta_or_excerpt, build_retina_image_meta,

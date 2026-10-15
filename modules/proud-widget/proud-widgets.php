@@ -30,6 +30,7 @@ require_once plugin_dir_path(__FILE__) . 'widgets/text-card/text-card.class.php'
 require_once plugin_dir_path(__FILE__) . 'widgets/powered-by/powered-by.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/document/document-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/fullcalendar/fullcalendar-widget.class.php';
+require_once plugin_dir_path(__FILE__) . 'widgets/meeting-calendar/meeting-calendar-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/embed/embed-widget.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/breadcrumb/breadcrumb.class.php';
 require_once plugin_dir_path(__FILE__) . 'widgets/hr/hr.class.php';
