@@ -1,3 +1,12 @@
+## 2026.10.26.1425
+
+- Fixed PHP 8 warnings that started showing in Cloud Logging once PHP errors were routed to stderr (wp-proudcity#2997). Behavior is unchanged.
+  - `proud-form`: repeating group fields with no saved value, and draggable checkbox values without a matching option.
+  - `proud-authentication`: requests with no Basic auth credentials on invite-only sites. The credential comparison gives the same result as before.
+  - `proud-teasers`: meeting teasers whose location post no longer exists.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3006
+
 ## 2026.10.06.1125
 
 - **Fixed Gravity Forms Stripe Connect payments failing in the browser with `The client_secret provided does not match the client_secret associated with the PaymentIntent`** (#2951). 2026.10.06.1004 swapped only `live_secret_key`. A live test on Rye Brook (entry 115123, `pi_3UNcmfK3yBBQrr5C01ChevpW`) confirmed the server side worked: the PaymentIntent was created on the platform with `application: null`, Rye Brook as destination and `on_behalf_of`, and the fee set. It then stayed at `requires_payment_method` with no `last_payment_error`, so Stripe rejected the confirmation before it was accepted. GF also stores the publishable key issued by the Connect OAuth flow (`pk_live_517b…`), and that key is scoped to GF's Connect app, not to our platform. Stripe.js confirms with whatever publishable key GF outputs, so the browser acted as GF's app on a PaymentIntent that belongs to our platform. Our platform publishable key is the different `PROUDCITY_PAYMENTS_PUBLIC` (`pk_live_iyBK…`).

@@ -917,7 +917,7 @@ if (!class_exists('TeaserList')) {
                     $meta = get_post_meta($post->ID);
                     $datetime = new \Datetime($meta['datetime'][0]);
                     $location_obj = get_post($meta['location'][0]);
-                    $location_name = $location_obj->post_title;
+                    $location_name = $location_obj->post_title ?? '';
                     $location_meta = get_post_meta($meta['location'][0]);
                     $location = @$location_meta['address'][0] . ', ' . @$location_meta['city'][0] . ' ' . @$location_meta['zip'][0];
                     break;

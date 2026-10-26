@@ -660,7 +660,7 @@ if (! class_exists('FormHelper')) {
                     // Init group titles
                     $field['#group_titles'] = [];
                     // How many of these do we have saved ?
-                    if (empty($instance[$id]) && ! is_string($instance[$id])) {
+                    if (empty($instance[$id]) && ! is_string($instance[$id] ?? null)) {
                         $instance[$id][] = [];
                     }
 
@@ -696,7 +696,7 @@ if (! class_exists('FormHelper')) {
                         $options = [];
                         foreach ($field['#value'] as $key => $value) {
                             // Set options in order of draggable
-                            $options[$key] = $field['#options'][$key];
+                            $options[$key] = $field['#options'][$key] ?? null;
                             unset($field['#options'][$key]);
                         }
                         $field['#options'] = array_merge($options, $field['#options']);
