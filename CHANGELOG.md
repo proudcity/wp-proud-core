@@ -1,3 +1,10 @@
+## 2026.10.27.0941
+
+- **Fixed page sitemaps running out of memory and returning 500s** (wp-proudcity#3007). SiteOrigin Page Builder's Yoast compatibility code (`siteorigin_yoast_sitemap_images_compat` on `wpseo_sitemap_urlimages`) fully renders every Page Builder page in a sitemap just to scrape `<img>` tags. Yoast puts up to 1000 pages in each sitemap file, so a single `page-sitemap.xml` request ran past the 128M memory limit inside the Redis object-cache drop-in. Most of the drop-in fatals in Cloud Logging came from this (fairfaxca, santaanaca, elgl, petalumaca). The `uncloneable object of class Redis` fatals were a side effect: the out-of-memory error left the Redis connection mid-transaction, and WP Stateless's shutdown hook then read a transient from it.
+- `ProudWordpressSeo::disable_so_sitemap_images()` removes that filter on `init` at priority 101, just after SiteOrigin adds it at priority 100. Page sitemaps no longer list images that appear only inside Page Builder widgets. Yoast still lists featured images and images in post content.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3007
+
 ## 2026.10.26.1425
 
 - Fixed PHP 8 warnings that started showing in Cloud Logging once PHP errors were routed to stderr (wp-proudcity#2997). Behavior is unchanged.
