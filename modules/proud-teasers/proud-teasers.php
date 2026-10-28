@@ -905,7 +905,10 @@ if (!class_exists('TeaserList')) {
                     $search_meta = $proudsearch->post_meta($post->post_type);
                     break;
                 case 'document':
-                    $src = get_post_meta($post->ID, 'document', true);
+                    // $src feeds the Download button, which must be the real
+                    // file. A raw get_post_meta() lets preview providers
+                    // (FileToWeb) swap in their HTML rendition (#2970).
+                    $src = proud_document_original_url($post->ID);
                     $filename = get_post_meta($post->ID, 'document_filename', true);
                     $meta = json_decode(get_post_meta($post->ID, 'document_meta', true));
                     // if (empty($this->terms) || count($this->terms) > 1) {
