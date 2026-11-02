@@ -66,6 +66,25 @@ class ProudGravityformsStripe {
  const ALERT_LOG_PREFIX = '[proudcity-payments] ALERT ';
 
  /**
+  * build_transfer_args() error codes that will never succeed on retry --
+  * the PaymentIntent/charge itself is wrong (foreign site, mismatched or
+  * malformed account, refunded/disputed before a transfer existed, or a
+  * non-positive amount). ensure_transfer() marks these entries 'invalid'
+  * rather than 'failed', so reconcile_transfers()' retry pass (which only
+  * looks for 'failed') never retries them forever.
+  *
+  * @since 2026.11.02
+  */
+ const TERMINAL_TRANSFER_ERROR_CODES = [
+	'site_tag_mismatch',
+	'destination_mismatch',
+	'invalid_transfer_account',
+	'transfer_amount_not_positive',
+	'charge_refunded_before_transfer',
+	'charge_disputed',
+ ];
+
+ /**
   * Constructor
   */
  public function __construct() {
@@ -257,6 +276,12 @@ class ProudGravityformsStripe {
   * blog id has to be part of it -- the hostname alone isn't unique enough to
   * rely on (staging mirrors, vanity domains).
   *
+  * Reads the raw 'home' option rather than home_url(): home_url() runs
+  * through the 'home_url' filter, which a theme or another plugin can
+  * change for display purposes, and this tag has to stay stable so a PI
+  * tagged under one value is still recognised as "this site" later, by the
+  * reconcile cron or a retry, even if something starts filtering home_url().
+  *
   * @since 2026.11.02
   * @author Curtis
   * @link https://github.com/proudcity/wp-proudcity/issues/2955
@@ -265,7 +290,7 @@ class ProudGravityformsStripe {
   */
  public static function get_site_tag(): string {
 
-	return get_current_blog_id() . ':' . wp_parse_url( home_url(), PHP_URL_HOST );
+	return get_current_blog_id() . ':' . wp_parse_url( get_option( 'home' ), PHP_URL_HOST );
 
  } // get_site_tag
 
@@ -372,11 +397,29 @@ class ProudGravityformsStripe {
 	if ( $transfers_mode ){
 
 	 // Transfer happens later, on gform_post_payment_completed -- see
-	 // handle_payment_completed(). Our keys are merged in last so feed-mapped
-	 // metadata can't override the values ensure_transfer() trusts.
+	 // handle_payment_completed(). Feed custom metadata (GF Stripe
+	 // get_stripe_meta_data()) maps an admin-chosen key to a form field
+	 // value, which an ordinary form submission controls -- so any
+	 // proudcity_* key a feed happens to carry is dropped here first, and
+	 // our own keys are merged in last, so neither this request's feed
+	 // metadata nor anything GF itself merges in later (capture(),
+	 // Checkout) can get a colliding key to stick over the account/fee
+	 // build_transfer_args() later computes. That hard validation in
+	 // build_transfer_args() -- destination must equal the site's CURRENT
+	 // get_transfer_account(), fee is never trusted below what
+	 // calculate_fee() recomputes -- is the real control; this is only
+	 // defense in depth for the one path (this filter) we can see.
+	 $feed_metadata = (array) ( $data['metadata'] ?? [] );
+
+	 foreach ( array_keys( $feed_metadata ) as $meta_key ){
+	  if ( str_starts_with( (string) $meta_key, 'proudcity_' ) ){
+	   unset( $feed_metadata[ $meta_key ] );
+	  }
+	 }
+
 	 $percent = getenv('PROUDCITY_PAYMENTS_PERCENT') ? (float)getenv('PROUDCITY_PAYMENTS_PERCENT') : 3.05;
 
-	 $data['metadata'] = array_merge( (array) ( $data['metadata'] ?? [] ), [
+	 $data['metadata'] = array_merge( $feed_metadata, [
 	  'proudcity_charge_model'     => 'transfers',
 	  'proudcity_transfer_account' => (string) $transfer_account,
 	  'proudcity_fee'              => (string) $pc_fee,
@@ -729,8 +772,12 @@ class ProudGravityformsStripe {
 	$body = is_array( $body ) ? $body : [];
 
 	if ( $code < 200 || $code >= 300 ){
+	 // Stripe's idempotency conflict (a concurrent POST with the same key
+	 // still in flight) comes back as error.type=idempotency_error with no
+	 // error.code on some responses, so the type is the fallback that lets
+	 // ensure_transfer() recognise it either way.
 	 return new \WP_Error(
-	  (string) ( $body['error']['code'] ?? $code ),
+	  (string) ( $body['error']['code'] ?? $body['error']['type'] ?? $code ),
 	  (string) ( $body['error']['message'] ?? 'Stripe request failed.' )
 	 );
 	}
@@ -738,6 +785,31 @@ class ProudGravityformsStripe {
 	return $body;
 
  } // stripe_request
+
+ /**
+  * Validates a Stripe object id before it's interpolated into a request
+  * path, and rawurlencode()s it. Every id this file ever builds a path
+  * from either came back from a Stripe response we made ourselves, or from
+  * GF's own entry/webhook data -- never directly from a site visitor -- but
+  * this is cheap insurance against a malformed or unexpected value (for
+  * example a path-traversal attempt) ever reaching a Stripe request URL.
+  *
+  * @since 2026.11.02
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2955
+  *
+  * @param  string  $id  required  A PaymentIntent, charge, transfer or refund id.
+  * @return string|\WP_Error  The rawurlencode()d id, or a WP_Error if it doesn't look like a Stripe id.
+  */
+ private static function validated_stripe_id_segment( string $id ){
+
+	if ( ! preg_match( '/^(pi|ch|py|tr|re)_[A-Za-z0-9]+$/', $id ) ){
+	 return new \WP_Error( 'invalid_stripe_id', 'Refusing to build a Stripe request path from a malformed id.' );
+	}
+
+	return rawurlencode( $id );
+
+ } // validated_stripe_id_segment
 
  /**
   * Fetches a PaymentIntent with its latest_charge expanded, the shape
@@ -754,9 +826,68 @@ class ProudGravityformsStripe {
   */
  public static function get_payment_intent_with_charge( string $pi_id, string $key ){
 
-	return self::stripe_request( 'GET', 'payment_intents/' . $pi_id, [ 'expand' => [ 'latest_charge' ] ], $key );
+	$segment = self::validated_stripe_id_segment( $pi_id );
+
+	if ( is_wp_error( $segment ) ){
+	 return $segment;
+	}
+
+	return self::stripe_request( 'GET', 'payment_intents/' . $segment, [ 'expand' => [ 'latest_charge' ] ], $key );
 
  } // get_payment_intent_with_charge
+
+ /**
+  * Fetches every page of a Stripe list endpoint, for the two places that
+  * need a complete list rather than the first page: sync_reversals()'s
+  * refunds and reversals lookups, which both have to see every item to
+  * dedupe and sum correctly, not just whatever a default or embedded-list
+  * limit happens to return.
+  *
+  * @since 2026.11.02
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2955
+  *
+  * @param  string  $path   required  Path under STRIPE_API_BASE.
+  * @param  array   $query  required  Query params, without limit/starting_after.
+  * @param  string  $key    required  The transfer key to sign with.
+  * @return array|\WP_Error  Every item across every page.
+  */
+ private static function list_all( string $path, array $query, string $key ){
+
+	$items = [];
+	$starting_after = '';
+	$pages = 0;
+
+	do {
+
+	 $page_query = $query;
+	 $page_query['limit'] = 100;
+
+	 if ( '' !== $starting_after ){
+	  $page_query['starting_after'] = $starting_after;
+	 }
+
+	 $response = self::stripe_request( 'GET', $path, $page_query, $key );
+
+	 if ( is_wp_error( $response ) ){
+	  return $response;
+	 }
+
+	 $data = (array) ( $response['data'] ?? [] );
+	 $items = array_merge( $items, $data );
+
+	 $has_more = ! empty( $response['has_more'] );
+	 $starting_after = $data ? (string) ( end( $data )['id'] ?? '' ) : '';
+	 $pages++;
+
+	 // Not a real limit for any realistic volume (100 items/page), just a
+	 // backstop against an infinite loop if Stripe's has_more/id pairing
+	 // ever misbehaves.
+	} while ( $has_more && '' !== $starting_after && $pages < 1000 );
+
+	return $items;
+
+ } // list_all
 
  /**
   * Builds the args for creating a Transfer from an already-fetched
@@ -764,10 +895,26 @@ class ProudGravityformsStripe {
   * side effects -- which makes it the main unit-test target for the Transfer
   * logic.
   *
+  * PI metadata is a HINT, not a trusted source for anything that moves
+  * money. GF's own get_stripe_meta_data() maps an admin-chosen feed key to
+  * a form field value and merges it into PI/charge metadata in more than
+  * one place (capture(), Checkout) outside this plugin's own pre_create
+  * filter, so metadata already in a charge GF created cannot be assumed to
+  * still be exactly what add_transfer_meta() wrote. Every value that
+  * decides where money goes or how much is independently verified or
+  * recomputed below instead of trusted as-is:
+  *  - destination MUST equal this site's CURRENT get_transfer_account() --
+  *    a mismatch is refused outright, never transferred to whatever the
+  *    metadata says.
+  *  - fee is never taken below what calculate_fee() recomputes from the
+  *    charge itself; a valid metadata fee can only raise it, never lower it.
+  *  - amount is capped to what the charge can actually still pay out.
   * Every validation failure returns a WP_Error instead of transferring:
   * the marker check is what makes flipping proudcity_payments_charge_model
   * safe mid-flight (see add_transfer_meta()), and the rest guard against a
-  * malformed or foreign PaymentIntent ever reaching a Stripe write.
+  * malformed, foreign, mismatched or already-refunded/disputed
+  * PaymentIntent ever reaching a Stripe write. TERMINAL_TRANSFER_ERROR_CODES
+  * lists which of these codes ensure_transfer() treats as non-retryable.
   *
   * @since 2026.11.02
   * @author Curtis
@@ -797,28 +944,59 @@ class ProudGravityformsStripe {
 	 return new \WP_Error( 'invalid_transfer_account', 'PaymentIntent metadata has a malformed transfer account.' );
 	}
 
+	// The destination has to match what this site is configured to pay out
+	// to RIGHT NOW -- never whatever the (potentially feed/form-influenced)
+	// metadata claims. A site that changed proudcity_payments_account since
+	// this PI was created gets refused, not silently paid to the old value.
+	$current_account = self::get_transfer_account();
+
+	if ( '' === (string) $current_account || $account !== $current_account ){
+	 return new \WP_Error( 'destination_mismatch', "PaymentIntent metadata account does not match this site's current connected account." );
+	}
+
 	$charge = (array) ( $pi['latest_charge'] ?? [] );
 
 	if ( 'succeeded' !== ( $charge['status'] ?? '' ) || empty( $charge['captured'] ) ){
 	 return new \WP_Error( 'charge_not_captured', 'Charge is not succeeded and captured.' );
 	}
 
-	// The site may have changed proudcity_payments_account since this PI was
-	// created -- the PI's own metadata is always what gets transferred, but
-	// a mismatch is worth a note for whoever is reading the logs.
-	$current_account = self::get_transfer_account();
-
-	if ( $current_account && $account !== $current_account ){
-	 error_log( sprintf(
-	  '[proudcity-payments] account_mismatch payment_intent=%s metadata_account=%s current_account=%s',
-	  (string) ( $pi['id'] ?? '' ),
-	  $account,
-	  $current_account
-	 ) );
+	// A charge refunded or disputed before we ever got to create a transfer
+	// for it is refused outright -- there's no "late" transfer to make for
+	// a fully refunded charge, and a disputed charge's funds are frozen.
+	// This is a race between the completed-payment hook/reconcile and a
+	// very fast refund or dispute, not the normal refund-after-transfer
+	// case, which sync_reversals() handles once a transfer exists.
+	if ( ! empty( $charge['refunded'] ) ){
+	 return new \WP_Error( 'charge_refunded_before_transfer', 'Charge was fully refunded before a transfer existed.' );
 	}
 
-	$fee = (int) ( $metadata['proudcity_fee'] ?? 0 );
-	$amount = (int) ( $charge['amount_captured'] ?? 0 ) - $fee;
+	if ( ! empty( $charge['disputed'] ) ){
+	 return new \WP_Error( 'charge_disputed', 'Charge is disputed; refusing to create a transfer.' );
+	}
+
+	$amount_captured = (int) ( $charge['amount_captured'] ?? 0 );
+	$amount_refunded = (int) ( $charge['amount_refunded'] ?? 0 );
+
+	// What the charge can actually still pay out -- amount_refunded is 0 in
+	// the overwhelming majority of transfers (no refund yet exists), so this
+	// is just amount_captured then. A partial refund issued in the window
+	// between the charge succeeding and the transfer being created lowers
+	// it, and the fee is recomputed against that lowered figure too, so the
+	// city and ProudCity both get their proportional share of what's left
+	// rather than the fee being a flat amount sized for the original total.
+	$available = $amount_captured - $amount_refunded;
+
+	$fee_recomputed = self::calculate_fee( $available );
+	$fee_metadata = filter_var( $metadata['proudcity_fee'] ?? null, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 0 ] ] );
+
+	// A valid metadata fee can only push the fee UP from the recomputed
+	// value, never down -- the metadata value came from the PI as GF last
+	// saved it, which is not guaranteed to still be what add_transfer_meta()
+	// wrote (see the class docblock), so it can never be trusted to reduce
+	// ProudCity's share below what the current formula would take.
+	$fee = false !== $fee_metadata ? max( $fee_metadata, $fee_recomputed ) : $fee_recomputed;
+
+	$amount = min( $available - $fee, $amount_captured - $fee );
 
 	if ( $amount <= 0 ){
 	 return new \WP_Error( 'transfer_amount_not_positive', 'Transfer amount after fee is not positive.' );
@@ -831,11 +1009,11 @@ class ProudGravityformsStripe {
 	 'source_transaction' => (string) ( $charge['id'] ?? '' ),
 	 'transfer_group'     => (string) ( $charge['transfer_group'] ?? '' ),
 	 'metadata'           => [
-	  'entry_id'       => (string) ( $metadata['gf_entry_id'] ?? '' ),
-	  'form_id'        => (string) ( $metadata['proudcity_form_id'] ?? '' ),
-	  'payment_intent' => (string) ( $pi['id'] ?? '' ),
-	  'charge'          => (string) ( $charge['id'] ?? '' ),
-	  'site'           => self::get_site_tag(),
+	  'proudcity_entry_id'       => (string) ( $metadata['gf_entry_id'] ?? '' ),
+	  'proudcity_form_id'        => (string) ( $metadata['proudcity_form_id'] ?? '' ),
+	  'proudcity_payment_intent' => (string) ( $pi['id'] ?? '' ),
+	  'proudcity_charge'         => (string) ( $charge['id'] ?? '' ),
+	  'proudcity_site'          => self::get_site_tag(),
 	 ],
 	];
 
@@ -843,9 +1021,17 @@ class ProudGravityformsStripe {
 
  /**
   * Finds a Transfer already created for this charge, by destination and
-  * source_transaction. Stripe idempotency keys expire after 24h, so a retry
-  * or the hourly reconcile has to check this before relying on the POST's
-  * Idempotency-Key header to dedupe.
+  * source_transaction. Stripe idempotency keys expire after 24h, so this is
+  * checked before EVERY transfer POST, not only on a retry or the hourly
+  * reconcile -- a crashed or lost response from an earlier POST must never
+  * turn into a second Transfer for the same charge (HIGH #2).
+  *
+  * Fails CLOSED: a lookup error returns a WP_Error, never null, so the
+  * caller can tell "definitely no transfer exists yet" apart from "could
+  * not find out" and refuse to POST rather than risk a duplicate. Paginates
+  * every page (no artificial cap) rather than only the first, since this
+  * one city's transfer volume on the shared platform account is unbounded
+  * from this function's point of view.
   *
   * @since 2026.11.02
   * @author Curtis
@@ -855,12 +1041,12 @@ class ProudGravityformsStripe {
   * @param  string  $destination  required  The connected account id.
   * @param  int     $since        required  Unix timestamp, created[gte].
   * @param  string  $key          required  The transfer key to sign with.
-  * @return array|null
+  * @return array|null|\WP_Error  The transfer if found, null if definitely not found, WP_Error on a lookup failure.
   */
  public static function find_existing_transfer( string $charge_id, string $destination, int $since, string $key ){
 
 	$starting_after = '';
-	$page = 0;
+	$pages = 0;
 
 	do {
 
@@ -877,7 +1063,7 @@ class ProudGravityformsStripe {
 	 $response = self::stripe_request( 'GET', 'transfers', $query, $key );
 
 	 if ( is_wp_error( $response ) ){
-	  return null;
+	  return $response;
 	 }
 
 	 $data = (array) ( $response['data'] ?? [] );
@@ -890,9 +1076,11 @@ class ProudGravityformsStripe {
 
 	 $has_more = ! empty( $response['has_more'] );
 	 $starting_after = $data ? (string) ( end( $data )['id'] ?? '' ) : '';
-	 $page++;
+	 $pages++;
 
-	} while ( $has_more && '' !== $starting_after && $page < 10 );
+	 // Not a real limit for any realistic volume, just a backstop against
+	 // an infinite loop if Stripe's has_more/id pairing ever misbehaves.
+	} while ( $has_more && '' !== $starting_after && $pages < 1000 );
 
 	return null;
 
@@ -902,6 +1090,21 @@ class ProudGravityformsStripe {
   * The single entry point for creating a Transfer: the gform_post_payment_completed
   * hook, the `wp proud payments_transfer` retry, and the hourly reconcile
   * cron all call this, so the skip/retry/store logic only lives in one place.
+  *
+  * Looks up an existing Transfer for this charge before EVERY POST, not
+  * only on a retry -- Stripe's idempotency keys expire after 24h, and the
+  * hook, a manual retry and the hourly reconcile can all race each other
+  * for the same charge, so the Idempotency-Key header alone is not enough
+  * to guarantee only one Transfer ever gets created (HIGH #2). The lookup
+  * fails CLOSED: if it errors, this returns without ever POSTing, and the
+  * entry is left 'pending' rather than 'failed' so the next reconcile pass
+  * looks up again instead of blindly retrying a POST.
+  *
+  * Writes 'pending' + the charge id to entry meta before the lookup/POST,
+  * so a crash between here and the POST still leaves a record that this
+  * charge needs reconciling, and so a later call (MEDIUM #4) can tell this
+  * entry's stored charge id apart from a different charge on the same
+  * entry (an unlikely but possible reused/edited entry).
   *
   * Never throws -- every failure is caught by the caller's try/catch and
   * turned into a WP_Error here, since GF has already marked the entry Paid
@@ -917,13 +1120,6 @@ class ProudGravityformsStripe {
   * @return array|\WP_Error
   */
  public static function ensure_transfer( string $pi_id, string $api_mode, int $entry_id = 0 ){
-
-	$existing_status = $entry_id ? (string) gform_get_meta( $entry_id, 'proudcity_stripe_transfer_status' ) : '';
-	$existing_id = $entry_id ? (string) gform_get_meta( $entry_id, 'proudcity_stripe_transfer_id' ) : '';
-
-	if ( '' !== $existing_id ){
-	 return [ 'id' => $existing_id, 'skipped' => true ];
-	}
 
 	$key = self::get_transfer_key( $api_mode );
 
@@ -943,42 +1139,85 @@ class ProudGravityformsStripe {
 
 	if ( is_wp_error( $args ) ){
 
-	 if ( 'no_transfer_marker' === $args->get_error_code() ){
+	 $error_code = $args->get_error_code();
+
+	 if ( 'no_transfer_marker' === $error_code ){
 	  // Expected for every pre-cutover destination charge -- not an error.
 	  return $args;
 	 }
 
 	 if ( $entry_id ){
-	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'failed' );
+	  // Terminal errors (foreign/mismatched/malformed account, already
+	  // refunded/disputed, non-positive amount) will never succeed on
+	  // retry, so they're marked 'invalid' rather than 'failed' --
+	  // reconcile_transfers()' retry pass only looks for 'failed'.
+	  $status = in_array( $error_code, self::TERMINAL_TRANSFER_ERROR_CODES, true ) ? 'invalid' : 'failed';
+	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', $status );
 	 }
 
-	 self::alert( 'transfer_invalid', $args->get_error_code() . ': ' . $args->get_error_message(), [ 'entry_id' => $entry_id, 'payment_intent' => $pi_id ] );
+	 self::alert( 'transfer_invalid', $error_code . ': ' . $args->get_error_message(), [ 'entry_id' => $entry_id, 'payment_intent' => $pi_id ] );
 	 return $args;
 	}
 
-	$charge_id = $args['metadata']['charge'];
+	$charge_id = $args['metadata']['proudcity_charge'];
 
-	// Only look for an already-created Transfer on a retry/reconcile pass --
-	// a fresh call from the completed-payment hook has no prior status, so
-	// its Idempotency-Key header is enough to dedupe on its own.
-	if ( 0 === $entry_id || 'failed' === $existing_status ){
+	if ( $entry_id ){
 
-	 $existing = self::find_existing_transfer( $charge_id, $args['destination'], time() - ( 7 * DAY_IN_SECONDS ), $key );
+	 $existing_id = (string) gform_get_meta( $entry_id, 'proudcity_stripe_transfer_id' );
 
-	 if ( $existing ){
-	  if ( $entry_id ){
-	   gform_update_meta( $entry_id, 'proudcity_stripe_charge_id', $charge_id );
-	   gform_update_meta( $entry_id, 'proudcity_stripe_transfer_id', $existing['id'] );
-	   gform_update_meta( $entry_id, 'proudcity_stripe_transfer_amount', (string) $existing['amount'] );
-	   gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
+	 if ( '' !== $existing_id ){
+
+	  $stored_charge_id = (string) gform_get_meta( $entry_id, 'proudcity_stripe_charge_id' );
+
+	  // Only skip if the transfer already recorded on this entry is for
+	  // THIS charge. A different stored charge id means this entry's
+	  // transfer meta doesn't belong to the charge we were just asked to
+	  // transfer -- never silently skip that, since it would hide a real
+	  // binding problem (MEDIUM #4).
+	  if ( '' !== $stored_charge_id && $stored_charge_id !== $charge_id ){
+	   self::alert( 'charge_mismatch', sprintf( 'Entry transfer meta is bound to charge %s, not %s.', $stored_charge_id, $charge_id ), [ 'entry_id' => $entry_id, 'payment_intent' => $pi_id, 'charge' => $charge_id ] );
+	   return new \WP_Error( 'charge_mismatch', 'Entry transfer meta is bound to a different charge.' );
 	  }
-	  return array_merge( $existing, [ 'skipped' => true ] );
+
+	  return [ 'id' => $existing_id, 'skipped' => true ];
 	 }
+
+	 gform_update_meta( $entry_id, 'proudcity_stripe_charge_id', $charge_id );
+	 gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'pending' );
+	}
+
+	// Checked before every POST, not only a retry -- see the docblock above.
+	$since = (int) ( $pi['latest_charge']['created'] ?? time() ) - 300;
+	$existing = self::find_existing_transfer( $charge_id, $args['destination'], $since, $key );
+
+	if ( is_wp_error( $existing ) ){
+	 // Fail closed: leave the entry 'pending' (already written above) and
+	 // never POST without knowing whether a Transfer already exists.
+	 self::alert( 'transfer_lookup_failed', $existing->get_error_code() . ': ' . $existing->get_error_message(), [ 'entry_id' => $entry_id, 'payment_intent' => $pi_id, 'charge' => $charge_id ] );
+	 return $existing;
+	}
+
+	if ( $existing ){
+	 if ( $entry_id ){
+	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_id', $existing['id'] );
+	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_amount', (string) $existing['amount'] );
+	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
+	 }
+	 return array_merge( $existing, [ 'skipped' => true ] );
 	}
 
 	$response = self::stripe_request( 'POST', 'transfers', $args, $key, 'transfer-' . $charge_id );
 
 	if ( is_wp_error( $response ) ){
+
+	 if ( 'idempotency_key_in_use' === $response->get_error_code() ){
+	  // A concurrent call (the hook and a reconcile pass, or two reconcile
+	  // runs) is already POSTing this same transfer-<charge id> key.
+	  // Leave the entry 'pending' rather than 'failed' -- the next
+	  // reconcile pass will find the Transfer via find_existing_transfer()
+	  // once the in-flight request finishes.
+	  return $response;
+	 }
 
 	 if ( $entry_id ){
 	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'failed' );
@@ -989,12 +1228,16 @@ class ProudGravityformsStripe {
 	}
 
 	if ( $entry_id ){
-	 gform_update_meta( $entry_id, 'proudcity_stripe_charge_id', $charge_id );
 	 gform_update_meta( $entry_id, 'proudcity_stripe_transfer_id', $response['id'] );
 	 gform_update_meta( $entry_id, 'proudcity_stripe_transfer_amount', (string) $response['amount'] );
 	 gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
 	 gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments transferred $%s to %s (transfer %s).', number_format( $response['amount'] / 100, 2 ), $args['destination'], $response['id'] ) );
 	}
+
+	// A refund (or even a full charge.refunded) landing in the narrow window
+	// between the PI fetch above and this POST would otherwise wait for the
+	// next refund webhook/reconcile pass to be reversed -- sync it now.
+	self::sync_reversals( $pi_id, $api_mode, $entry_id );
 
 	return $response;
 
@@ -1051,7 +1294,13 @@ class ProudGravityformsStripe {
 
 	 if ( ! str_starts_with( $pi_id, 'pi_' ) ){
 
-	  $charge = self::stripe_request( 'GET', 'charges/' . $transaction_id, [], $key );
+	  $charge_segment = self::validated_stripe_id_segment( $transaction_id );
+
+	  if ( is_wp_error( $charge_segment ) ){
+	   return;
+	  }
+
+	  $charge = self::stripe_request( 'GET', 'charges/' . $charge_segment, [], $key );
 
 	  if ( is_wp_error( $charge ) ){
 	   return;
@@ -1157,37 +1406,82 @@ class ProudGravityformsStripe {
 	}
 
 	$charge_id = (string) ( $pi['latest_charge']['id'] ?? '' );
+	$charge_segment = self::validated_stripe_id_segment( $charge_id );
+	$transfer_segment = self::validated_stripe_id_segment( $transfer_id );
 
-	$charge = self::stripe_request( 'GET', 'charges/' . $charge_id, [ 'expand' => [ 'refunds' ] ], $key );
+	if ( is_wp_error( $charge_segment ) ){
+	 return $charge_segment;
+	}
+
+	if ( is_wp_error( $transfer_segment ) ){
+	 return $transfer_segment;
+	}
+
+	$charge = self::stripe_request( 'GET', 'charges/' . $charge_segment, [], $key );
 
 	if ( is_wp_error( $charge ) ){
 	 self::alert( 'reversal_fetch_failed', $charge->get_error_code() . ': ' . $charge->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
 	 return $charge;
 	}
 
-	$transfer = self::stripe_request( 'GET', 'transfers/' . $transfer_id, [], $key );
+	$transfer = self::stripe_request( 'GET', 'transfers/' . $transfer_segment, [], $key );
 
 	if ( is_wp_error( $transfer ) ){
 	 self::alert( 'reversal_fetch_failed', $transfer->get_error_code() . ': ' . $transfer->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
 	 return $transfer;
 	}
 
+	// The transfer this entry points at must actually be the one made FOR
+	// this charge, to THIS site's current account -- otherwise reversing it
+	// would move another charge's (or another site's) money (MEDIUM #4).
+	$current_account = self::get_transfer_account();
+
+	if ( ( $transfer['source_transaction'] ?? '' ) !== $charge_id || '' === (string) $current_account || ( $transfer['destination'] ?? '' ) !== $current_account ){
+	 self::alert( 'transfer_binding_mismatch', sprintf( 'Transfer %s does not match charge %s / account %s.', $transfer_id, $charge_id, (string) $current_account ), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	 return new \WP_Error( 'transfer_binding_mismatch', 'Transfer does not match this charge and account.' );
+	}
+
+	$refunds = self::list_all( 'refunds', [ 'charge' => $charge_id ], $key );
+
+	if ( is_wp_error( $refunds ) ){
+	 self::alert( 'reversal_fetch_failed', $refunds->get_error_code() . ': ' . $refunds->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	 return $refunds;
+	}
+
+	$reversals = self::list_all( 'transfers/' . $transfer_segment . '/reversals', [], $key );
+
+	if ( is_wp_error( $reversals ) ){
+	 self::alert( 'reversal_fetch_failed', $reversals->get_error_code() . ': ' . $reversals->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	 return $reversals;
+	}
+
 	$reversed_refund_ids = [];
 
-	foreach ( (array) ( $transfer['reversals']['data'] ?? [] ) as $reversal ){
+	foreach ( $reversals as $reversal ){
 	 $refund_id = $reversal['metadata']['refund_id'] ?? '';
 	 if ( '' !== $refund_id ){
 	  $reversed_refund_ids[] = $refund_id;
 	 }
 	}
 
+	$charge_amount = (int) ( $charge['amount'] ?? 0 );
+	$transfer_amount = (int) ( $transfer['amount'] ?? 0 );
+	$amount_reversed = (int) ( $transfer['amount_reversed'] ?? 0 );
 	$charge_fully_refunded = ! empty( $charge['refunded'] );
 
-	$unreversed = array_values( array_filter( (array) ( $charge['refunds']['data'] ?? [] ), function( $refund ) use ( $reversed_refund_ids ) {
+	$unreversed = array_values( array_filter( $refunds, function( $refund ) use ( $reversed_refund_ids ) {
 	 return 'succeeded' === ( $refund['status'] ?? '' ) && ! in_array( $refund['id'] ?? '', $reversed_refund_ids, true );
 	} ) );
 
-	$remaining = (int) ( $transfer['amount'] ?? 0 ) - (int) ( $transfer['amount_reversed'] ?? 0 );
+	// Two independent ceilings on every reversal POST below:
+	//  - $remaining: never reverse more than the transfer has left.
+	//  - $budget: never let the TOTAL reversed for this charge exceed the
+	//    proportional share of everything refunded on the charge SO FAR
+	//    (charge.amount_refunded, Stripe's own running total) -- this is
+	//    what keeps repeated/duplicate-looking reversal attempts idempotent
+	//    by sum rather than by matching a specific refund id (MEDIUM #6).
+	$remaining = $transfer_amount - $amount_reversed;
+	$budget = max( 0, self::calculate_reversal_amount( (int) ( $charge['amount_refunded'] ?? 0 ), $transfer_amount, $charge_amount, [ 'entry_id' => $entry_id ] ) - $amount_reversed );
 	$count_unreversed = count( $unreversed );
 	$results = [ 'reversed' => 0, 'errors' => 0 ];
 
@@ -1200,15 +1494,22 @@ class ProudGravityformsStripe {
 
 	 $reversal_amount = $is_last
 	  ? $remaining
-	  : self::calculate_reversal_amount( (int) $refund['amount'], (int) ( $transfer['amount'] ?? 0 ), (int) ( $charge['amount'] ?? 0 ), [ 'entry_id' => $entry_id, 'refund_id' => $refund['id'] ] );
+	  : self::calculate_reversal_amount( (int) $refund['amount'], $transfer_amount, $charge_amount, [ 'entry_id' => $entry_id, 'refund_id' => $refund['id'] ] );
 
-	 $reversal_amount = min( $reversal_amount, $remaining );
+	 $reversal_amount = min( $reversal_amount, $remaining, $budget );
 
 	 if ( $reversal_amount <= 0 ){
 	  continue;
 	 }
 
-	 $response = self::stripe_request( 'POST', 'transfers/' . $transfer_id . '/reversals', [
+	 $refund_segment = self::validated_stripe_id_segment( (string) ( $refund['id'] ?? '' ) );
+
+	 if ( is_wp_error( $refund_segment ) ){
+	  $results['errors']++;
+	  continue;
+	 }
+
+	 $response = self::stripe_request( 'POST', 'transfers/' . $transfer_segment . '/reversals', [
 	  'amount'   => $reversal_amount,
 	  'metadata' => [
 	   'refund_id' => $refund['id'],
@@ -1226,6 +1527,7 @@ class ProudGravityformsStripe {
 	 }
 
 	 $remaining -= $reversal_amount;
+	 $budget -= $reversal_amount;
 	 $results['reversed']++;
 
 	 if ( $entry_id ){
@@ -1234,12 +1536,14 @@ class ProudGravityformsStripe {
 	}
 
 	// Defensive path for a failed/voided charge with no refund object at all
-	// (fail_payment, void_authorization) -- reverse whatever is left.
+	// (fail_payment, void_authorization) -- reverse whatever is left,
+	// bounded only by $remaining since no refund amount exists to budget
+	// against.
 	$charge_voided = 'succeeded' === ( $charge['status'] ?? '' ) && empty( $charge['captured'] );
 
 	if ( ( 'failed' === ( $charge['status'] ?? '' ) || $charge_voided ) && $remaining > 0 ){
 
-	 $response = self::stripe_request( 'POST', 'transfers/' . $transfer_id . '/reversals', [
+	 $response = self::stripe_request( 'POST', 'transfers/' . $transfer_segment . '/reversals', [
 	  'amount' => $remaining,
 	 ], $key, 'reversal-fail-' . $charge_id );
 
@@ -1431,7 +1735,13 @@ class ProudGravityformsStripe {
 
 	 if ( '' === $pi_id && ! empty( $parsed['charge'] ) ){
 
-	  $charge = self::stripe_request( 'GET', 'charges/' . $parsed['charge'], [], $transfer_key );
+	  $charge_segment = self::validated_stripe_id_segment( (string) $parsed['charge'] );
+
+	  if ( is_wp_error( $charge_segment ) ){
+	   return $args;
+	  }
+
+	  $charge = self::stripe_request( 'GET', 'charges/' . $charge_segment, [], $transfer_key );
 
 	  if ( is_wp_error( $charge ) ){
 	   return $args;
@@ -1522,9 +1832,10 @@ class ProudGravityformsStripe {
 
  /**
   * Schedules the hourly reconcile cron, once a transfer key exists for
-  * either mode. Keeps running even after a site flips back to 'destination',
-  * so an in-flight transfers-mode payment still gets transferred -- see the
-  * mid-flight note on add_transfer_meta().
+  * either mode AND the site has a connected account to pay out to. Keeps
+  * running even after a site flips back to 'destination', so an in-flight
+  * transfers-mode payment still gets transferred -- see the mid-flight note
+  * on add_transfer_meta().
   *
   * Relies on the cluster's external WP-Cron runner (DISABLE_WP_CRON) to hit
   * every site's due events hourly, same as every other scheduled hook here.
@@ -1536,6 +1847,10 @@ class ProudGravityformsStripe {
   * @return void
   */
  public static function maybe_schedule_reconcile(): void {
+
+	if ( ! self::get_transfer_account() ){
+	 return;
+	}
 
 	if ( '' === self::get_transfer_key( 'live' ) && '' === self::get_transfer_key( 'test' ) ){
 	 return;
@@ -1553,10 +1868,20 @@ class ProudGravityformsStripe {
   *
   * Two passes, for each mode that has a transfer key configured:
   *  (a) Search this site's last 7 days of succeeded, transfers-marked
-  *      PaymentIntents and ensure_transfer() each -- covers a webhook that
-  *      never reached this site.
+  *      PaymentIntents (paginated via Stripe search's next_page cursor,
+  *      skipping anything younger than 10 minutes to give the
+  *      completed-payment hook a chance to transfer it first) and
+  *      ensure_transfer() each -- covers a webhook that never reached this
+  *      site. An entry id from the PI's own metadata is only trusted if
+  *      that entry's own transaction_id still points back at this exact PI
+  *      (MEDIUM #4).
   *  (b) Retry every entry GF has recorded with a failed transfer or a
-  *      pending reversal.
+  *      pending reversal, paginated rather than relying on a single page
+  *      of results.
+  *
+  * Guarded end to end: GFAPI/gf_stripe() must both exist (the cron can in
+  * principle fire before Gravity Forms Stripe has loaded), and any
+  * exception is caught rather than left to break WP-Cron's run.
   *
   * @since 2026.11.02
   * @author Curtis
@@ -1568,72 +1893,124 @@ class ProudGravityformsStripe {
 
 	$counts = [ 'transferred' => 0, 'retried' => 0, 'skipped' => 0, 'errors' => 0 ];
 
-	foreach ( [ 'live', 'test' ] as $api_mode ){
-
-	 $key = self::get_transfer_key( $api_mode );
-
-	 if ( '' === $key ){
-	  continue;
-	 }
-
-	 $query = sprintf(
-	  "metadata['proudcity_site']:'%s' AND metadata['proudcity_charge_model']:'transfers' AND status:'succeeded' AND created>%d",
-	  self::get_site_tag(),
-	  time() - ( 7 * DAY_IN_SECONDS )
-	 );
-
-	 $response = self::stripe_request( 'GET', 'payment_intents/search', [ 'query' => $query, 'limit' => 100 ], $key );
-
-	 if ( is_wp_error( $response ) ){
-	  self::alert( 'reconcile_search_failed', $response->get_error_code() . ': ' . $response->get_error_message(), [ 'api_mode' => $api_mode ] );
-	  $counts['errors']++;
-	  continue;
-	 }
-
-	 foreach ( (array) ( $response['data'] ?? [] ) as $pi ){
-
-	  $entry_id = (int) ( $pi['metadata']['gf_entry_id'] ?? 0 );
-	  $result = self::ensure_transfer( (string) ( $pi['id'] ?? '' ), $api_mode, $entry_id );
-
-	  if ( is_wp_error( $result ) ){
-	   $counts['errors']++;
-	  } elseif ( ! empty( $result['skipped'] ) ){
-	   $counts['skipped']++;
-	  } else {
-	   $counts['transferred']++;
-	  }
-	 }
+	if ( ! class_exists( 'GFAPI' ) || ! function_exists( 'gf_stripe' ) ){
+	 return $counts;
 	}
 
-	$failed_entries = \GFAPI::get_entries( 0, [
-	 'field_filters' => [
-	  'mode' => 'any',
-	  [ 'key' => 'proudcity_stripe_transfer_status', 'value' => 'failed' ],
-	  [ 'key' => 'proudcity_stripe_reversal_pending', 'value' => '1' ],
-	 ],
-	] );
+	try {
 
-	foreach ( (array) $failed_entries as $entry ){
+	 foreach ( [ 'live', 'test' ] as $api_mode ){
 
-	 $entry_id = (int) ( $entry['id'] ?? 0 );
-	 $transaction_id = (string) ( $entry['transaction_id'] ?? '' );
+	  $key = self::get_transfer_key( $api_mode );
 
-	 if ( ! $entry_id || ! str_starts_with( $transaction_id, 'pi_' ) ){
-	  continue;
+	  if ( '' === $key ){
+	   continue;
+	  }
+
+	  $query = sprintf(
+	   "metadata['proudcity_site']:'%s' AND metadata['proudcity_charge_model']:'transfers' AND status:'succeeded' AND created>%d",
+	   self::get_site_tag(),
+	   time() - ( 7 * DAY_IN_SECONDS )
+	  );
+
+	  $page = '';
+	  $pages_fetched = 0;
+
+	  do {
+
+	   $search_args = [ 'query' => $query, 'limit' => 100 ];
+
+	   if ( '' !== $page ){
+	    $search_args['page'] = $page;
+	   }
+
+	   $response = self::stripe_request( 'GET', 'payment_intents/search', $search_args, $key );
+
+	   if ( is_wp_error( $response ) ){
+	    self::alert( 'reconcile_search_failed', $response->get_error_code() . ': ' . $response->get_error_message(), [ 'api_mode' => $api_mode ] );
+	    $counts['errors']++;
+	    break;
+	   }
+
+	   foreach ( (array) ( $response['data'] ?? [] ) as $pi ){
+
+	    // Give the completed-payment hook a chance to transfer this first --
+	    // ensure_transfer()'s own lookup-before-POST makes a race safe, but
+	    // it's not worth the extra Stripe calls on every single hourly pass.
+	    if ( ( time() - (int) ( $pi['created'] ?? 0 ) ) < 600 ){
+	     continue;
+	    }
+
+	    $pi_id = (string) ( $pi['id'] ?? '' );
+	    $entry_id = (int) ( $pi['metadata']['gf_entry_id'] ?? 0 );
+
+	    if ( $entry_id ){
+	     $bound_entry = \GFAPI::get_entry( $entry_id );
+	     if ( is_wp_error( $bound_entry ) || (string) ( $bound_entry['transaction_id'] ?? '' ) !== $pi_id ){
+	      $entry_id = 0;
+	     }
+	    }
+
+	    $result = self::ensure_transfer( $pi_id, $api_mode, $entry_id );
+
+	    if ( is_wp_error( $result ) ){
+	     $counts['errors']++;
+	    } elseif ( ! empty( $result['skipped'] ) ){
+	     $counts['skipped']++;
+	    } else {
+	     $counts['transferred']++;
+	    }
+	   }
+
+	   $page = (string) ( $response['next_page'] ?? '' );
+	   $pages_fetched++;
+
+	  } while ( ! empty( $response['has_more'] ) && '' !== $page && $pages_fetched < 1000 );
 	 }
 
-	 $feed = gf_stripe()->get_payment_feed( $entry );
-	 $api_mode = $feed ? self::get_api_mode_for_feed( $feed ) : 'live';
+	 $page_size = 100;
+	 $offset = 0;
 
-	 if ( 'failed' === gform_get_meta( $entry_id, 'proudcity_stripe_transfer_status' ) ){
-	  $result = self::ensure_transfer( $transaction_id, $api_mode, $entry_id );
-	  is_wp_error( $result ) ? $counts['errors']++ : $counts['retried']++;
-	 }
+	 do {
 
-	 if ( gform_get_meta( $entry_id, 'proudcity_stripe_reversal_pending' ) ){
-	  $result = self::sync_reversals( $transaction_id, $api_mode, $entry_id );
-	  is_wp_error( $result ) ? $counts['errors']++ : $counts['retried']++;
-	 }
+	  $failed_entries = (array) \GFAPI::get_entries( 0, [
+	   'field_filters' => [
+	    'mode' => 'any',
+	    [ 'key' => 'proudcity_stripe_transfer_status', 'value' => 'failed' ],
+	    [ 'key' => 'proudcity_stripe_reversal_pending', 'value' => '1' ],
+	   ],
+	  ], null, [ 'offset' => $offset, 'page_size' => $page_size ] );
+
+	  foreach ( $failed_entries as $entry ){
+
+	   $entry_id = (int) ( $entry['id'] ?? 0 );
+	   $transaction_id = (string) ( $entry['transaction_id'] ?? '' );
+
+	   if ( ! $entry_id || ! str_starts_with( $transaction_id, 'pi_' ) ){
+	    continue;
+	   }
+
+	   $feed = gf_stripe()->get_payment_feed( $entry );
+	   $api_mode = $feed ? self::get_api_mode_for_feed( $feed ) : 'live';
+
+	   if ( 'failed' === gform_get_meta( $entry_id, 'proudcity_stripe_transfer_status' ) ){
+	    $result = self::ensure_transfer( $transaction_id, $api_mode, $entry_id );
+	    is_wp_error( $result ) ? $counts['errors']++ : $counts['retried']++;
+	   }
+
+	   if ( gform_get_meta( $entry_id, 'proudcity_stripe_reversal_pending' ) ){
+	    $result = self::sync_reversals( $transaction_id, $api_mode, $entry_id );
+	    is_wp_error( $result ) ? $counts['errors']++ : $counts['retried']++;
+	   }
+	  }
+
+	  $offset += $page_size;
+
+	 } while ( count( $failed_entries ) === $page_size );
+
+	} catch ( \Throwable $e ){
+	 self::alert( 'reconcile_exception', $e->getMessage(), [] );
+	 $counts['errors']++;
 	}
 
 	return $counts;
@@ -1685,7 +2062,10 @@ class ProudGravityformsStripe {
 	$entry_id = (int) ( $context['entry_id'] ?? 0 );
 
 	if ( $entry_id ){
-	 gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments error (%s): %s', $code, $message ) );
+	 // Generic on purpose -- the full Stripe error message (which can echo
+	 // back request details) only ever goes to error_log() above, never
+	 // onto an entry note any GF admin with entry access can read.
+	 gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments could not transfer this payment (ref: %s); ProudCity has been alerted.', $code ) );
 	}
 
  } // alert

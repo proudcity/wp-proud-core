@@ -33,6 +33,7 @@ class GravityformsStripeTransfersTest extends TestCase
 
         $this->options = [
             'proudcity_payments_account' => 'acct_city123',
+            'home' => 'https://example.gov',
         ];
         $this->siteUrl = 'https://example.gov';
         $this->entryMeta = [];
@@ -46,6 +47,7 @@ class GravityformsStripeTransfersTest extends TestCase
         GfStripeOnBehalfOfStub::$paymentFeed = null;
         GfStripeOnBehalfOfStub::$notes = [];
         GFAPI::$entries = [];
+        GFAPI::$entriesById = [];
 
         Functions\when('get_option')->alias(function ($name, $default = false) {
             return array_key_exists($name, $this->options) ? $this->options[$name] : $default;
@@ -120,11 +122,72 @@ class GravityformsStripeTransfersTest extends TestCase
                 'captured' => true,
                 'amount' => 2000,
                 'amount_captured' => 2000,
+                'amount_refunded' => 0,
                 'currency' => 'usd',
                 'transfer_group' => 'Test Form',
                 'refunded' => false,
+                'created' => time() - 3600,
             ], $chargeOverrides),
         ];
+    }
+
+    /**
+     * Ordered Stripe endpoint handlers covering the full happy path a
+     * single ensure_transfer()/sync_reversals() call touches: the PI fetch,
+     * the pre-POST transfer lookup (HIGH #2), the transfer create, the
+     * charge/refunds/reversals reads sync_reversals() always does (MEDIUM
+     * #3's post-create sync, MEDIUM #6's pagination), and the single
+     * transfer fetch sync_reversals() uses for its binding check (MEDIUM
+     * #4). Tests override just the one or two entries they care about via
+     * array_merge()/direct key assignment -- the key's position (and so its
+     * priority against the more specific 'reversals'/'search' matches
+     * checked first) is preserved.
+     */
+    private function defaultStripeHandlers(): array
+    {
+        return [
+            'reversal_create' => ['method' => 'POST', 'contains' => '/reversals', 'response' => $this->jsonResponse(200, ['id' => 'trr_default', 'amount' => 0])],
+            'reversal_list'   => ['method' => 'GET', 'contains' => '/reversals', 'response' => $this->jsonResponse(200, ['data' => [], 'has_more' => false])],
+            'transfer_create' => ['method' => 'POST', 'contains' => '/transfers', 'response' => $this->jsonResponse(200, ['id' => 'tr_default', 'amount' => 0])],
+            'transfer_lookup' => ['method' => 'GET', 'contains' => 'transfers?', 'response' => $this->jsonResponse(200, ['data' => [], 'has_more' => false])],
+            'transfer_fetch'  => ['method' => 'GET', 'contains' => '/transfers/', 'response' => $this->jsonResponse(200, [
+                'id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0,
+                'source_transaction' => 'ch_123', 'destination' => 'acct_city123',
+            ])],
+            'charge_fetch'    => ['method' => 'GET', 'contains' => 'charges/', 'response' => $this->jsonResponse(200, [
+                'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+                'amount' => 2000, 'amount_refunded' => 0, 'refunded' => false,
+            ])],
+            'refunds_list'    => ['method' => 'GET', 'contains' => 'refunds?', 'response' => $this->jsonResponse(200, ['data' => [], 'has_more' => false])],
+            'pi_fetch'        => ['method' => 'GET', 'contains' => 'payment_intents/pi_123', 'response' => $this->jsonResponse(200, $this->samplePi())],
+        ];
+    }
+
+    /**
+     * Routes a mocked wp_remote_request() call through an ordered list of
+     * [method, contains, response] handlers -- the first whose method
+     * matches and whose 'contains' is a substring of the URL wins.
+     * 'response' can be a plain jsonResponse() array or a callable
+     * ($url, $args) for a test that needs to capture or compute per-call.
+     */
+    private function stripeRouter(array $handlers): \Closure
+    {
+        return function ($url, $args) use ($handlers) {
+            $method = $args['method'] ?? 'GET';
+
+            foreach ($handlers as $handler) {
+                if (($handler['method'] ?? 'GET') !== $method) {
+                    continue;
+                }
+                if (!str_contains($url, $handler['contains'])) {
+                    continue;
+                }
+                $response = $handler['response'];
+                return is_callable($response) ? $response($url, $args) : $response;
+            }
+
+            return $this->jsonResponse(404, ['error' => ['code' => 'resource_missing', 'message' => 'Unhandled test URL: ' . $url]]);
+        };
     }
 
     // -------------------------------------------------------------------
@@ -366,11 +429,11 @@ class GravityformsStripeTransfersTest extends TestCase
         $this->assertSame('acct_city123', $args['destination']);
         $this->assertSame('ch_123', $args['source_transaction']);
         $this->assertSame('Test Form', $args['transfer_group']);
-        $this->assertSame('42', $args['metadata']['entry_id']);
-        $this->assertSame('7', $args['metadata']['form_id']);
-        $this->assertSame('pi_123', $args['metadata']['payment_intent']);
-        $this->assertSame('ch_123', $args['metadata']['charge']);
-        $this->assertSame('1:example.gov', $args['metadata']['site']);
+        $this->assertSame('42', $args['metadata']['proudcity_entry_id']);
+        $this->assertSame('7', $args['metadata']['proudcity_form_id']);
+        $this->assertSame('pi_123', $args['metadata']['proudcity_payment_intent']);
+        $this->assertSame('ch_123', $args['metadata']['proudcity_charge']);
+        $this->assertSame('1:example.gov', $args['metadata']['proudcity_site']);
     }
 
     public function test_build_transfer_args_errors(): void
@@ -396,69 +459,298 @@ class GravityformsStripeTransfersTest extends TestCase
         $this->assertSame('transfer_amount_not_positive', $notPositive->get_error_code());
     }
 
+    /**
+     * HIGH #1: PI metadata is only a hint. The destination has to equal
+     * THIS site's current get_transfer_account(), never whatever a feed
+     * (or GF's own later metadata merges) wrote on the PI.
+     */
+    public function test_build_transfer_args_refuses_destination_mismatch(): void
+    {
+        $this->options['proudcity_payments_account'] = 'acct_DIFFERENT';
+
+        $result = ProudGravityformsStripe::build_transfer_args($this->samplePi());
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('destination_mismatch', $result->get_error_code());
+    }
+
+    /**
+     * MEDIUM #3: refuse a late transfer for a charge that was already fully
+     * refunded or disputed before one ever existed -- distinct from the
+     * normal refund-after-transfer case sync_reversals() handles.
+     */
+    public function test_build_transfer_args_refuses_refunded_or_disputed_charge(): void
+    {
+        $refunded = ProudGravityformsStripe::build_transfer_args($this->samplePi([], ['refunded' => true]));
+        $this->assertInstanceOf(\WP_Error::class, $refunded);
+        $this->assertSame('charge_refunded_before_transfer', $refunded->get_error_code());
+
+        $disputed = ProudGravityformsStripe::build_transfer_args($this->samplePi([], ['disputed' => true]));
+        $this->assertInstanceOf(\WP_Error::class, $disputed);
+        $this->assertSame('charge_disputed', $disputed->get_error_code());
+    }
+
+    /**
+     * HIGH #1: a metadata fee lower than what calculate_fee() recomputes
+     * from the charge is never trusted -- it can only ever raise the fee,
+     * never lower ProudCity's share below the current formula.
+     */
+    public function test_build_transfer_args_fee_never_goes_below_recomputed(): void
+    {
+        $args = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '1']));
+
+        // calculate_fee(2000) is 89, so the amount is exactly as if the
+        // metadata fee had never been set to 1.
+        $this->assertSame(1911, $args['amount']);
+    }
+
+    /**
+     * A metadata fee HIGHER than the recomputed value is honoured --
+     * max(), not the recomputed value outright -- so a legitimate fee set
+     * at creation time under a different PROUDCITY_PAYMENTS_PERCENT isn't
+     * clawed back down just because the env changed later.
+     */
+    public function test_build_transfer_args_fee_metadata_can_raise_above_recomputed(): void
+    {
+        $args = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '500']));
+
+        $this->assertSame(1500, $args['amount']);
+    }
+
+    /**
+     * HIGH #1: a negative or non-numeric metadata fee is rejected outright
+     * and the recomputed value is used instead, rather than being clamped
+     * or otherwise half-trusted.
+     */
+    public function test_build_transfer_args_invalid_metadata_fee_uses_recomputed(): void
+    {
+        $negative = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '-5']));
+        $this->assertSame(1911, $negative['amount']);
+
+        $nonNumeric = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => 'not-a-number']));
+        $this->assertSame(1911, $nonNumeric['amount']);
+    }
+
+    /**
+     * MEDIUM #3: a partial refund issued before the transfer was ever
+     * created lowers the base the fee is recomputed from, so both sides
+     * get their proportional share of what's actually left rather than a
+     * flat fee sized for the original, now-stale, total.
+     */
+    public function test_build_transfer_args_partial_refund_before_transfer_reduces_available_and_fee(): void
+    {
+        $args = ProudGravityformsStripe::build_transfer_args($this->samplePi([], ['amount_refunded' => 500]));
+
+        // available = 2000 - 500 = 1500; calculate_fee(1500) = 74, but the
+        // stale metadata fee of 89 is still higher, so max() keeps 89.
+        $this->assertSame(1411, $args['amount']);
+    }
+
     public function test_ensure_transfer_sends_idempotency_key_and_our_own_key(): void
     {
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
 
         $captured = [];
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$captured) {
-            $captured[] = ['url' => $url, 'args' => $args];
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_create']['response'] = function ($url, $args) use (&$captured) {
+            $captured[] = $args;
+            return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911]);
+        };
 
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
-
-            if (str_contains($url, '/transfers') && 'POST' === $args['method']) {
-                return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
 
         $this->assertSame('tr_123', $result['id']);
         $this->assertSame('tr_123', $this->entryMeta[42]['proudcity_stripe_transfer_id']);
         $this->assertSame('created', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+        $this->assertSame('ch_123', $this->entryMeta[42]['proudcity_stripe_charge_id']);
 
-        $post = $captured[1];
-        $this->assertSame('transfer-ch_123', $post['args']['headers']['Idempotency-Key']);
-        $this->assertSame('Basic ' . base64_encode('rk_live_PLATFORM:'), $post['args']['headers']['Authorization']);
-        $this->assertSame(ProudGravityformsStripe::STRIPE_API_VERSION, $post['args']['headers']['Stripe-Version']);
+        $this->assertCount(1, $captured);
+        $this->assertSame('transfer-ch_123', $captured[0]['headers']['Idempotency-Key']);
+        $this->assertSame('Basic ' . base64_encode('rk_live_PLATFORM:'), $captured[0]['headers']['Authorization']);
+        $this->assertSame(ProudGravityformsStripe::STRIPE_API_VERSION, $captured[0]['headers']['Stripe-Version']);
     }
 
-    public function test_ensure_transfer_skips_when_meta_already_has_transfer_id(): void
+    public function test_ensure_transfer_skips_when_meta_already_has_transfer_id_for_the_same_charge(): void
     {
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
         $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_existing';
+        $this->entryMeta[42]['proudcity_stripe_charge_id'] = 'ch_123';
 
-        Functions\when('wp_remote_request')->alias(function () {
-            $this->fail('wp_remote_request should not be called when a transfer id already exists.');
-        });
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_create']['response'] = function () {
+            $this->fail('A transfer should not be created when the entry already has one for this charge.');
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
 
         $this->assertSame('tr_existing', $result['id']);
+        $this->assertTrue($result['skipped']);
+    }
+
+    /**
+     * MEDIUM #4: an entry's existing transfer meta only gets trusted (and
+     * skipped) if it's bound to the SAME charge this call is for. A
+     * different stored charge id is a real binding problem, not something
+     * to silently skip.
+     */
+    public function test_ensure_transfer_alerts_on_charge_mismatch_instead_of_skipping(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_existing';
+        $this->entryMeta[42]['proudcity_stripe_charge_id'] = 'ch_SOMETHING_ELSE';
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($this->defaultStripeHandlers()));
+
+        $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('charge_mismatch', $result->get_error_code());
     }
 
     public function test_ensure_transfer_wp_error_response_sets_failed_and_does_not_throw(): void
     {
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) {
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_create']['response'] = $this->jsonResponse(402, ['error' => ['code' => 'balance_insufficient', 'message' => 'Not enough funds.']]);
 
-            return $this->jsonResponse(402, ['error' => ['code' => 'balance_insufficient', 'message' => 'Not enough funds.']]);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
 
         $this->assertInstanceOf(\WP_Error::class, $result);
         $this->assertSame('balance_insufficient', $result->get_error_code());
         $this->assertSame('failed', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+    }
+
+    /**
+     * HIGH #2: the lookup before the POST fails CLOSED -- any error there
+     * means no POST ever happens, and the entry is left 'pending' (written
+     * before the lookup) rather than 'failed', so the next reconcile pass
+     * looks up again instead of blindly retrying a POST that might already
+     * have succeeded.
+     */
+    public function test_ensure_transfer_fails_closed_when_the_lookup_itself_errors(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_lookup']['response'] = $this->jsonResponse(500, ['error' => ['code' => 'api_error', 'message' => 'Stripe is down.']]);
+        $handlers['transfer_create']['response'] = function () {
+            $this->fail('Must not POST a transfer when the existing-transfer lookup itself failed.');
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('api_error', $result->get_error_code());
+        $this->assertSame('pending', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+        $this->assertSame('ch_123', $this->entryMeta[42]['proudcity_stripe_charge_id']);
+    }
+
+    /**
+     * HIGH #2: the lookup runs before EVERY POST, not only on a retry --
+     * even a entry's very first call finds and uses an already-existing
+     * Transfer instead of creating a second one.
+     */
+    public function test_ensure_transfer_finds_existing_transfer_before_posting_on_the_very_first_call(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_lookup']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 'tr_already', 'amount' => 1911, 'source_transaction' => 'ch_123'],
+        ], 'has_more' => false]);
+        $handlers['transfer_create']['response'] = function () {
+            $this->fail('Must not POST a transfer when find_existing_transfer() already found one.');
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertTrue($result['skipped']);
+        $this->assertSame('tr_already', $this->entryMeta[42]['proudcity_stripe_transfer_id']);
+        $this->assertSame('created', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+    }
+
+    /**
+     * HIGH #2: a 409 idempotency conflict means a concurrent call (the hook
+     * racing a reconcile pass, or two reconcile runs) is already POSTing
+     * this exact transfer -- leave the entry 'pending', not 'failed', so
+     * the next pass looks it up instead of endlessly retrying a POST.
+     */
+    public function test_ensure_transfer_idempotency_conflict_leaves_status_pending(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_create']['response'] = $this->jsonResponse(409, ['error' => ['code' => 'idempotency_key_in_use', 'message' => 'Keys for idempotent requests can only be used for the same endpoint.']]);
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('idempotency_key_in_use', $result->get_error_code());
+        $this->assertSame('pending', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+    }
+
+    /**
+     * LOW #7: a terminal build_transfer_args() error (here, a destination
+     * mismatch) is marked 'invalid', not 'failed' -- reconcile_transfers()'
+     * retry pass only looks for 'failed', so this is never retried forever.
+     */
+    public function test_ensure_transfer_terminal_error_sets_invalid_status_not_failed(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        $this->options['proudcity_payments_account'] = 'acct_DIFFERENT';
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($this->defaultStripeHandlers()));
+
+        $result = ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('destination_mismatch', $result->get_error_code());
+        $this->assertSame('invalid', $this->entryMeta[42]['proudcity_stripe_transfer_status']);
+    }
+
+    /**
+     * MEDIUM #3: once the Transfer is created, sync_reversals() runs
+     * immediately, so a refund that landed in the window between the PI
+     * fetch and the POST doesn't have to wait for the next webhook/reconcile.
+     */
+    public function test_ensure_transfer_syncs_reversals_immediately_after_creating_a_transfer(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $reversalCalls = 0;
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+            'amount' => 2000, 'amount_refunded' => 500, 'refunded' => false,
+        ]);
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
+        ], 'has_more' => false]);
+        $handlers['reversal_create']['response'] = function () use (&$reversalCalls) {
+            $reversalCalls++;
+            return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => 478]);
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        ProudGravityformsStripe::ensure_transfer('pi_123', 'live', 42);
+
+        $this->assertSame(1, $reversalCalls);
     }
 
     public function test_handle_payment_completed_ignores_non_stripe_transaction_id(): void
@@ -524,44 +816,27 @@ class GravityformsStripeTransfersTest extends TestCase
 
         $captured = [];
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$captured) {
-            $captured[] = ['url' => $url, 'args' => $args];
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+            'amount' => 2000, 'amount_refunded' => 500, 'refunded' => false,
+        ]);
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
+        ], 'has_more' => false]);
+        $handlers['reversal_create']['response'] = function ($url, $args) use (&$captured) {
+            $captured[] = $args;
+            return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => 478]);
+        };
 
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
-
-            if (str_contains($url, 'charges/ch_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'ch_123',
-                    'status' => 'succeeded',
-                    'captured' => true,
-                    'amount' => 2000,
-                    'refunded' => false,
-                    'refunds' => ['data' => [
-                        ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
-                    ]],
-                ]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123/reversals')) {
-                return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => 478]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123')) {
-                return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0, 'reversals' => ['data' => []]]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
 
         $this->assertSame(1, $result['reversed']);
         $this->assertSame(0, $result['errors']);
-
-        $reversal = $captured[array_search('POST', array_column(array_column($captured, 'args'), 'method'), true)];
-        $this->assertSame('reversal-re_1', $reversal['args']['headers']['Idempotency-Key']);
+        $this->assertCount(1, $captured);
+        $this->assertSame('reversal-re_1', $captured[0]['headers']['Idempotency-Key']);
     }
 
     public function test_sync_reversals_skips_an_already_reversed_refund(): void
@@ -571,42 +846,23 @@ class GravityformsStripeTransfersTest extends TestCase
 
         $postCount = 0;
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$postCount) {
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
+        ], 'has_more' => false]);
+        $handlers['reversal_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['metadata' => ['refund_id' => 're_1']],
+        ], 'has_more' => false]);
+        $handlers['transfer_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 478,
+            'source_transaction' => 'ch_123', 'destination' => 'acct_city123',
+        ]);
+        $handlers['reversal_create']['response'] = function () use (&$postCount) {
+            $postCount++;
+            return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => 478]);
+        };
 
-            if (str_contains($url, 'charges/ch_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'ch_123',
-                    'status' => 'succeeded',
-                    'captured' => true,
-                    'amount' => 2000,
-                    'refunded' => false,
-                    'refunds' => ['data' => [
-                        ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
-                    ]],
-                ]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123/reversals')) {
-                $postCount++;
-                return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => 478]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'tr_123',
-                    'amount' => 1911,
-                    'amount_reversed' => 478,
-                    'reversals' => ['data' => [
-                        ['metadata' => ['refund_id' => 're_1']],
-                    ]],
-                ]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
 
@@ -619,40 +875,24 @@ class GravityformsStripeTransfersTest extends TestCase
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
         $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_123';
 
-        $reversalAmount = null;
+        $reversalAmounts = [];
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$reversalAmount) {
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+            'amount' => 2000, 'amount_refunded' => 2000, 'refunded' => true,
+        ]);
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 1000],
+            ['id' => 're_2', 'status' => 'succeeded', 'amount' => 1000],
+        ], 'has_more' => false]);
+        $handlers['reversal_create']['response'] = function ($url, $args) use (&$reversalAmounts) {
+            parse_str($args['body'], $parsed);
+            $reversalAmounts[] = (int) $parsed['amount'];
+            return $this->jsonResponse(200, ['id' => 'trr_x', 'amount' => (int) $parsed['amount']]);
+        };
 
-            if (str_contains($url, 'charges/ch_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'ch_123',
-                    'status' => 'succeeded',
-                    'captured' => true,
-                    'amount' => 2000,
-                    'amount_refunded' => 2000,
-                    'refunded' => true,
-                    'refunds' => ['data' => [
-                        ['id' => 're_1', 'status' => 'succeeded', 'amount' => 1000],
-                        ['id' => 're_2', 'status' => 'succeeded', 'amount' => 1000],
-                    ]],
-                ]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123/reversals')) {
-                parse_str($args['body'], $parsed);
-                $reversalAmount = (int) $parsed['amount'];
-                return $this->jsonResponse(200, ['id' => 'trr_x', 'amount' => $reversalAmount]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123')) {
-                return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0, 'reversals' => ['data' => []]]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         // Both refunds are processed in one call; the second (last) one takes
         // exactly whatever is left on the transfer rather than the
@@ -660,6 +900,7 @@ class GravityformsStripeTransfersTest extends TestCase
         $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
 
         $this->assertSame(2, $result['reversed']);
+        $this->assertSame(1911, array_sum($reversalAmounts));
     }
 
     public function test_sync_reversals_balance_insufficient_sets_pending_and_alerts(): void
@@ -667,39 +908,110 @@ class GravityformsStripeTransfersTest extends TestCase
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
         $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_123';
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) {
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+            'amount' => 2000, 'amount_refunded' => 500, 'refunded' => false,
+        ]);
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
+        ], 'has_more' => false]);
+        $handlers['reversal_create']['response'] = $this->jsonResponse(402, ['error' => ['code' => 'balance_insufficient', 'message' => 'Not enough funds.']]);
 
-            if (str_contains($url, 'charges/ch_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'ch_123',
-                    'status' => 'succeeded',
-                    'captured' => true,
-                    'amount' => 2000,
-                    'refunded' => false,
-                    'refunds' => ['data' => [
-                        ['id' => 're_1', 'status' => 'succeeded', 'amount' => 500],
-                    ]],
-                ]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123/reversals')) {
-                return $this->jsonResponse(402, ['error' => ['code' => 'balance_insufficient', 'message' => 'Not enough funds.']]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123')) {
-                return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0, 'reversals' => ['data' => []]]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
 
         $this->assertSame(1, $result['errors']);
         $this->assertSame(1, $this->entryMeta[42]['proudcity_stripe_reversal_pending']);
+    }
+
+    /**
+     * MEDIUM #4: a Transfer only gets reversed if it's bound to THIS
+     * charge, on THIS site's current account. A mismatch aborts rather
+     * than moving money against the wrong transfer.
+     */
+    public function test_sync_reversals_aborts_on_transfer_binding_mismatch(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_123';
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['transfer_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0,
+            'source_transaction' => 'ch_SOMETHING_ELSE', 'destination' => 'acct_city123',
+        ]);
+        $handlers['reversal_create']['response'] = function () {
+            $this->fail('Must never reverse a transfer bound to a different charge.');
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('transfer_binding_mismatch', $result->get_error_code());
+    }
+
+    /**
+     * MEDIUM #6: the TOTAL reversed for this charge is capped at the
+     * proportional share of charge.amount_refunded (Stripe's own running
+     * total), so a single inconsistent-looking refund object can never
+     * push the sum past what's actually been refunded -- idempotent by
+     * sum, not just by refund id.
+     */
+    public function test_sync_reversals_caps_total_reversed_to_proportional_share_of_amount_refunded(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_123';
+
+        $reversalAmounts = [];
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'succeeded', 'captured' => true,
+            'amount' => 2000, 'amount_refunded' => 500, 'refunded' => false,
+        ]);
+        $handlers['refunds_list']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 're_1', 'status' => 'succeeded', 'amount' => 2000],
+        ], 'has_more' => false]);
+        $handlers['reversal_create']['response'] = function ($url, $args) use (&$reversalAmounts) {
+            parse_str($args['body'], $parsed);
+            $reversalAmounts[] = (int) $parsed['amount'];
+            return $this->jsonResponse(200, ['id' => 'trr_1', 'amount' => (int) $parsed['amount']]);
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
+
+        // calculate_reversal_amount(500, 1911, 2000) = 478 -- the proportional
+        // share of what's ACTUALLY been refunded, even though the one refund
+        // object here claims the full 2000.
+        $this->assertSame(478, array_sum($reversalAmounts));
+    }
+
+    /**
+     * LOW #10: a malformed transfer id on the entry (which this code would
+     * otherwise interpolate straight into a Stripe request path) is
+     * refused before any further Stripe call is made.
+     */
+    public function test_sync_reversals_refuses_a_malformed_transfer_id(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        $this->entryMeta[42]['proudcity_stripe_transfer_id'] = 'tr_123; DROP TABLE';
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            if (str_contains($url, 'payment_intents/pi_123')) {
+                return $this->jsonResponse(200, $this->samplePi());
+            }
+            $this->fail('Must not build a Stripe request path from a malformed transfer id.');
+        });
+
+        $result = ProudGravityformsStripe::sync_reversals('pi_123', 'live', 42);
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('invalid_stripe_id', $result->get_error_code());
     }
 
     public function test_handle_payment_action_fail_payment_gives_full_reversal(): void
@@ -710,33 +1022,18 @@ class GravityformsStripeTransfersTest extends TestCase
 
         $reversalAmount = null;
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$reversalAmount) {
-            if (str_contains($url, 'payment_intents/pi_123')) {
-                return $this->jsonResponse(200, $this->samplePi());
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['charge_fetch']['response'] = $this->jsonResponse(200, [
+            'id' => 'ch_123', 'status' => 'failed', 'captured' => false,
+            'amount' => 2000, 'amount_refunded' => 0, 'refunded' => false,
+        ]);
+        $handlers['reversal_create']['response'] = function ($url, $args) use (&$reversalAmount) {
+            parse_str($args['body'], $parsed);
+            $reversalAmount = (int) $parsed['amount'];
+            return $this->jsonResponse(200, ['id' => 'trr_fail', 'amount' => $reversalAmount]);
+        };
 
-            if (str_contains($url, 'charges/ch_123')) {
-                return $this->jsonResponse(200, [
-                    'id' => 'ch_123',
-                    'status' => 'failed',
-                    'amount' => 2000,
-                    'refunded' => false,
-                    'refunds' => ['data' => []],
-                ]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123/reversals')) {
-                parse_str($args['body'], $parsed);
-                $reversalAmount = (int) $parsed['amount'];
-                return $this->jsonResponse(200, ['id' => 'trr_fail', 'amount' => $reversalAmount]);
-            }
-
-            if (str_contains($url, 'transfers/tr_123')) {
-                return $this->jsonResponse(200, ['id' => 'tr_123', 'amount' => 1911, 'amount_reversed' => 0, 'reversals' => ['data' => []]]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         ProudGravityformsStripe::handle_payment_action(
             ['id' => 42, 'transaction_id' => 'pi_123'],
@@ -765,6 +1062,23 @@ class GravityformsStripeTransfersTest extends TestCase
         $this->assertStringNotContainsString('rk_live_SECRETVALUE', $result->get_error_code());
     }
 
+    /**
+     * HIGH #2: Stripe's idempotency conflict sometimes comes back with no
+     * error.code, only error.type -- stripe_request() has to surface that
+     * too, since ensure_transfer() keys its 409 handling off the code.
+     */
+    public function test_stripe_request_falls_back_to_error_type_when_code_is_absent(): void
+    {
+        Functions\when('wp_remote_request')->justReturn($this->jsonResponse(409, [
+            'error' => ['type' => 'idempotency_error', 'message' => 'Keys for idempotent requests can only be used for the same endpoint.'],
+        ]));
+
+        $result = ProudGravityformsStripe::stripe_request('POST', 'transfers', [], 'rk_live_PLATFORM', 'transfer-ch_123');
+
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('idempotency_error', $result->get_error_code());
+    }
+
     public function test_reconcile_transfers_search_query_and_retries(): void
     {
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
@@ -777,23 +1091,16 @@ class GravityformsStripeTransfersTest extends TestCase
         ];
         GfStripeOnBehalfOfStub::$paymentFeed = ['id' => 1, 'meta' => []];
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) use (&$searchQuery) {
-            if (str_contains($url, 'payment_intents/search')) {
-                parse_str(substr($url, strpos($url, '?') + 1), $parsed);
-                $searchQuery = $parsed['query'];
-                return $this->jsonResponse(200, ['data' => [], 'has_more' => false]);
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => function ($url) use (&$searchQuery) {
+            parse_str(substr($url, strpos($url, '?') + 1), $parsed);
+            $searchQuery = $parsed['query'];
+            return $this->jsonResponse(200, ['data' => [], 'has_more' => false]);
+        }];
+        $handlers['pi_fetch'] = ['method' => 'GET', 'contains' => 'payment_intents/pi_555', 'response' => $this->jsonResponse(200, $this->samplePi(['gf_entry_id' => '55']))];
+        $handlers['transfer_create']['response'] = $this->jsonResponse(200, ['id' => 'tr_555', 'amount' => 1911]);
 
-            if (str_contains($url, 'payment_intents/pi_555')) {
-                return $this->jsonResponse(200, $this->samplePi(['gf_entry_id' => '55']));
-            }
-
-            if (str_contains($url, '/transfers') && 'POST' === $args['method']) {
-                return $this->jsonResponse(200, ['id' => 'tr_555', 'amount' => 1911]);
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $counts = ProudGravityformsStripe::reconcile_transfers();
 
@@ -808,31 +1115,175 @@ class GravityformsStripeTransfersTest extends TestCase
     {
         putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
         $this->entryMeta[55]['proudcity_stripe_transfer_status'] = 'failed';
+        GFAPI::$entriesById[55] = ['id' => 55, 'transaction_id' => 'pi_555'];
 
-        Functions\when('wp_remote_request')->alias(function ($url, $args) {
-            if (str_contains($url, 'payment_intents/search')) {
-                return $this->jsonResponse(200, ['data' => [['id' => 'pi_555', 'metadata' => ['gf_entry_id' => '55']]], 'has_more' => false]);
-            }
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => $this->jsonResponse(200, [
+            'data' => [['id' => 'pi_555', 'created' => time() - 700, 'metadata' => ['gf_entry_id' => '55']]],
+            'has_more' => false,
+        ])];
+        $handlers['pi_fetch'] = ['method' => 'GET', 'contains' => 'payment_intents/pi_555', 'response' => $this->jsonResponse(200, $this->samplePi(['gf_entry_id' => '55']))];
+        $handlers['transfer_lookup']['response'] = $this->jsonResponse(200, ['data' => [
+            ['id' => 'tr_already', 'amount' => 1911, 'source_transaction' => 'ch_123'],
+        ], 'has_more' => false]);
+        $handlers['transfer_create']['response'] = function () {
+            $this->fail('A transfer already found by find_existing_transfer() should not be re-created.');
+        };
 
-            if (str_contains($url, 'payment_intents/pi_555')) {
-                return $this->jsonResponse(200, $this->samplePi(['gf_entry_id' => '55']));
-            }
-
-            if (str_contains($url, '/transfers') && 'GET' === $args['method']) {
-                return $this->jsonResponse(200, ['data' => [['id' => 'tr_already', 'amount' => 1911, 'source_transaction' => 'ch_123']], 'has_more' => false]);
-            }
-
-            if (str_contains($url, '/transfers') && 'POST' === $args['method']) {
-                $this->fail('A transfer already found by find_existing_transfer() should not be re-created.');
-            }
-
-            return $this->jsonResponse(404, []);
-        });
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
 
         $counts = ProudGravityformsStripe::reconcile_transfers();
 
         $this->assertSame(1, $counts['skipped']);
         $this->assertSame('tr_already', $this->entryMeta[55]['proudcity_stripe_transfer_id']);
+    }
+
+    /**
+     * LOW #7: a PaymentIntent younger than 10 minutes is left for the
+     * completed-payment hook to transfer first, rather than racing it.
+     */
+    public function test_reconcile_transfers_skips_pis_younger_than_10_minutes(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => $this->jsonResponse(200, [
+            'data' => [['id' => 'pi_fresh', 'created' => time() - 60, 'metadata' => ['gf_entry_id' => 0]]],
+            'has_more' => false,
+        ])];
+        $handlers['transfer_create']['response'] = function () {
+            $this->fail('A PaymentIntent younger than 10 minutes should not be transferred by reconcile yet.');
+        };
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $counts = ProudGravityformsStripe::reconcile_transfers();
+
+        $this->assertSame(0, $counts['transferred']);
+        $this->assertSame(0, $counts['skipped']);
+        $this->assertSame(0, $counts['errors']);
+    }
+
+    /**
+     * LOW #7: every page of the PI search is fetched, following Stripe
+     * search's next_page cursor, not just the first.
+     */
+    public function test_reconcile_transfers_paginates_pi_search(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $pages = 0;
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => function ($url) use (&$pages) {
+            $pages++;
+            parse_str(substr($url, strpos($url, '?') + 1), $parsed);
+            if (empty($parsed['page'])) {
+                return $this->jsonResponse(200, [
+                    'data' => [['id' => 'pi_page1', 'created' => time() - 700, 'metadata' => ['gf_entry_id' => 0]]],
+                    'has_more' => true,
+                    'next_page' => 'cursor-2',
+                ]);
+            }
+            return $this->jsonResponse(200, [
+                'data' => [['id' => 'pi_page2', 'created' => time() - 700, 'metadata' => ['gf_entry_id' => 0]]],
+                'has_more' => false,
+            ]);
+        }];
+        $handlers['pi_fetch'] = ['method' => 'GET', 'contains' => 'payment_intents/pi_page', 'response' => function ($url) {
+            $id = str_contains($url, 'pi_page1') ? 'pi_page1' : 'pi_page2';
+            return $this->jsonResponse(200, array_merge($this->samplePi(), ['id' => $id]));
+        }];
+        $handlers['transfer_create']['response'] = $this->jsonResponse(200, ['id' => 'tr_x', 'amount' => 1911]);
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $counts = ProudGravityformsStripe::reconcile_transfers();
+
+        $this->assertSame(2, $pages);
+        $this->assertSame(2, $counts['transferred']);
+    }
+
+    /**
+     * MEDIUM #4: an entry id read off the PI's own metadata is only trusted
+     * if that entry's OWN transaction_id still points back at this exact
+     * PI -- otherwise it's treated as unknown (0), not bound to the wrong
+     * entry's meta.
+     */
+    public function test_reconcile_transfers_ignores_stale_entry_id_from_pi_metadata(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+        GFAPI::$entriesById[55] = ['id' => 55, 'transaction_id' => 'pi_SOMETHING_ELSE'];
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => $this->jsonResponse(200, [
+            'data' => [['id' => 'pi_123', 'created' => time() - 700, 'metadata' => ['gf_entry_id' => '55']]],
+            'has_more' => false,
+        ])];
+        $handlers['transfer_create']['response'] = $this->jsonResponse(200, ['id' => 'tr_x', 'amount' => 1911]);
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        $counts = ProudGravityformsStripe::reconcile_transfers();
+
+        $this->assertSame(1, $counts['transferred']);
+        $this->assertArrayNotHasKey(55, $this->entryMeta);
+    }
+
+    /**
+     * LOW #7: every page of GF entries is fetched too, not just the first
+     * page_size's worth.
+     */
+    public function test_reconcile_transfers_paginates_failed_entries(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        GFAPI::$entries = [];
+        for ($i = 1; $i <= 101; $i++) {
+            GFAPI::$entries[] = ['id' => $i, 'transaction_id' => 'pi_' . $i];
+            $this->entryMeta[$i]['proudcity_stripe_transfer_status'] = 'failed';
+        }
+
+        $attempts = 0;
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => $this->jsonResponse(200, ['data' => [], 'has_more' => false])];
+        $handlers['pi_fetch'] = ['method' => 'GET', 'contains' => 'payment_intents/pi_', 'response' => function () use (&$attempts) {
+            $attempts++;
+            return $this->jsonResponse(404, ['error' => ['code' => 'resource_missing', 'message' => 'nope']]);
+        }];
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+
+        ProudGravityformsStripe::reconcile_transfers();
+
+        $this->assertSame(101, $attempts);
+    }
+
+    /**
+     * LOW #7: an exception anywhere in the pass is caught rather than left
+     * to break the cron run.
+     */
+    public function test_reconcile_transfers_catches_exceptions(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        $this->entryMeta[77]['proudcity_stripe_transfer_status'] = 'failed';
+        GFAPI::$entries = [
+            ['id' => 77, 'transaction_id' => 'pi_77'],
+        ];
+
+        $handlers = $this->defaultStripeHandlers();
+        $handlers['pi_search'] = ['method' => 'GET', 'contains' => 'payment_intents/search', 'response' => $this->jsonResponse(200, ['data' => [], 'has_more' => false])];
+
+        Functions\when('wp_remote_request')->alias($this->stripeRouter($handlers));
+        Functions\when('gform_get_meta')->alias(function () {
+            throw new \RuntimeException('boom');
+        });
+
+        $counts = ProudGravityformsStripe::reconcile_transfers();
+
+        $this->assertSame(1, $counts['errors']);
     }
 
     public function test_alert_is_throttled_for_24h_per_code_and_charge(): void
@@ -1042,6 +1493,29 @@ class GravityformsStripeTransfersTest extends TestCase
         });
 
         $args = $this->gfRefundArgs('whatever_this_is');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    /**
+     * LOW #10: a malformed charge id in GF's own refund request body (which
+     * this code would otherwise interpolate straight into a Stripe request
+     * path to resolve it to a PaymentIntent) is refused before any Stripe
+     * call is made.
+     */
+    public function test_refund_filter_ignores_malformed_charge_id(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('Must not build a Stripe request path from a malformed charge id.');
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN', ['charge' => 'ch_123/../transfers', 'payment_intent' => null]);
         $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
             $args,
             ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'

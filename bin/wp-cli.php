@@ -385,9 +385,16 @@ class ProudCore_CLI {
 	 * Run the ProudCity Payments separate-charges-and-transfers reconcile pass by hand.
 	 *
 	 * Thin wrapper around ProudGravityformsStripe::reconcile_transfers(), the same pass
-	 * the hourly `proudcity_payments_reconcile` cron runs: transfers any succeeded,
-	 * transfers-marked PaymentIntent from the last 7 days that has none yet, and retries
-	 * every entry recorded with a failed transfer or pending reversal. See wp-proudcity#2955.
+	 * the hourly `proudcity_payments_reconcile` cron runs: searches the last 7 days of
+	 * succeeded, transfers-marked PaymentIntents (skipping anything under 10 minutes old,
+	 * to give the completed-payment hook a chance first) and ensure_transfer()s each one,
+	 * and retries every entry recorded with a failed transfer or pending reversal.
+	 * ensure_transfer() always looks up Stripe for an existing Transfer before ever
+	 * POSTing a new one, fails closed (leaves the entry 'pending', not 'failed') if that
+	 * lookup itself errors, and never retries an entry marked 'invalid' -- a destination
+	 * mismatch, a charge already refunded/disputed, or a non-positive amount are all
+	 * structural, not transient, so they're flagged for a human rather than retried
+	 * forever. See wp-proudcity#2955.
 	 *
 	 * ## EXAMPLES
 	 *

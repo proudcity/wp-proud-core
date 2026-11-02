@@ -61,6 +61,7 @@ if (!class_exists('GFAPI')) {
     class GFAPI
     {
         public static $entries = [];
+        public static $entriesById = [];
 
         public static function get_form($form_id)
         {
@@ -69,7 +70,19 @@ if (!class_exists('GFAPI')) {
 
         public static function get_entries($form_ids = 0, $search_criteria = [], $sorting = null, $paging = null)
         {
-            return self::$entries;
+            if (!is_array($paging)) {
+                return self::$entries;
+            }
+
+            $offset = $paging['offset'] ?? 0;
+            $page_size = $paging['page_size'] ?? count(self::$entries);
+
+            return array_slice(self::$entries, $offset, $page_size);
+        }
+
+        public static function get_entry($entry_id)
+        {
+            return self::$entriesById[$entry_id] ?? new \WP_Error('not_found', 'Entry not found.');
         }
     }
 }
