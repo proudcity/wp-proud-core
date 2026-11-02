@@ -955,7 +955,7 @@ class ProudGravityformsStripe {
 	   gform_update_meta( $entry_id, 'proudcity_stripe_transfer_amount', (string) $existing['amount'] );
 	   gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
 	  }
-	  return $existing;
+	  return array_merge( $existing, [ 'skipped' => true ] );
 	 }
 	}
 
