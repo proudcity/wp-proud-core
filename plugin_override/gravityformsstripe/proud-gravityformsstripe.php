@@ -488,9 +488,11 @@ class ProudGravityformsStripe {
   * never has transfer_data on the PI or the charge, never has
   * application_fee_amount on the charge, and never has charge.transfer set
   * (Stripe only sets that for a destination charge) -- add_transfer_meta()
-  * never sets any of those in transfers mode. on_behalf_of IS expected
-  * (kept in both modes, see add_transfer_meta()), so it's only checked for
-  * equality when present, not required.
+  * never sets any of those in transfers mode. on_behalf_of IS required to
+  * equal this site's current account -- add_transfer_meta() always sets it
+  * in both charge models (see its docblock), so a 'transfers'-marked
+  * charge with no on_behalf_of at all, or the wrong one, is already
+  * inconsistent with how this file ever creates one.
   *
   * Used by both build_transfer_args() and
   * strip_reverse_transfer_for_our_refunds() so a forged/leaked marker gets
@@ -535,7 +537,11 @@ class ProudGravityformsStripe {
 
 	$current_account = self::get_transfer_account();
 
-	if ( ! empty( $charge['on_behalf_of'] ) && $current_account && $charge['on_behalf_of'] !== $current_account ){
+	// on_behalf_of is required, not merely checked when present (NEW-4):
+	// add_transfer_meta() always sets it in both charge models, so a
+	// 'transfers'-marked charge with no on_behalf_of at all is already
+	// inconsistent with how this file ever creates one.
+	if ( '' === (string) $current_account || ( $charge['on_behalf_of'] ?? '' ) !== $current_account ){
 	 return false;
 	}
 
@@ -1153,6 +1159,13 @@ class ProudGravityformsStripe {
 	 return new \WP_Error( 'transfer_amount_not_positive', 'Transfer amount after fee is not positive.' );
 	}
 
+	// Clamped defensively: $available/$amount_refunded only make sense as
+	// proudcity_base_amount/proudcity_base_refunded within [1, amount_captured]
+	// and [0, amount_captured] respectively, and sync_reversals() divides by
+	// the former.
+	$base_amount = max( 1, min( $available, $amount_captured ) );
+	$base_refunded = max( 0, min( $amount_refunded, $amount_captured ) );
+
 	return [
 	 'amount'             => $amount,
 	 'currency'           => (string) ( $charge['currency'] ?? '' ),
@@ -1165,7 +1178,11 @@ class ProudGravityformsStripe {
 	  'proudcity_payment_intent' => $pi_id,
 	  'proudcity_charge'         => (string) ( $charge['id'] ?? '' ),
 	  'proudcity_site'          => self::get_site_tag(),
-	  'proudcity_base_amount'   => (string) $available,
+	  // The amount the transfer is sized on, and what was already refunded
+	  // at THIS moment -- sync_reversals() needs both to reverse by sum
+	  // rather than per refund object (N1, see its own docblock).
+	  'proudcity_base_amount'    => (string) $base_amount,
+	  'proudcity_base_refunded'  => (string) $base_refunded,
 	 ],
 	];
 
@@ -1264,11 +1281,28 @@ class ProudGravityformsStripe {
   * regardless of what build_transfer_args() would now say about the
   * charge's CURRENT state (for example refunded or disputed AFTER the
   * transfer already went out) -- a created transfer is never downgraded to
-  * invalid/failed.
+  * invalid/failed. When build_transfer_args() itself returns
+  * charge_refunded_before_transfer/charge_disputed (NEW-2(b)), the same
+  * find_existing_transfer() lookup runs once more before giving up to
+  * 'invalid' -- a POST that actually succeeded on Stripe's side but whose
+  * response was lost (a transport timeout) looks identical to a
+  * genuinely-too-late refund/dispute otherwise, and this also covers
+  * reconcile's PI-search pass for a PI with no bound entry (NEW-5): found
+  * here, it's 'skipped', never alerted as invalid.
+  *
+  * Whenever an existing or newly-created Transfer is confirmed (the
+  * $existing branches below, and after a fresh POST), sync_reversals() is
+  * called immediately after (NEW-2(a)) -- a refund landing in the gap
+  * between the PI fetch and finding out about the Transfer must not wait
+  * for the next webhook/reconcile pass.
   *
   * Never throws -- every failure is caught by the caller's try/catch and
   * turned into a WP_Error here, since GF has already marked the entry Paid
-  * by the time this runs and a Stripe webhook retry would not help us.
+  * by the time this runs and a Stripe webhook retry would not help us. A
+  * transport failure on the POST itself (http_request_failed -- we don't
+  * know if Stripe ever got it) leaves the entry 'pending', not 'failed'
+  * (NEW-2(c)), so reconcile's retry pass looks it up rather than assuming
+  * it never happened; a genuine Stripe-side rejection still marks 'failed'.
   *
   * @since 2026.11.02
   * @author Curtis
@@ -1341,6 +1375,36 @@ class ProudGravityformsStripe {
 	  return $args;
 	 }
 
+	 // NEW-2(b): a charge that's now refunded/disputed might already have a
+	 // real Transfer -- a POST that succeeded on Stripe's side but whose
+	 // response never reached us (a transport timeout, say) looks exactly
+	 // like this on the next call. Check before marking the entry invalid
+	 // for something that's actually already done.
+	 if ( in_array( $error_code, [ 'charge_refunded_before_transfer', 'charge_disputed' ], true ) && '' !== $charge_id ){
+
+	  $current_account = self::get_transfer_account();
+
+	  if ( $current_account ){
+
+	   $since = (int) ( $pi['latest_charge']['created'] ?? time() ) - 300;
+	   $existing = self::find_existing_transfer( $charge_id, $current_account, $since, $key );
+
+	   if ( $existing && ! is_wp_error( $existing ) ){
+
+	    if ( $entry_id ){
+	     gform_update_meta( $entry_id, 'proudcity_stripe_charge_id', $charge_id );
+	     gform_update_meta( $entry_id, 'proudcity_stripe_transfer_id', $existing['id'] );
+	     gform_update_meta( $entry_id, 'proudcity_stripe_transfer_amount', (string) $existing['amount'] );
+	     gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
+	     gform_update_meta( $entry_id, 'proudcity_stripe_transfer_pending_since', '' );
+	    }
+
+	    self::sync_reversals( $pi_id, $api_mode, $entry_id );
+	    return array_merge( $existing, [ 'skipped' => true ] );
+	   }
+	  }
+	 }
+
 	 if ( $entry_id ){
 	  // Terminal errors (foreign/mismatched/malformed account, forged
 	  // marker, already refunded/disputed, non-positive amount) will never
@@ -1382,6 +1446,10 @@ class ProudGravityformsStripe {
 	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_status', 'created' );
 	  gform_update_meta( $entry_id, 'proudcity_stripe_transfer_pending_since', '' );
 	 }
+	 // NEW-2(a): same as a fresh POST below -- a refund landing in the gap
+	 // before we found out this Transfer already existed must still be
+	 // synced, not left for the next webhook/reconcile pass.
+	 self::sync_reversals( $pi_id, $api_mode, $entry_id );
 	 return array_merge( $existing, [ 'skipped' => true ] );
 	}
 
@@ -1389,12 +1457,25 @@ class ProudGravityformsStripe {
 
 	if ( is_wp_error( $response ) ){
 
-	 if ( in_array( $response->get_error_code(), [ 'idempotency_key_in_use', 'idempotency_error' ], true ) ){
+	 $response_code = $response->get_error_code();
+
+	 if ( in_array( $response_code, [ 'idempotency_key_in_use', 'idempotency_error' ], true ) ){
 	  // A concurrent call (the hook and a reconcile pass, or two reconcile
 	  // runs) is already POSTing this same transfer-<charge id> key.
 	  // Leave the entry 'pending' rather than 'failed' -- the next
 	  // reconcile pass will find the Transfer via find_existing_transfer()
 	  // once the in-flight request finishes.
+	  return $response;
+	 }
+
+	 if ( 'http_request_failed' === $response_code ){
+	  // NEW-2(c): a transport failure (timeout, DNS, TLS) -- we genuinely
+	  // don't know whether Stripe ever received or processed this POST.
+	  // Leave 'pending' (already written above) rather than 'failed', so
+	  // reconcile's retry pass looks it up via find_existing_transfer()
+	  // instead of assuming it never happened. Still alert once, so a
+	  // human knows this needs a look.
+	  self::alert( 'transfer_failed', $response_code . ': ' . $response->get_error_message(), [ 'entry_id' => $entry_id, 'payment_intent' => $pi_id, 'charge' => $charge_id ] );
 	  return $response;
 	 }
 
@@ -1555,20 +1636,23 @@ class ProudGravityformsStripe {
  } // calculate_reversal_amount
 
  /**
-  * Reverses every succeeded, not-yet-reversed refund on a charge against its
-  * Transfer, syncing from Stripe's own state rather than trusting the
-  * inconsistent $action array gform_post_payment_refunded passes (GF's entry
-  * Refund button and the charge.refunded webhook disagree on amount and
+  * Reverses whatever's been refunded on a charge against its Transfer,
+  * syncing from Stripe's own state rather than trusting the inconsistent
+  * $action array gform_post_payment_refunded passes (GF's entry Refund
+  * button and the charge.refunded webhook disagree on amount and
   * transaction_id shape -- see issue notes).
   *
-  * Idempotent by design: a refund already present in some reversal's
-  * metadata.refund_id is skipped, which is what makes it safe for the
-  * webhook to fire twice for one refund and for cumulative dashboard
-  * partials to each land here as their own refund object. A refund that
-  * predates the Transfer (build_transfer_args() already sized it net of
-  * that refund, via proudcity_base_amount) is also skipped -- it was
-  * priced in once, at creation, and must never be reversed a second time
-  * here (N1).
+  * When the Transfer carries proudcity_base_amount/proudcity_base_refunded
+  * (build_transfer_args() writes both), reverses by SUM: the delta between
+  * the charge's current cumulative amount_refunded and what was already
+  * priced into the transfer at creation, proportioned against the amount
+  * the transfer was actually sized on. One reversal POST per distinct
+  * total, idempotent on that total (not on any single refund id) -- see
+  * the inline comment where it's computed for why a per-refund-object
+  * budget split doesn't work once refunds aren't filtered by timing (N1).
+  * Falls back to the per-refund, charge-amount-proportional behaviour
+  * (idempotent via each reversal's own metadata.refund_id) for a transfer
+  * that predates this metadata.
   *
   * @since 2026.11.02
   * @author Curtis
@@ -1652,118 +1736,178 @@ class ProudGravityformsStripe {
 	 return $reversals;
 	}
 
-	$reversed_refund_ids = [];
+	$charge_amount = (int) ( $charge['amount'] ?? 0 );
+	$charge_amount_refunded = (int) ( $charge['amount_refunded'] ?? 0 );
+	$transfer_amount = (int) ( $transfer['amount'] ?? 0 );
+	$amount_reversed = (int) ( $transfer['amount_reversed'] ?? 0 );
+	$charge_fully_refunded = ! empty( $charge['refunded'] );
+	$remaining = max( 0, $transfer_amount - $amount_reversed );
+	$results = [ 'reversed' => 0, 'errors' => 0 ];
 
-	foreach ( $reversals as $reversal ){
-	 $refund_id = $reversal['metadata']['refund_id'] ?? '';
-	 if ( '' !== $refund_id ){
-	  $reversed_refund_ids[] = $refund_id;
+	// NEW-5: a refund still settling (ACH-style delayed refunds) means the
+	// charge's refunded state isn't final yet -- proudcity_stripe_reversal_pending
+	// stays set so this entry stays in reconcile's retry set until it is.
+	$any_refund_pending = false;
+
+	foreach ( $refunds as $refund ){
+	 if ( 'pending' === ( $refund['status'] ?? '' ) ){
+	  $any_refund_pending = true;
+	  break;
 	 }
 	}
 
-	$charge_amount = (int) ( $charge['amount'] ?? 0 );
-	$transfer_amount = (int) ( $transfer['amount'] ?? 0 );
-	$transfer_created = (int) ( $transfer['created'] ?? 0 );
-	$amount_reversed = (int) ( $transfer['amount_reversed'] ?? 0 );
-	$charge_fully_refunded = ! empty( $charge['refunded'] );
-
 	// build_transfer_args() sizes the Transfer on amount_captured minus
-	// WHATEVER was already refunded at that moment (proudcity_base_amount),
-	// so a refund that predates the transfer is already priced in -- it
-	// must never be reversed again here, and the proportional math for
-	// every refund that comes AFTER has to be against that smaller base,
-	// not the charge's full original amount (N1). Falls back to today's
-	// charge-amount-based behaviour when the transfer predates this
-	// metadata key (or was created some other way).
+	// WHATEVER was already refunded at that moment (proudcity_base_amount,
+	// proudcity_base_refunded). N1: reversing by SUM against that snapshot,
+	// rather than per refund object filtered by a created timestamp, is
+	// what makes this correct regardless of timing -- a refund created in
+	// the gap between the PI fetch and the transfer POST is not yet
+	// reflected in proudcity_base_refunded and so is correctly included in
+	// the delta below; a refund that landed the same second as the
+	// transfer (and so IS already reflected in that one snapshot value) is
+	// correctly excluded, with no timestamp comparison needed at all. A
+	// per-refund-object budget split was tried first and rejected: once
+	// the refund list is no longer filtered by timing, a pre-existing
+	// (already priced-in) refund can sort before a genuinely new one, and
+	// a naive per-refund proportional share would hand the whole budget to
+	// the wrong refund. Reversing the SUM in one POST sidesteps that
+	// attribution problem entirely.
 	$base_amount = filter_var( $transfer['metadata']['proudcity_base_amount'] ?? null, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
-	$has_base_amount = false !== $base_amount;
-	$proportional_base = $has_base_amount ? $base_amount : $charge_amount;
+	$base_refunded = filter_var( $transfer['metadata']['proudcity_base_refunded'] ?? null, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 0 ] ] );
+	$has_base_amount = false !== $base_amount && false !== $base_refunded;
 
-	$unreversed = array_values( array_filter( $refunds, function( $refund ) use ( $reversed_refund_ids, $has_base_amount, $transfer_created ) {
-	 if ( 'succeeded' !== ( $refund['status'] ?? '' ) ){
-	  return false;
-	 }
-	 if ( in_array( $refund['id'] ?? '', $reversed_refund_ids, true ) ){
-	  return false;
-	 }
-	 // Already priced into proudcity_base_amount -- not a new refund to
-	 // reverse against the transfer.
-	 if ( $has_base_amount && (int) ( $refund['created'] ?? 0 ) < $transfer_created ){
-	  return false;
-	 }
-	 return true;
-	} ) );
+	if ( $has_base_amount ){
 
-	// Two independent ceilings on every reversal POST below:
-	//  - $remaining: never reverse more than the transfer has left.
-	//  - $budget: with a base amount, the transfer was already sized net of
-	//    every pre-existing refund, so the only ceiling left is $remaining
-	//    itself. Without one (the fallback), never let the TOTAL reversed
-	//    for this charge exceed the proportional share of everything
-	//    refunded on the charge SO FAR (charge.amount_refunded, Stripe's
-	//    own running total) -- idempotent by sum rather than by matching a
-	//    specific refund id (MEDIUM #6).
-	$remaining = $transfer_amount - $amount_reversed;
-	$budget = $has_base_amount
-	 ? $remaining
-	 : max( 0, self::calculate_reversal_amount( (int) ( $charge['amount_refunded'] ?? 0 ), $transfer_amount, $charge_amount, [ 'entry_id' => $entry_id ] ) - $amount_reversed );
-	$count_unreversed = count( $unreversed );
-	$results = [ 'reversed' => 0, 'errors' => 0 ];
-
-	foreach ( $unreversed as $i => $refund ){
-
-	 // The last unreversed refund on a fully-refunded charge takes whatever
-	 // is left on the transfer exactly, so a 1c rounding difference from the
-	 // proportional formula is never stranded on the transfer.
-	 $is_last = $charge_fully_refunded && ( $i === $count_unreversed - 1 );
-
-	 $reversal_amount = $is_last
+	 $budget = $charge_fully_refunded
 	  ? $remaining
-	  : self::calculate_reversal_amount( (int) $refund['amount'], $transfer_amount, $proportional_base, [ 'entry_id' => $entry_id, 'refund_id' => $refund['id'] ] );
+	  : min( $remaining, max( 0, self::calculate_reversal_amount( $charge_amount_refunded - $base_refunded, $transfer_amount, $base_amount, [ 'entry_id' => $entry_id ] ) - $amount_reversed ) );
 
-	 $reversal_amount = min( $reversal_amount, $remaining, $budget );
+	 if ( $budget > 0 ){
 
-	 if ( $reversal_amount <= 0 ){
-	  continue;
-	 }
+	  // Idempotent per the TOTAL amount_refunded this budget was computed
+	  // from, not per refund id -- a reversal already made for this exact
+	  // total (the webhook firing twice for the same refund, or reconcile
+	  // running again with nothing new since) is never repeated, and a
+	  // later refund that raises the total gets its own key.
+	  $already_reversed_for_total = false;
 
-	 $refund_segment = self::validated_stripe_id_segment( (string) ( $refund['id'] ?? '' ) );
-
-	 if ( is_wp_error( $refund_segment ) ){
-	  // Never silent: an unparseable refund id means money that should be
-	  // reversed can't be, so it's flagged for reconcile/a human rather
-	  // than just dropped.
-	  $results['errors']++;
-	  if ( $entry_id ){
-	   gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 1 );
+	  foreach ( $reversals as $reversal ){
+	   if ( (string) ( $reversal['metadata']['charge_amount_refunded'] ?? '' ) === (string) $charge_amount_refunded ){
+	    $already_reversed_for_total = true;
+	    break;
+	   }
 	  }
-	  self::alert( 'reversal_skipped', sprintf( 'Refund id %s is not a valid Stripe id; skipped.', (string) ( $refund['id'] ?? '' ) ), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
-	  continue;
-	 }
 
-	 $response = self::stripe_request( 'POST', 'transfers/' . $transfer_segment . '/reversals', [
-	  'amount'   => $reversal_amount,
-	  'metadata' => [
-	   'refund_id' => $refund['id'],
-	   'entry_id'  => (string) $entry_id,
-	  ],
-	 ], $key, 'reversal-' . $refund['id'] );
+	  if ( ! $already_reversed_for_total ){
 
-	 if ( is_wp_error( $response ) ){
-	  $results['errors']++;
-	  if ( $entry_id ){
-	   gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 1 );
+	   $response = self::stripe_request( 'POST', 'transfers/' . $transfer_segment . '/reversals', [
+	    'amount'   => $budget,
+	    'metadata' => [
+	     'charge_amount_refunded' => (string) $charge_amount_refunded,
+	     'entry_id'               => (string) $entry_id,
+	    ],
+	   ], $key, 'reversal-' . $charge_id . '-' . $charge_amount_refunded );
+
+	   if ( is_wp_error( $response ) ){
+	    $results['errors']++;
+	    if ( $entry_id ){
+	     gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 1 );
+	    }
+	    self::alert( 'reversal_failed', $response->get_error_code() . ': ' . $response->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	   } else {
+	    $amount_reversed += $budget;
+	    $remaining -= $budget;
+	    $results['reversed']++;
+
+	    if ( $entry_id ){
+	     gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments reversed $%s of the transfer.', number_format( $budget / 100, 2 ) ) );
+	    }
+	   }
 	  }
-	  self::alert( 'reversal_failed', $response->get_error_code() . ': ' . $response->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
-	  continue;
 	 }
 
-	 $remaining -= $reversal_amount;
-	 $budget -= $reversal_amount;
-	 $results['reversed']++;
+	} else {
 
-	 if ( $entry_id ){
-	  gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments reversed $%s of the transfer for refund %s.', number_format( $reversal_amount / 100, 2 ), $refund['id'] ) );
+	 // Fallback for a transfer created before proudcity_base_amount
+	 // existed (or some other way): proportional against the charge's full
+	 // original amount, per refund, same as before N1.
+	 $reversed_refund_ids = [];
+
+	 foreach ( $reversals as $reversal ){
+	  $refund_id = $reversal['metadata']['refund_id'] ?? '';
+	  if ( '' !== $refund_id ){
+	   $reversed_refund_ids[] = $refund_id;
+	  }
+	 }
+
+	 $unreversed = array_values( array_filter( $refunds, function( $refund ) use ( $reversed_refund_ids ) {
+	  return 'succeeded' === ( $refund['status'] ?? '' ) && ! in_array( $refund['id'] ?? '', $reversed_refund_ids, true );
+	 } ) );
+
+	 // Two independent ceilings on every reversal POST below: never
+	 // reverse more than the transfer has left ($remaining), and never let
+	 // the TOTAL reversed for this charge exceed the proportional share of
+	 // everything refunded on the charge SO FAR (charge.amount_refunded,
+	 // Stripe's own running total) -- idempotent by sum rather than by
+	 // matching a specific refund id (MEDIUM #6).
+	 $budget = max( 0, self::calculate_reversal_amount( $charge_amount_refunded, $transfer_amount, $charge_amount, [ 'entry_id' => $entry_id ] ) - $amount_reversed );
+	 $count_unreversed = count( $unreversed );
+
+	 foreach ( $unreversed as $i => $refund ){
+
+	  // The last unreversed refund on a fully-refunded charge takes
+	  // whatever is left on the transfer exactly, so a 1c rounding
+	  // difference from the proportional formula is never stranded.
+	  $is_last = $charge_fully_refunded && ( $i === $count_unreversed - 1 );
+
+	  $reversal_amount = $is_last
+	   ? $remaining
+	   : self::calculate_reversal_amount( (int) $refund['amount'], $transfer_amount, $charge_amount, [ 'entry_id' => $entry_id, 'refund_id' => $refund['id'] ] );
+
+	  $reversal_amount = min( $reversal_amount, $remaining, $budget );
+
+	  if ( $reversal_amount <= 0 ){
+	   continue;
+	  }
+
+	  $refund_segment = self::validated_stripe_id_segment( (string) ( $refund['id'] ?? '' ) );
+
+	  if ( is_wp_error( $refund_segment ) ){
+	   // Never silent: an unparseable refund id means money that should be
+	   // reversed can't be, so it's flagged for reconcile/a human rather
+	   // than just dropped.
+	   $results['errors']++;
+	   if ( $entry_id ){
+	    gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 1 );
+	   }
+	   self::alert( 'reversal_skipped', sprintf( 'Refund id %s is not a valid Stripe id; skipped.', (string) ( $refund['id'] ?? '' ) ), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	   continue;
+	  }
+
+	  $response = self::stripe_request( 'POST', 'transfers/' . $transfer_segment . '/reversals', [
+	   'amount'   => $reversal_amount,
+	   'metadata' => [
+	    'refund_id' => $refund['id'],
+	    'entry_id'  => (string) $entry_id,
+	   ],
+	  ], $key, 'reversal-' . $refund['id'] );
+
+	  if ( is_wp_error( $response ) ){
+	   $results['errors']++;
+	   if ( $entry_id ){
+	    gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 1 );
+	   }
+	   self::alert( 'reversal_failed', $response->get_error_code() . ': ' . $response->get_error_message(), [ 'entry_id' => $entry_id, 'charge' => $charge_id ] );
+	   continue;
+	  }
+
+	  $remaining -= $reversal_amount;
+	  $budget -= $reversal_amount;
+	  $results['reversed']++;
+
+	  if ( $entry_id ){
+	   gf_stripe()->add_note( $entry_id, sprintf( 'ProudCity Payments reversed $%s of the transfer for refund %s.', number_format( $reversal_amount / 100, 2 ), $refund['id'] ) );
+	  }
 	 }
 	}
 
@@ -1791,7 +1935,7 @@ class ProudGravityformsStripe {
 	 }
 	}
 
-	if ( 0 === $results['errors'] && $entry_id ){
+	if ( 0 === $results['errors'] && ! $any_refund_pending && $entry_id ){
 	 gform_update_meta( $entry_id, 'proudcity_stripe_reversal_pending', 0 );
 	}
 
