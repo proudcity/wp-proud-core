@@ -380,6 +380,91 @@ class ProudCore_CLI {
 
 		return true;
 	}
+
+	/**
+	 * Run the ProudCity Payments separate-charges-and-transfers reconcile pass by hand.
+	 *
+	 * Thin wrapper around ProudGravityformsStripe::reconcile_transfers(), the same pass
+	 * the hourly `proudcity_payments_reconcile` cron runs: transfers any succeeded,
+	 * transfers-marked PaymentIntent from the last 7 days that has none yet, and retries
+	 * every entry recorded with a failed transfer or pending reversal. See wp-proudcity#2955.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp proud payments_reconcile
+	 *
+	 * @subcommand payments_reconcile
+	 * @when after_wp_load
+	 *
+	 * @param array<int,string> $args       Positional arguments (unused).
+	 * @param array<string,bool> $assoc_args Flag arguments (unused).
+	 */
+	public function payments_reconcile( array $args, array $assoc_args ): void {
+
+		$counts = \Proud\GravityformsStripe\ProudGravityformsStripe::reconcile_transfers();
+
+		WP_CLI::success( sprintf(
+			'Transferred %d, retried %d, skipped %d, errors %d.',
+			$counts['transferred'] ?? 0,
+			$counts['retried'] ?? 0,
+			$counts['skipped'] ?? 0,
+			$counts['errors'] ?? 0
+		) );
+	}
+
+	/**
+	 * Manually (re)create the separate-charges-and-transfers Transfer for a single entry.
+	 *
+	 * Wraps ProudGravityformsStripe::ensure_transfer(), resolving the entry's PaymentIntent
+	 * id and Stripe API mode the same way handle_payment_completed() does. Safe to run on
+	 * an entry that already has a transfer -- it is a no-op in that case. See wp-proudcity#2955.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <entry_id>
+	 * : The Gravity Forms entry ID to transfer.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp proud payments_transfer 123
+	 *
+	 * @subcommand payments_transfer
+	 * @when after_wp_load
+	 *
+	 * @param array<int,string> $args       Positional arguments: entry ID.
+	 * @param array<string,bool> $assoc_args Flag arguments (unused).
+	 */
+	public function payments_transfer( array $args, array $assoc_args ): void {
+
+		$entry_id = absint( $args[0] ?? 0 );
+
+		if ( ! $entry_id ) {
+			WP_CLI::error( 'Usage: wp proud payments_transfer <entry_id>' );
+		}
+
+		$entry = \GFAPI::get_entry( $entry_id );
+
+		if ( is_wp_error( $entry ) ) {
+			WP_CLI::error( sprintf( 'Entry #%d not found: %s', $entry_id, $entry->get_error_message() ) );
+		}
+
+		$transaction_id = (string) ( $entry['transaction_id'] ?? '' );
+
+		if ( ! str_starts_with( $transaction_id, 'pi_' ) ) {
+			WP_CLI::error( sprintf( 'Entry #%d has no PaymentIntent transaction id (%s).', $entry_id, $transaction_id ) );
+		}
+
+		$feed     = gf_stripe()->get_payment_feed( $entry );
+		$api_mode = $feed ? \Proud\GravityformsStripe\ProudGravityformsStripe::get_api_mode_for_feed( $feed ) : 'live';
+
+		$result = \Proud\GravityformsStripe\ProudGravityformsStripe::ensure_transfer( $transaction_id, $api_mode, $entry_id );
+
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
+		}
+
+		WP_CLI::success( sprintf( 'Transfer %s for entry #%d.', $result['id'] ?? 'unknown', $entry_id ) );
+	}
 }
 
 WP_CLI::add_command( 'proud', ProudCore_CLI::class );

@@ -7,24 +7,69 @@ use Proud\GravityformsStripe\ProudGravityformsStripe;
 
 /**
  * Stand-in for the GFStripe add-on instance returned by gf_stripe().
+ *
+ * Also the shared double for the transfers code (#2955, see
+ * GravityformsStripeTransfersTest): get_api_mode_for_feed(),
+ * handle_payment_completed() and friends all call these same methods on
+ * gf_stripe(), and the class_exists()/function_exists() guards mean only one
+ * test file in the suite gets to define GfStripeOnBehalfOfStub/GFAPI, so the
+ * methods those tests need live here too rather than being duplicated.
  */
 class GfStripeOnBehalfOfStub
 {
     public static $paymentElementEnabled = true;
+    public static $feedConnectEnabled = false;
+    public static $apiMode = 'live';
+    public static $pluginSettings = [];
+    public static $paymentFeed = null;
+    public static $notes = [];
 
     public function is_payment_element_enabled($form)
     {
         return self::$paymentElementEnabled;
     }
+
+    public function is_feed_stripe_connect_enabled($feed_id = null)
+    {
+        return self::$feedConnectEnabled;
+    }
+
+    public function get_api_mode($settings, $feed_id = null)
+    {
+        return self::$apiMode;
+    }
+
+    public function get_plugin_settings()
+    {
+        return self::$pluginSettings;
+    }
+
+    public function get_payment_feed($entry, $form = false)
+    {
+        return self::$paymentFeed;
+    }
+
+    public function add_note($entry_id, $note, $sub_type = null)
+    {
+        self::$notes[] = ['entry_id' => $entry_id, 'note' => $note];
+    }
 }
 
 // add_transfer_meta() reads the form title for transfer_group.
+// get_entries() is the reconcile cron's retry pass (#2955).
 if (!class_exists('GFAPI')) {
     class GFAPI
     {
+        public static $entries = [];
+
         public static function get_form($form_id)
         {
             return ['id' => $form_id, 'title' => 'Test Form'];
+        }
+
+        public static function get_entries($form_ids = 0, $search_criteria = [], $sorting = null, $paging = null)
+        {
+            return self::$entries;
         }
     }
 }

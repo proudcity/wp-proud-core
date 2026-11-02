@@ -255,11 +255,61 @@ namespace {
         }
     }
 
+    // Standard WP time constants. Real WordPress defines these in
+    // wp-includes/default-constants.php; no full WP load happens here, so
+    // the GravityformsStripeTransfersTest alert()/reconcile throttling
+    // (issue #2955) needs them defined directly.
+    if (!defined('DAY_IN_SECONDS')) {
+        define('DAY_IN_SECONDS', 60 * 60 * 24);
+    }
+
     // WP_Query stub so plugin files can be loaded without a real DB.
     if (!class_exists('WP_Query')) {
         class WP_Query {
             public array $posts = [];
             public function __construct(array $args = []) {}
+        }
+    }
+
+    // Faithful enough WP_Error: single-code-at-a-time construction and
+    // retrieval are all ProudGravityformsStripe's Stripe HTTP layer (#2955)
+    // needs. is_wp_error() is the real core one-liner, not a passthrough --
+    // Functions\when('is_wp_error') still overrides it per test the same way
+    // it overrides any other function here.
+    if (!class_exists('WP_Error')) {
+        class WP_Error {
+            public $errors = [];
+            public $error_data = [];
+            public function __construct($code = '', $message = '', $data = '') {
+                if (empty($code)) {
+                    return;
+                }
+                $this->errors[$code][] = $message;
+                if (!empty($data)) {
+                    $this->error_data[$code] = $data;
+                }
+            }
+            public function get_error_code() {
+                $codes = array_keys($this->errors);
+                return $codes ? $codes[0] : '';
+            }
+            public function get_error_message($code = '') {
+                if (empty($code)) {
+                    $code = $this->get_error_code();
+                }
+                return isset($this->errors[$code][0]) ? $this->errors[$code][0] : '';
+            }
+            public function get_error_data($code = '') {
+                if (empty($code)) {
+                    $code = $this->get_error_code();
+                }
+                return $this->error_data[$code] ?? null;
+            }
+        }
+    }
+    if (!function_exists('is_wp_error')) {
+        function is_wp_error($thing) {
+            return $thing instanceof WP_Error;
         }
     }
 }
