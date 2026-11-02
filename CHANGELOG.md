@@ -1,3 +1,11 @@
+## 2026.11.02.1252
+
+- **Fixed Events Manager iCal feeds running out of memory and returning 500s** (wp-proudcity#3008). Events Manager's `?ical=1` handler (`em_ical_item()`) starts its query with `'scope' => 'all'`, so feeds from the events page, a location or a category ignored the site's "iCal Scope" setting and exported every event ever published. The template pages 50 events at a time, but every loaded event stays in memory: holyokema has 3,580 published events back to 2015, the feed grew memory by ~132MB, and 34 of 39 feed requests a day died at the 128M limit in the object-cache drop-in. carnationwa and miamisburgoh hit it occasionally.
+- New module `modules/events-manager-ical-scope.php` filters `em_calendar_template_args` and replaces an `'all'` scope on iCal requests with the last 12 months plus everything upcoming. Subscribed calendars drop events that leave the feed, so a year of history keeps recent past events visible. Measured on holyokema's prod data with the real template under 128M: before, the same fatal as in Cloud Logging; after, 496 events, peak 60.8MB. Single-event downloads (the "Add to calendar" link) and any scope a site has set itself are unchanged.
+- Added `tests/EventsManagerIcalScopeTest.php` (5 tests). Suite 444 tests / 725 assertions.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3008
+
 ## 2026.10.28.1351
 
 - **Fixed document list Download buttons saving an HTML page as a "corrupt" PDF on FileToWeb sites** (wp-proudcity#2970). `TeaserList::print_content()` read the `document` post meta with a plain `get_post_meta()`, and FileToWeb's `Link_Rewriter::filter_document_meta()` replaces that meta with its HTML preview URL on public pages. The teaser templates (`teaser-document-list.php`, `teaser-document-mini.php`) put that URL in the Download button's `href` alongside `download="<file>.pdf"`, so browsers saved the preview page under the PDF's name. The teaser now reads the URL through `proud_document_original_url()`, which raises the resolving-source flag FileToWeb honours (since 0.1.54), the same fix the Embed Document widget got in #2917. Title links still go to the Document page.
