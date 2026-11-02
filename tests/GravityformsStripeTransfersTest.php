@@ -454,7 +454,10 @@ class GravityformsStripeTransfersTest extends TestCase
         $this->assertInstanceOf(\WP_Error::class, $notCaptured);
         $this->assertSame('charge_not_captured', $notCaptured->get_error_code());
 
-        $notPositive = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '5000'], ['amount_captured' => 2000]));
+        // Fee is always recomputed from the charge, never metadata, so a
+        // non-positive amount has to come from a genuinely tiny charge --
+        // calculate_fee(20) (31) exceeds the 20 cent amount_captured itself.
+        $notPositive = ProudGravityformsStripe::build_transfer_args($this->samplePi([], ['amount_captured' => 20]));
         $this->assertInstanceOf(\WP_Error::class, $notPositive);
         $this->assertSame('transfer_amount_not_positive', $notPositive->get_error_code());
     }
@@ -491,11 +494,18 @@ class GravityformsStripeTransfersTest extends TestCase
     }
 
     /**
-     * HIGH #1: a metadata fee lower than what calculate_fee() recomputes
-     * from the charge is never trusted -- it can only ever raise the fee,
-     * never lower ProudCity's share below the current formula.
+     * HIGH #1: metadata['proudcity_fee'] is never used for the money math
+     * in either direction -- only calculate_fee() recomputed from the
+     * charge decides the fee. A max(metadata, recomputed) was tried first,
+     * but GF's nopriv gfstripe_update_payment_intent AJAX action can
+     * legitimately lower the PaymentIntent's amount after
+     * add_transfer_meta() wrote that metadata (a quantity change on the
+     * form), which would leave a stale, too-large metadata fee and win a
+     * max() against the correctly recomputed, smaller fee -- underpaying
+     * the city. A metadata fee SMALLER than the recomputed value is
+     * likewise ignored, never trusted to reduce ProudCity's share.
      */
-    public function test_build_transfer_args_fee_never_goes_below_recomputed(): void
+    public function test_build_transfer_args_ignores_metadata_fee_smaller_than_recomputed(): void
     {
         $args = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '1']));
 
@@ -505,16 +515,14 @@ class GravityformsStripeTransfersTest extends TestCase
     }
 
     /**
-     * A metadata fee HIGHER than the recomputed value is honoured --
-     * max(), not the recomputed value outright -- so a legitimate fee set
-     * at creation time under a different PROUDCITY_PAYMENTS_PERCENT isn't
-     * clawed back down just because the env changed later.
+     * A metadata fee LARGER than the recomputed value is also ignored --
+     * recomputed, not metadata, decides the fee either way.
      */
-    public function test_build_transfer_args_fee_metadata_can_raise_above_recomputed(): void
+    public function test_build_transfer_args_ignores_metadata_fee_larger_than_recomputed(): void
     {
         $args = ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '500']));
 
-        $this->assertSame(1500, $args['amount']);
+        $this->assertSame(1911, $args['amount']);
     }
 
     /**
@@ -532,6 +540,25 @@ class GravityformsStripeTransfersTest extends TestCase
     }
 
     /**
+     * A metadata fee that differs from the recomputed value is logged
+     * (non-ALERT, for reporting/reconciliation) but never changes the
+     * money math.
+     */
+    public function test_build_transfer_args_logs_a_fee_metadata_mismatch(): void
+    {
+        $logged = [];
+        Functions\when('error_log')->alias(function ($line) use (&$logged) {
+            $logged[] = $line;
+        });
+
+        ProudGravityformsStripe::build_transfer_args($this->samplePi(['proudcity_fee' => '500']));
+
+        $this->assertCount(1, $logged);
+        $this->assertStringStartsWith('[proudcity-payments] fee_metadata_mismatch', $logged[0]);
+        $this->assertStringNotContainsString('ALERT', $logged[0]);
+    }
+
+    /**
      * MEDIUM #3: a partial refund issued before the transfer was ever
      * created lowers the base the fee is recomputed from, so both sides
      * get their proportional share of what's actually left rather than a
@@ -541,9 +568,9 @@ class GravityformsStripeTransfersTest extends TestCase
     {
         $args = ProudGravityformsStripe::build_transfer_args($this->samplePi([], ['amount_refunded' => 500]));
 
-        // available = 2000 - 500 = 1500; calculate_fee(1500) = 74, but the
-        // stale metadata fee of 89 is still higher, so max() keeps 89.
-        $this->assertSame(1411, $args['amount']);
+        // available = 2000 - 500 = 1500; calculate_fee(1500) = 74, used
+        // outright regardless of the stale metadata fee of 89.
+        $this->assertSame(1426, $args['amount']);
     }
 
     public function test_ensure_transfer_sends_idempotency_key_and_our_own_key(): void

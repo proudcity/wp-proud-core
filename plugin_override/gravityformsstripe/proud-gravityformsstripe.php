@@ -986,15 +986,29 @@ class ProudGravityformsStripe {
 	// rather than the fee being a flat amount sized for the original total.
 	$available = $amount_captured - $amount_refunded;
 
-	$fee_recomputed = self::calculate_fee( $available );
+	// The fee is ALWAYS recomputed from the charge, with the currently
+	// configured percent -- metadata['proudcity_fee'] is never used for the
+	// money math, in either direction. A max(metadata, recomputed) was
+	// tried first, but GF's nopriv gfstripe_update_payment_intent AJAX
+	// action can legitimately lower the PaymentIntent's amount after
+	// add_transfer_meta() wrote that metadata (a quantity change on the
+	// form), which would leave a stale, now-too-large metadata fee and
+	// underpay the city if it ever won a max() against the correctly
+	// recomputed, smaller fee. Metadata is still written on the PI (see
+	// add_transfer_meta()) for reporting/reconciliation, just never trusted
+	// here.
+	$fee = self::calculate_fee( $available );
+
 	$fee_metadata = filter_var( $metadata['proudcity_fee'] ?? null, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 0 ] ] );
 
-	// A valid metadata fee can only push the fee UP from the recomputed
-	// value, never down -- the metadata value came from the PI as GF last
-	// saved it, which is not guaranteed to still be what add_transfer_meta()
-	// wrote (see the class docblock), so it can never be trusted to reduce
-	// ProudCity's share below what the current formula would take.
-	$fee = false !== $fee_metadata ? max( $fee_metadata, $fee_recomputed ) : $fee_recomputed;
+	if ( false !== $fee_metadata && $fee_metadata !== $fee ){
+	 error_log( sprintf(
+	  '[proudcity-payments] fee_metadata_mismatch payment_intent=%s metadata_fee=%d recomputed_fee=%d',
+	  (string) ( $pi['id'] ?? '' ),
+	  $fee_metadata,
+	  $fee
+	 ) );
+	}
 
 	$amount = min( $available - $fee, $amount_captured - $fee );
 
