@@ -62,6 +62,7 @@ if (!class_exists('GFAPI')) {
     {
         public static $entries = [];
         public static $entriesById = [];
+        public static $entriesByTransactionId = [];
 
         public static function get_form($form_id)
         {
@@ -70,6 +71,17 @@ if (!class_exists('GFAPI')) {
 
         public static function get_entries($form_ids = 0, $search_criteria = [], $sorting = null, $paging = null)
         {
+            $filters = $search_criteria['field_filters'] ?? [];
+
+            // reconcile_transfers()'s transaction_id-lookup fallback (a single,
+            // non-OR filter) is matched against its own fixture map so it
+            // doesn't collide with the status-based OR query used by the
+            // retry pass, which both read from this same stub.
+            if (!isset($filters['mode']) && 1 === count($filters) && 'transaction_id' === ($filters[0]['key'] ?? null)) {
+                $match = self::$entriesByTransactionId[$filters[0]['value']] ?? null;
+                return $match ? [$match] : [];
+            }
+
             if (!is_array($paging)) {
                 return self::$entries;
             }
