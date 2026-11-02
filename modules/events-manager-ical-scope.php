@@ -23,12 +23,21 @@
  * and are left alone. A scope other than 'all' is the site's own choice and is
  * also left alone.
  *
+ * The scope alone isn't enough for busy sites. The memory is held by the object
+ * cache's in-process copy of every post, meta row and location the feed touches,
+ * not by the events themselves. santaanaca has 1,711 events in the 12-month
+ * window and still ran out of memory. So on iCal requests we also clear the
+ * runtime cache after each page of events (em_events_get fires once per page).
+ * That only drops the in-memory copy; Redis is untouched. Memory stays flat
+ * across santaanaca's full 2,926 events.
+ *
  * Tracked in wp-proudcity#3008.
  *
  * @since 2026.11.02
  */
 
 add_filter( 'em_calendar_template_args', 'proudcity_em_bound_ical_feed_scope' );
+add_filter( 'em_events_get', 'proudcity_em_flush_runtime_cache_between_ical_pages' );
 
 /**
  * Replace the iCal feed's 'all' scope with "12 months ago, through 10 years ahead".
@@ -60,4 +69,22 @@ function proudcity_em_bound_ical_feed_scope( $args, $now = null ) {
 		. wp_date( 'Y-m-d', strtotime( '+10 years', $now ) );
 
 	return $args;
+}
+
+/**
+ * Clear the in-process object cache after each page of iCal events.
+ *
+ * The events on the current page are already built when em_events_get fires, so
+ * clearing here only drops cached copies of rows from earlier pages and the ones
+ * just loaded. Anything the template reads again comes back from Redis.
+ *
+ * @param array $events Events Manager events for the current page.
+ * @return array The same events, unchanged.
+ */
+function proudcity_em_flush_runtime_cache_between_ical_pages( $events ) {
+	if ( get_query_var( 'ical' ) && function_exists( 'wp_cache_flush_runtime' ) ) {
+		wp_cache_flush_runtime();
+	}
+
+	return $events;
 }
