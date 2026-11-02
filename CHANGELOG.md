@@ -1,3 +1,14 @@
+## 2026.11.02.2300
+
+- **Third round of security/correctness hardening for the SC&T transfer/reversal code** (wp-proudcity#2955):
+  - **NEW-1 (MEDIUM, money):** the previous round's created-timestamp filter in `sync_reversals()` could drop a refund made in the gap between the PI fetch and the transfer POST (never reversed), or double-reverse a same-second refund. Removed entirely. `build_transfer_args()` now writes both `proudcity_base_amount` AND `proudcity_base_refunded` (the charge's `amount_refunded` at that same moment) onto the Transfer's own metadata, clamped to sane bounds. `sync_reversals()` now reverses by SUM: the delta between the charge's current cumulative `amount_refunded` and `proudcity_base_refunded`, proportioned against `proudcity_base_amount`, in one POST per distinct total (idempotent on that total via a new `metadata.charge_amount_refunded`, not on any single refund id) -- a per-refund budget split was tried and rejected, since once refunds aren't filtered by timing, an already-priced-in refund can sort before a genuinely new one and wrongly consume the whole budget. Falls back to the prior per-refund, charge-amount-proportional behaviour for a transfer that predates this metadata.
+  - **NEW-2 (MEDIUM):** covers a Transfer that exists on Stripe but isn't recorded on the entry (e.g. the POST's response was lost to a transport timeout after Stripe had already created it). (a) `ensure_transfer()`'s "transfer already exists" branches now call `sync_reversals()` immediately, same as a fresh POST. (b) Before marking an entry `invalid` for `charge_refunded_before_transfer`/`charge_disputed`, `ensure_transfer()` now runs `find_existing_transfer()` once more; if found, it's stored as `created` and synced instead. (c) A transport failure on the POST itself (`http_request_failed`) now leaves the entry `pending`, not `failed` -- we don't know if Stripe ever received it -- while still alerting once.
+  - **NEW-4 (LOW):** `pi_structurally_ours()` now *requires* `charge.on_behalf_of === get_transfer_account()` rather than only checking it when present.
+  - **NEW-5 (LOW):** both already fell out of NEW-1/NEW-2's fixes -- reconcile's PI-search pass (entry_id 0) now finds an existing Transfer for a refunded/disputed PI via the same NEW-2(b) lookup rather than alerting `transfer_invalid`; `sync_reversals()` never clears `proudcity_stripe_reversal_pending` while any refund on the charge is still `pending` (ACH-style settlement).
+  - Added/rewrote tests in `tests/GravityformsStripeTransfersTest.php` for all of the above. Suite 550 tests / 983 assertions.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2955
+
 ## 2026.11.02.2100
 
 - **Second round of security hardening for the SC&T transfer/reversal code** (wp-proudcity#2955):
