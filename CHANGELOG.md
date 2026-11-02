@@ -1,3 +1,11 @@
+## 2026.11.02.1304
+
+- **Fixed iCal feeds still running out of memory on sites with many upcoming events** (wp-proudcity#3008, follow-up to 2026.11.02.1252). Bounding the feed to the last 12 months wasn't enough for santaanaca: it has 742 upcoming events and 1,641 in the window, and the feed still hit the 128M limit. The memory isn't held by the events. It's the object cache's in-process copy of every post, meta row and location the feed reads, which lives for the whole request (~107MB for santaanaca).
+- `modules/events-manager-ical-scope.php` now also hooks `em_events_get` (fires once per 50-event page) and calls `wp_cache_flush_runtime()` on iCal requests. That drops only the in-memory copy; Redis is untouched. Measured with the real template on prod data under 128M: santaanaca 1,641 events, peak 47.1MB; holyokema 496 events, peak 39.7MB. Both feeds complete (`END:VCALENDAR`).
+- 2 more tests in `tests/EventsManagerIcalScopeTest.php` (flush on iCal requests only, events returned unchanged). Suite 446 tests / 727 assertions.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3008
+
 ## 2026.11.02.1252
 
 - **Fixed Events Manager iCal feeds running out of memory and returning 500s** (wp-proudcity#3008). Events Manager's `?ical=1` handler (`em_ical_item()`) starts its query with `'scope' => 'all'`, so feeds from the events page, a location or a category ignored the site's "iCal Scope" setting and exported every event ever published. The template pages 50 events at a time, but every loaded event stays in memory: holyokema has 3,580 published events back to 2015, the feed grew memory by ~132MB, and 34 of 39 feed requests a day died at the 128M limit in the object-cache drop-in. carnationwa and miamisburgoh hit it occasionally.

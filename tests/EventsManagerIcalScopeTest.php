@@ -94,4 +94,21 @@ class EventsManagerIcalScopeTest extends TestCase
 
         $this->assertArrayNotHasKey('scope', $args);
     }
+    public function test_runtime_cache_is_flushed_after_each_ical_page(): void
+    {
+        $this->ical_request(true);
+        Functions\expect('wp_cache_flush_runtime')->once();
+
+        $events = ['a', 'b'];
+        $this->assertSame($events, proudcity_em_flush_runtime_cache_between_ical_pages($events));
+    }
+
+    public function test_runtime_cache_is_left_alone_outside_ical(): void
+    {
+        $this->ical_request(false);
+        Functions\expect('wp_cache_flush_runtime')->never();
+
+        $events = ['a'];
+        $this->assertSame($events, proudcity_em_flush_runtime_cache_between_ical_pages($events));
+    }
 }
