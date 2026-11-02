@@ -1,3 +1,11 @@
+## 2026.11.02.1700
+
+- **Fixed GF's own Refund button failing on SC&T charges** (wp-proudcity#2955). GF Stripe's `create_refund()` (`gravityformsstripe/includes/api/class-gf-stripe-api.php`) always POSTs `/v1/refunds` with `reverse_transfer=true` and `refund_application_fee=true`, with no filter of its own. On a #2955 transfers-model charge, that request now has no associated transfer on GF's own Stripe account (the Transfer was created afterwards with our key, not theirs), and Stripe rejects it: "Cannot reverse transfer on charge ch_... because it does not have an associated transfer."
+- New `strip_reverse_transfer_for_our_refunds()`, hooked on WP core's `http_request_args` filter, strips both flags from that one request -- and only that request, for a charge we marked ourselves. It reads the Stripe API mode from the prefix of whatever key GF signed the request with, checks our transfer key for that mode, resolves a `charge` id to its PaymentIntent when needed, and checks the PI's own `proudcity_charge_model` metadata before touching anything. Any charge without our marker, or any site with no transfer key configured, is untouched -- GF's flags go out exactly as they do today. Never throws into the HTTP request: any Stripe error leaves `$args` unchanged.
+- Added 10 tests to `tests/GravityformsStripeTransfersTest.php` covering the array- and string-body cases, charge-to-PaymentIntent resolution, the untouched/destination-model and no-transfer-key no-ops, non-refund URLs, GET requests, and the Stripe-error fallback. Suite 495 tests / 855 assertions.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2955
+
 ## 2026.11.02.1500
 
 - **Added separate-charges-and-transfers support for GF Stripe Connect** (wp-proudcity#2955). GF Stripe 7.0's "Connect with Stripe" signs every request with GF's own OAuth token, which made Rye Brook's destination charges fail outright (platform rejects destination charges from an app it doesn't own) -- #2951 shipped an interim fix that swaps in our platform secret at settings-read time. A 2026-11-02 test-mode spike confirmed separate charges and transfers (SC&T) works under Connect with no workaround: keep `on_behalf_of` so the city stays first on the statement, drop `transfer_data`/`application_fee_amount`, and create the Transfer afterwards with our own platform restricted key.

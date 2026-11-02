@@ -28,6 +28,16 @@ class ProudGravityformsStripe {
  private static $stash_active = false;
 
  /**
+  * Reentrance guard for strip_reverse_transfer_for_our_refunds(): that
+  * filter runs on every single wp_remote_request() site-wide (not only
+  * Stripe's), and its own PI/charge lookups go through wp_remote_request()
+  * too, so this stops it ever evaluating its own inner requests.
+  *
+  * @since 2026.11.02
+  */
+ private static $in_refund_filter = false;
+
+ /**
   * Stripe API version every wp_remote_request() call in this file pins via
   * the Stripe-Version header, matching the webhook endpoint GF Stripe
   * recreated for #2339/#2849, so the transfer/reversal code and the webhook
@@ -79,6 +89,13 @@ class ProudGravityformsStripe {
 
   add_action( 'init', [ $this, 'maybe_schedule_reconcile' ] );
   add_action( 'proudcity_payments_reconcile', [ $this, 'reconcile_transfers' ] );
+
+  // GF's own Refund button always sends reverse_transfer+refund_application_fee
+  // (gravityformsstripe/includes/api/class-gf-stripe-api.php create_refund()),
+  // which Stripe rejects on an SC&T charge that has no associated transfer on
+  // GF's own account. GF has no filter on that request, so this strips both
+  // flags at the WP_Http layer instead, only for charges we marked ourselves.
+  add_filter( 'http_request_args', [ $this, 'strip_reverse_transfer_for_our_refunds' ], 10, 2 );
 
   // add_filter('gform_stripe_create_customer', [$this, 'gform_stripe_create_customer'], 10, 1);
   // add_filter('gform_stripe_create_plan', [$this, 'gform_stripe_create_plan'], 10, 1);
@@ -1285,6 +1302,175 @@ class ProudGravityformsStripe {
 	}
 
  } // handle_payment_refunded
+
+ /**
+  * Reads the key out of a request's Basic Authorization header, as GF
+  * Stripe and stripe_request() both build it: "Basic base64(key:)".
+  *
+  * @since 2026.11.02
+  * @author Curtis
+  *
+  * @param  array  $args  required  The http_request_args filter's $args.
+  * @return string  The key, or '' if the header isn't Basic auth.
+  */
+ private static function key_from_basic_auth_header( array $args ): string {
+
+	$header = $args['headers']['Authorization'] ?? '';
+
+	if ( ! is_string( $header ) || ! str_starts_with( $header, 'Basic ' ) ){
+	 return '';
+	}
+
+	$decoded = base64_decode( substr( $header, 6 ), true );
+
+	if ( false === $decoded ){
+	 return '';
+	}
+
+	$key = strstr( $decoded, ':', true );
+
+	return false === $key ? $decoded : $key;
+
+ } // key_from_basic_auth_header
+
+ /**
+  * The Stripe API mode implied by a key's own prefix -- GF signs its
+  * refund request with whatever key is active for the feed, so this is how
+  * strip_reverse_transfer_for_our_refunds() finds the matching transfer key
+  * without needing the feed at all.
+  *
+  * @since 2026.11.02
+  * @author Curtis
+  *
+  * @param  string  $key  required  A Stripe secret or restricted key.
+  * @return string  'live', 'test', or '' when the prefix isn't recognised.
+  */
+ private static function api_mode_from_key_prefix( string $key ): string {
+
+	if ( str_starts_with( $key, 'sk_live_' ) || str_starts_with( $key, 'rk_live_' ) ){
+	 return 'live';
+	}
+
+	if ( str_starts_with( $key, 'sk_test_' ) || str_starts_with( $key, 'rk_test_' ) ){
+	 return 'test';
+	}
+
+	return '';
+
+ } // api_mode_from_key_prefix
+
+ /**
+  * Strips reverse_transfer and refund_application_fee from GF's own
+  * POST /v1/refunds request when -- and only when -- the charge being
+  * refunded is one of ours on the #2955 transfers model.
+  *
+  * GF's create_refund() (gravityformsstripe/includes/api/class-gf-stripe-api.php)
+  * always sends both flags with no filter of its own, and Stripe rejects
+  * reverse_transfer on a charge that has no transfer on GF's own Stripe
+  * account -- that's always true for an SC&T charge, since the Transfer was
+  * created afterwards with our key, not GF's. Every other field GF sends is
+  * left exactly as it is.
+  *
+  * Hooked on the WordPress-core `http_request_args` filter, so this runs on
+  * every single wp_remote_request() site-wide, not just Stripe's -- the
+  * exact URL/method check has to be the very first thing this does, and it
+  * never signs or sends anything with GF's key, only reads which key GF used.
+  *
+  * @since 2026.11.02
+  * @author Curtis
+  * @link https://github.com/proudcity/wp-proudcity/issues/2955
+  *
+  * @param  array   $args  required  The request args about to be sent.
+  * @param  string  $url   required  The request URL.
+  * @return array
+  */
+ public static function strip_reverse_transfer_for_our_refunds( $args, $url ){
+
+	if ( self::STRIPE_API_BASE . 'refunds' !== $url ){
+	 return $args;
+	}
+
+	if ( 'POST' !== ( $args['method'] ?? '' ) ){
+	 return $args;
+	}
+
+	if ( self::$in_refund_filter ){
+	 return $args;
+	}
+
+	self::$in_refund_filter = true;
+
+	try {
+
+	 $api_mode = self::api_mode_from_key_prefix( self::key_from_basic_auth_header( $args ) );
+
+	 if ( '' === $api_mode ){
+	  return $args;
+	 }
+
+	 $transfer_key = self::get_transfer_key( $api_mode );
+
+	 if ( '' === $transfer_key ){
+	  // Nothing configured for this mode, so this charge could never be
+	  // one of ours -- skip the Stripe round trip entirely.
+	  return $args;
+	 }
+
+	 $body = $args['body'] ?? null;
+	 $body_is_string = is_string( $body );
+
+	 if ( $body_is_string ){
+	  parse_str( $body, $parsed );
+	 } elseif ( is_array( $body ) ){
+	  $parsed = $body;
+	 } else {
+	  return $args;
+	 }
+
+	 $pi_id = (string) ( $parsed['payment_intent'] ?? '' );
+
+	 if ( '' === $pi_id && ! empty( $parsed['charge'] ) ){
+
+	  $charge = self::stripe_request( 'GET', 'charges/' . $parsed['charge'], [], $transfer_key );
+
+	  if ( is_wp_error( $charge ) ){
+	   return $args;
+	  }
+
+	  $pi_id = (string) ( $charge['payment_intent'] ?? '' );
+	 }
+
+	 if ( '' === $pi_id ){
+	  return $args;
+	 }
+
+	 $pi = self::get_payment_intent_with_charge( $pi_id, $transfer_key );
+
+	 if ( is_wp_error( $pi ) ){
+	  error_log( sprintf( '[proudcity-payments] refund_filter_fetch_failed payment_intent=%s: %s', $pi_id, $pi->get_error_message() ) );
+	  return $args;
+	 }
+
+	 if ( 'transfers' !== ( $pi['metadata']['proudcity_charge_model'] ?? '' ) ){
+	  // Not one of ours -- leave GF's reverse_transfer/refund_application_fee
+	  // exactly as they are, same as today.
+	  return $args;
+	 }
+
+	 unset( $parsed['reverse_transfer'], $parsed['refund_application_fee'] );
+
+	 $args['body'] = $body_is_string ? http_build_query( $parsed ) : $parsed;
+
+	 return $args;
+
+	} catch ( \Throwable $e ){
+	 error_log( '[proudcity-payments] refund_filter_exception: ' . $e->getMessage() );
+	 return $args;
+	} finally {
+	 self::$in_refund_filter = false;
+	}
+
+ } // strip_reverse_transfer_for_our_refunds
 
  /**
   * Hooks gform_post_payment_action. Only acts on fail_payment/void_authorization

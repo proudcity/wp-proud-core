@@ -855,4 +855,198 @@ class GravityformsStripeTransfersTest extends TestCase
         $this->assertCount(1, GfStripeOnBehalfOfStub::$notes);
         $this->assertSame(42, GfStripeOnBehalfOfStub::$notes[0]['entry_id']);
     }
+
+    // -------------------------------------------------------------------
+    // strip_reverse_transfer_for_our_refunds() (GF Refund button on an
+    // SC&T charge)
+    // -------------------------------------------------------------------
+
+    private function gfRefundArgs(string $key, array $bodyOverrides = [], bool $bodyAsString = false): array
+    {
+        $body = array_merge([
+            'payment_intent' => 'pi_123',
+            'reverse_transfer' => 'true',
+            'refund_application_fee' => 'true',
+        ], $bodyOverrides);
+
+        return [
+            'method' => 'POST',
+            'headers' => [
+                'Authorization' => 'Basic ' . base64_encode($key . ':'),
+            ],
+            'body' => $bodyAsString ? http_build_query($body) : $body,
+        ];
+    }
+
+    public function test_refund_filter_strips_flags_for_marked_pi_array_body(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            return $this->jsonResponse(200, $this->samplePi());
+        });
+
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $this->gfRefundArgs('sk_live_GFOAUTHTOKEN'),
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertArrayNotHasKey('reverse_transfer', $result['body']);
+        $this->assertArrayNotHasKey('refund_application_fee', $result['body']);
+        $this->assertSame('pi_123', $result['body']['payment_intent']);
+    }
+
+    public function test_refund_filter_strips_flags_for_marked_pi_string_body(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            return $this->jsonResponse(200, $this->samplePi());
+        });
+
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $this->gfRefundArgs('sk_live_GFOAUTHTOKEN', [], true),
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertIsString($result['body']);
+        parse_str($result['body'], $parsed);
+        $this->assertArrayNotHasKey('reverse_transfer', $parsed);
+        $this->assertArrayNotHasKey('refund_application_fee', $parsed);
+        $this->assertSame('pi_123', $parsed['payment_intent']);
+    }
+
+    public function test_refund_filter_resolves_a_charge_id_to_its_payment_intent(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            if (str_contains($url, 'charges/ch_123')) {
+                return $this->jsonResponse(200, ['id' => 'ch_123', 'payment_intent' => 'pi_123']);
+            }
+
+            return $this->jsonResponse(200, $this->samplePi());
+        });
+
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $this->gfRefundArgs('sk_live_GFOAUTHTOKEN', ['charge' => 'ch_123', 'payment_intent' => null]),
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertArrayNotHasKey('reverse_transfer', $result['body']);
+    }
+
+    public function test_refund_filter_leaves_unmarked_charge_untouched(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            return $this->jsonResponse(200, $this->samplePi(['proudcity_charge_model' => 'destination']));
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_ignores_non_refund_urls(): void
+    {
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('A non-refund URL should never reach the Stripe API.');
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'charges'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_ignores_get_requests(): void
+    {
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('A GET request should never reach the Stripe API.');
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN');
+        $args['method'] = 'GET';
+
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_ignores_unrelated_wordpress_requests(): void
+    {
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('An unrelated WordPress HTTP request should never reach the Stripe API.');
+        });
+
+        $args = ['method' => 'POST', 'headers' => [], 'body' => ['anything' => 'here']];
+
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            'https://api.wordpress.org/core/version-check/1.7/'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_is_a_noop_without_a_transfer_key(): void
+    {
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('No transfer key is configured, so there should be no Stripe round trip at all.');
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_returns_args_unchanged_on_stripe_error(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function ($url, $args) {
+            return $this->jsonResponse(404, ['error' => ['code' => 'resource_missing', 'message' => 'No such PaymentIntent.']]);
+        });
+
+        $args = $this->gfRefundArgs('sk_live_GFOAUTHTOKEN');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
+
+    public function test_refund_filter_unrecognised_key_prefix_is_untouched(): void
+    {
+        putenv('PROUDCITY_PAYMENTS_TRANSFER_KEY=rk_live_PLATFORM');
+
+        Functions\when('wp_remote_request')->alias(function () {
+            $this->fail('An unrecognised key prefix should never reach the Stripe API.');
+        });
+
+        $args = $this->gfRefundArgs('whatever_this_is');
+        $result = ProudGravityformsStripe::strip_reverse_transfer_for_our_refunds(
+            $args,
+            ProudGravityformsStripe::STRIPE_API_BASE . 'refunds'
+        );
+
+        $this->assertSame($args, $result);
+    }
 }
