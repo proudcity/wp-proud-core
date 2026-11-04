@@ -1,3 +1,19 @@
+## 2026.11.04.1056
+
+- **New Meeting Calendar widget** (wp-proudcity#2768, Princeton). Shows meetings in the same interactive month/week/day calendar as the Events "Calendar" widget, with an optional "Limit to category" choice from `meeting-taxonomy` (all categories by default).
+  - Lives in `modules/proud-widget/widgets/meeting-calendar/`. Registers only when both wp-proud-meeting and wp-fullcalendar are active; a saved instance renders nothing (no fatal) if either is later deactivated.
+  - Reuses wp-fullcalendar's bundled FullCalendar library and CSS but not its single-calendar `inline.js` or feed, so any number of meeting calendars can sit on one page next to the Events calendar. Each instance reads its config from a `data-calendar` attribute (no inline script, no `id`, safe for the content cache).
+  - Public read-only feed `admin-ajax.php?action=proud_meeting_calendar` (GET only, no nonce so page caching keeps working). `start`/`end` are strictly validated (`Y-m-d` or `Y-m-d\TH:i:s`, max 93-day range); categories capped at 100; at most 500 meetings per request. Meetings use their `datetime` wall time; ones without a valid `datetime` are skipped.
+  - Theme font selector for the widget is in wp-proud-theme.
+- **Events Calendar widget fixes** found while cloning it:
+  - The `[widget widget_name="FullcalendarWidget" categories="1"]` shortcode used to fatal on PHP 8 (`implode()` on a string). A string `categories` now shows all categories.
+  - The widget's own `before_widget`/`after_widget`/`widget_id` args are no longer printed into `WPFC.data` and sent back as feed query params.
+  - Dropped `extract($instance)`; added the missing `moment` script dependency; script version now comes from the installed wp-fullcalendar instead of a hard-coded constant; no fatal when wp-fullcalendar is deactivated with a saved instance.
+- Verified in the browser: Events calendar plus two meeting calendars with different categories on one page, all views including agenda, 390px mobile, existing Events pages unchanged against master, each dependency deactivated.
+- New tests: `FullcalendarWidgetTest`, `MeetingCalendarWidgetTest`, `MeetingCalendarAjaxTest`, `MeetingCalendarMissingFullCalendarClassTest`. Suite 595 tests / 1069 assertions.
+
+References: https://github.com/proudcity/wp-proudcity/issues/2768
+
 ## 2026.11.02.1430
 
 - **GF Stripe Connect: separate charges and transfers, behind a per-site switch** (wp-proudcity#2955). GF Stripe 7.0's "Connect with Stripe" signs requests with GF's own OAuth token, and Stripe rejects destination charges made that way (Rye Brook, 2026-10). Payments work today only through the #2951 interim fix that swaps our platform secret in at settings-read time. This adds the replacement, off by default:
