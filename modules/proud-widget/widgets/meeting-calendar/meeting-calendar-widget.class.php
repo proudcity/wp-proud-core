@@ -94,8 +94,10 @@ class MeetingCalendarWidget extends Core\ProudWidget {
     public function printWidget( $args, $instance ) {
         $categories = isset( $instance['categories'] ) ? $instance['categories'] : array();
         // Shortcode usage can pass categories as a string; only an array is
-        // ever parsed (see FullcalendarWidget F1).
-        $categories = is_array( $categories ) ? wp_parse_id_list( $categories ) : array();
+        // ever parsed (see FullcalendarWidget F1). Saved checkbox instances
+        // are keyed by term ID and wp_parse_id_list() keeps keys, so
+        // array_values() keeps the JSON a list (the JS calls .join()).
+        $categories = is_array( $categories ) ? array_values( wp_parse_id_list( $categories ) ) : array();
 
         $config = array(
             'ajaxUrl'     => admin_url( 'admin-ajax.php' ),

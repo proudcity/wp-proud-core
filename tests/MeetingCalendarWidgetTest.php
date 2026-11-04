@@ -131,6 +131,24 @@ class MeetingCalendarWidgetTest extends TestCase
         $this->assertSame('proud_meeting_calendar', $config['action']);
     }
 
+    public function test_print_widget_keyed_saved_categories_encode_as_json_list(): void
+    {
+        // Saved checkbox instances (widget form, SiteOrigin panels_data) are
+        // keyed by term ID. wp_parse_id_list() keeps those keys, so without
+        // array_values() wp_json_encode() emits an object and the front-end
+        // config.categories.join() throws.
+        $widget = new MeetingCalendarWidget();
+
+        ob_start();
+        $widget->printWidget(array(), array('categories' => array(87 => 87, 433 => '433')));
+        $html = ob_get_clean();
+
+        $this->assertSame(1, preg_match('/data-calendar="([^"]*)"/', $html, $matches), 'Expected a data-calendar attribute.');
+        $raw = htmlspecialchars_decode($matches[1], ENT_QUOTES);
+
+        $this->assertStringContainsString('"categories":[87,433]', $raw);
+    }
+
     public function test_print_widget_never_echoes_inline_script(): void
     {
         $widget = new MeetingCalendarWidget();
