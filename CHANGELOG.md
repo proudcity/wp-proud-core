@@ -1,4 +1,4 @@
-## Unreleased
+## 2026.11.05.1540
 
 - **Gravity Forms autocomplete** (wp-proudcity#3021, WCAG 2.1 1.3.5 Identify Input Purpose). Name, email, phone, address and website fields now print `autocomplete` attributes so browsers and assistive technology know what each input is for. Done at render time on `gform_pre_render` (priority 50); nothing is saved to form meta.
   - "Enable Autocomplete" is forced on for those field types; blank tokens are filled with standard ones (`given-name`, `family-name`, `address-line1`, `postal-code`, `email`, `tel`, `url`, and so on). Any token an admin set is kept, including `off`.
