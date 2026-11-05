@@ -160,8 +160,8 @@ class MeetingCalendarWidget extends Core\ProudWidget {
         }
         ?>
         <label class="proud-meeting-calendar-filter-label">
-            <?php echo esc_html__( 'Category', 'wp-proud-core' ); ?>
-            <select class="proud-meeting-calendar-filter form-control">
+            <span class="sr-only"><?php echo esc_html__( 'Category', 'wp-proud-core' ); ?></span>
+            <select class="proud-meeting-calendar-filter">
                 <option value=""><?php echo esc_html__( 'All meeting categories', 'wp-proud-core' ); ?></option>
                 <?php foreach ( self::orderTermsHierarchically( $terms ) as $row ) : ?>
                     <option value="<?php echo esc_attr( absint( $row['term']->term_id ) ); ?>"><?php echo str_repeat( "\u{00A0}\u{00A0}\u{00A0}", $row['depth'] ) . esc_html( $row['term']->name ); ?></option>

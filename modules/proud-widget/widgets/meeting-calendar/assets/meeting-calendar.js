@@ -63,13 +63,35 @@
 			// Per-instance category filter: swaps this calendar's event source only,
 			// so other calendars on the page are untouched. The value is read with
 			// .val() and only ever passed on as a digits-only id.
-			$calendar.closest('.proud-meeting-calendar-wrapper').find('.proud-meeting-calendar-filter').on('change', function () {
-				var selected = String($(this).val() || '');
+			var $filter = $calendar.closest('.proud-meeting-calendar-wrapper').find('.proud-meeting-calendar-filter');
+			if (!$filter.length) {
+				return;
+			}
+
+			function applyFilter() {
+				var selected = String($filter.val() || '');
 				var categories = /^\d+$/.test(selected) ? [selected] : (config.categories || []);
 
 				$calendar.fullCalendar('removeEventSources');
 				$calendar.fullCalendar('addEventSource', eventSource(config, categories));
-			});
+			}
+
+			// Match the Events calendar's category filter: same spot (right
+			// under the toolbar) and the same jQuery UI selectmenu that
+			// wp-fullcalendar's inline.js uses. Its own select.wpfc-taxonomy
+			// class is not reused, because inline.js binds to that selector.
+			var $toolbar = $calendar.find('.fc-toolbar').first();
+			if ($toolbar.length) {
+				$('<div class="proud-meeting-calendar-search"></div>')
+					.append($filter.closest('label'))
+					.insertAfter($toolbar);
+			}
+
+			if ($.fn.selectmenu) {
+				$filter.selectmenu({ change: applyFilter });
+			} else {
+				$filter.on('change', applyFilter);
+			}
 		});
 	});
 })(jQuery);
