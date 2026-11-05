@@ -53,6 +53,157 @@ function proud_gform_valid_export_id($export_id) {
     return is_string($export_id) && preg_match('/^[A-Za-z0-9_-]+$/', $export_id) === 1;
 }
 
+/**
+ * Autocomplete tokens (WCAG 2.1 SC 1.3.5, wp-proudcity#3021).
+ *
+ * Gravity Forms only prints an autocomplete attribute when a field's "Enable
+ * Autocomplete" setting is on, and that is off on nearly every form. Keys are
+ * GF field types. 'field' is the field-level token (single-input fields),
+ * 'inputs' maps the part of an input id after the dot to its token. Every value
+ * is a hard-coded constant: Gravity Forms does not escape the attribute on
+ * output, so request or form data must never be used to build one.
+ */
+function proud_gform_autocomplete_tokens() {
+    return [
+        'name'    => [
+            'inputs' => [
+                '2' => 'honorific-prefix',
+                '3' => 'given-name',
+                '4' => 'additional-name',
+                '6' => 'family-name',
+                '8' => 'honorific-suffix',
+            ],
+        ],
+        'address' => [
+            'inputs' => [
+                '1' => 'address-line1',
+                '2' => 'address-line2',
+                '3' => 'address-level2',
+                '4' => 'address-level1',
+                '5' => 'postal-code',
+                '6' => 'country-name',
+            ],
+        ],
+        // With confirmation on, both the main input and ".2" take the token.
+        'email'   => ['field' => 'email', 'all_inputs' => 'email'],
+        'phone'   => ['field' => 'tel'],
+        'website' => ['field' => 'url'],
+    ];
+}
+
+/**
+ * Resolves the autocomplete value a slot should end up with.
+ *
+ * Gravity Forms prints the attribute unescaped and explode()s it, so a stored
+ * value is only kept when it is a string made of letters, digits, hyphens and
+ * spaces (spaces allow multi-token values like "section-a email"; "off" passes).
+ * Anything else (array, quotes, markup) is replaced with the mapped constant, or
+ * '' when the slot has no mapped token so GF prints nothing. A blank value gets
+ * the mapped constant, or stays unset. Only constants from the token map are
+ * ever introduced.
+ *
+ * @param mixed       $existing Stored value, or null if unset.
+ * @param string|null $mapped   Token for this slot, if any.
+ * @return mixed The value to store.
+ */
+function proud_gform_autocomplete_resolve($existing, $mapped) {
+    if (is_string($existing) && trim($existing) !== '' && preg_match('/^[A-Za-z0-9\- ]+$/', trim($existing)) === 1) {
+        return $existing;
+    }
+
+    $blank = $existing === null || $existing === false || (is_string($existing) && trim($existing) === '');
+    if ($mapped !== null) {
+        return $mapped;
+    }
+
+    return $blank ? $existing : '';
+}
+
+/**
+ * Returns a field ready to print autocomplete attributes.
+ *
+ * Field types outside the allowlist, and name fields in the simple or legacy
+ * "normal" format (customers can label those anything, so no token is safe),
+ * come back as the same object. Otherwise a clone is returned with
+ * enableAutocomplete on and blank tokens filled; tokens an admin set, including
+ * "off", are kept. The clone keeps Gravity Forms' in-request form cache clean.
+ *
+ * @param object $field A GF_Field.
+ * @return object
+ */
+function proud_gform_autocomplete_field($field) {
+    if (! is_object($field) || ! isset($field->type) || ! is_string($field->type)) {
+        return $field;
+    }
+
+    $map = proud_gform_autocomplete_tokens();
+    if (! isset($map[ $field->type ])) {
+        return $field;
+    }
+    $tokens = $map[ $field->type ];
+
+    if ($field->type === 'name') {
+        $format = isset($field->nameFormat) ? $field->nameFormat : '';
+        if ($format !== 'advanced' && $format !== 'extended') {
+            return $field;
+        }
+    }
+
+    $clone = clone $field;
+    $clone->enableAutocomplete = true;
+
+    if (isset($clone->autocompleteAttribute) || isset($tokens['field'])) {
+        $clone->autocompleteAttribute = proud_gform_autocomplete_resolve(
+            isset($clone->autocompleteAttribute) ? $clone->autocompleteAttribute : null,
+            isset($tokens['field']) ? $tokens['field'] : null
+        );
+    }
+
+    $inputs = isset($clone->inputs) ? $clone->inputs : null;
+    if (is_array($inputs)) {
+        foreach ($inputs as $i => $input) {
+            if (! is_array($input) || ! isset($input['id'])) {
+                continue;
+            }
+            if (isset($tokens['all_inputs'])) {
+                $mapped = $tokens['all_inputs'];
+            } else {
+                $parts  = explode('.', (string) $input['id']);
+                $suffix = count($parts) > 1 ? end($parts) : '';
+                $mapped = isset($tokens['inputs'][ $suffix ]) ? $tokens['inputs'][ $suffix ] : null;
+            }
+            if (! array_key_exists('autocompleteAttribute', $input) && $mapped === null) {
+                continue;
+            }
+            $inputs[ $i ]['autocompleteAttribute'] = proud_gform_autocomplete_resolve(
+                isset($input['autocompleteAttribute']) ? $input['autocompleteAttribute'] : null,
+                $mapped
+            );
+        }
+        $clone->inputs = $inputs;
+    }
+
+    return $clone;
+}
+
+/**
+ * gform_pre_render: apply proud_gform_autocomplete_field() to every field.
+ *
+ * @param array $form
+ * @return array
+ */
+function proud_gform_autocomplete_pre_render($form) {
+    if (! is_array($form) || ! isset($form['fields']) || ! is_array($form['fields'])) {
+        return $form;
+    }
+
+    foreach ($form['fields'] as $i => $field) {
+        $form['fields'][ $i ] = proud_gform_autocomplete_field($field);
+    }
+
+    return $form;
+}
+
 if (class_exists('GFCommon')) {
 
     // Load our downloading class
@@ -73,6 +224,10 @@ if (class_exists('GFCommon')) {
         add_filter('gform_form_theme_slug', __NAMESPACE__ . '\\proud_force_orbital_theme', 10, 2);
 
         add_filter('gform_field_content', __NAMESPACE__ . '\\gf_remove_aria_required', 999, 5);
+
+        // Print autocomplete attributes on name/email/phone/address/website (WCAG 1.3.5).
+        // Late priority so fields added by other gform_pre_render callbacks are covered.
+        add_filter('gform_pre_render', __NAMESPACE__ . '\\proud_gform_autocomplete_pre_render', 50);
 
         add_filter('gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1);
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
