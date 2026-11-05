@@ -1,3 +1,12 @@
+## 2026.11.05.1045
+
+- **Meeting Calendar widget, round 2** (wp-proudcity#2768, Kevin's feedback).
+  - Meetings now show their meeting category color. Previously the feed sent no color, so every meeting used FullCalendar's default `#3a87ad` with white text (4.00:1, fails WCAG AA). Meetings without a category color use the theme's Primary color (theme change in wp-proud-theme).
+  - New "Show category filter" widget setting, on by default (including existing instances). It uses the same jQuery UI dropdown as the Events calendar, sits under the toolbar, lists the widget's categories (or all meeting categories) with child categories indented under their parent, and is hidden when fewer than two categories apply. Each calendar on a page filters independently.
+- **Central color palette** in `proud-helpers.php`: `proud_dark_palette()` (8 colors, all at least 5:1 against white), `proud_legacy_palette_map()`, and `proud_normalize_palette_color()`. Old light colors map to dark ones when read; anything not in the palette returns `''`. Used by wp-proud-meeting, wp-proud-location and wp-proud-actions-app.
+- **Security:** new `proud_sanitize_icon_class()` allowlist for term `icon` meta (space-separated `[a-z0-9-]` tokens, max 4, max 100 characters). The icon was stored raw and concatenated into HTML by the service-center map, a stored XSS for anyone with `manage_categories` on multisite.
+- New tests: `PaletteTest`, `SanitizeIconClassTest`, plus feed color and filter tests. Suite 651 tests / 1196 assertions.
+
 ## 2026.11.04.1056
 
 - **New Meeting Calendar widget** (wp-proudcity#2768, Princeton). Shows meetings in the same interactive month/week/day calendar as the Events "Calendar" widget, with an optional "Limit to category" choice from `meeting-taxonomy` (all categories by default).
