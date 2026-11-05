@@ -17,6 +17,17 @@
 	'use strict';
 
 	$(function () {
+		// Built per call so each calendar owns its source object.
+		function eventSource(config, categories) {
+			return {
+				url: config.ajaxUrl,
+				data: {
+					action: config.action,
+					categories: categories.join(',')
+				}
+			};
+		}
+
 		$('.proud-meeting-calendar').each(function () {
 			var $calendar = $(this);
 			var config;
@@ -46,13 +57,18 @@
 				// carried as dead config.
 				timezone: false,
 				editable: false,
-				eventSources: [{
-					url: config.ajaxUrl,
-					data: {
-						action: config.action,
-						categories: (config.categories || []).join(',')
-					}
-				}]
+				eventSources: [eventSource(config, config.categories || [])]
+			});
+
+			// Per-instance category filter: swaps this calendar's event source only,
+			// so other calendars on the page are untouched. The value is read with
+			// .val() and only ever passed on as a digits-only id.
+			$calendar.closest('.proud-meeting-calendar-wrapper').find('.proud-meeting-calendar-filter').on('change', function () {
+				var selected = String($(this).val() || '');
+				var categories = /^\d+$/.test(selected) ? [selected] : (config.categories || []);
+
+				$calendar.fullCalendar('removeEventSources');
+				$calendar.fullCalendar('addEventSource', eventSource(config, categories));
 			});
 		});
 	});

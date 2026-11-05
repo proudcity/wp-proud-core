@@ -25,6 +25,7 @@ class MeetingCalendarAjaxTest extends TestCase
         Functions\when('post_type_exists')->justReturn(true);
         Functions\when('wp_timezone')->justReturn(new \DateTimeZone('UTC'));
         Functions\when('wp_die')->justReturn(null);
+        Functions\when('get_the_terms')->justReturn(false);
     }
 
     protected function tearDown(): void
@@ -536,6 +537,138 @@ class MeetingCalendarAjaxTest extends TestCase
 
         $this->assertCount(1, $captured);
         $this->assertSame('Executive Session', $captured[0]['title']);
+
+        \Patchwork\restoreAll();
+    }
+
+    // -----------------------------------------------------------------------
+    // Category color (round 2)
+    // -----------------------------------------------------------------------
+
+    private function feedWithTerms($terms, array $meta, string $categories = ''): array
+    {
+        $_GET['start'] = '2026-02-01';
+        $_GET['end']   = '2026-02-15';
+        if ('' !== $categories) {
+            $_GET['categories'] = $categories;
+        }
+
+        $post = (object) array('ID' => 42, 'post_title' => 'Budget Meeting', 'post_password' => '');
+        \Patchwork\redefine('WP_Query::__construct', function (array $args = array()) use ($post) {
+            $this->posts = array($post);
+        });
+        Functions\when('get_post_meta')->justReturn('2026-02-05 18:00');
+        Functions\when('get_the_title')->justReturn('Budget Meeting');
+        Functions\when('get_permalink')->justReturn('https://example.com/meetings/budget');
+        Functions\when('get_the_terms')->justReturn($terms);
+        Functions\when('get_term_meta')->alias(static function ($id) use ($meta) {
+            return $meta[$id] ?? '';
+        });
+
+        $captured = null;
+        Functions\when('wp_send_json')->alias(static function ($data) use (&$captured) {
+            $captured = $data;
+        });
+
+        proud_meeting_calendar_feed();
+        \Patchwork\restoreAll();
+
+        return $captured;
+    }
+
+    private function term(int $id): object
+    {
+        return (object) array('term_id' => $id);
+    }
+
+    public function test_feed_emits_palette_color_and_white_text(): void
+    {
+        $items = $this->feedWithTerms(array($this->term(5)), array(5 => '#0071BC'));
+
+        $this->assertSame('#0071BC', $items[0]['color']);
+        $this->assertSame('#ffffff', $items[0]['textColor']);
+    }
+
+    public function test_feed_maps_legacy_color_to_dark_equivalent(): void
+    {
+        $items = $this->feedWithTerms(array($this->term(5)), array(5 => '#5A97C4'));
+
+        $this->assertSame('#0071BC', $items[0]['color']);
+    }
+
+    public function test_feed_omits_color_when_unset(): void
+    {
+        $items = $this->feedWithTerms(array($this->term(5)), array());
+
+        $this->assertArrayNotHasKey('color', $items[0]);
+        $this->assertArrayNotHasKey('textColor', $items[0]);
+    }
+
+    public function test_feed_omits_color_when_term_has_no_category(): void
+    {
+        $items = $this->feedWithTerms(false, array());
+
+        $this->assertArrayNotHasKey('color', $items[0]);
+    }
+
+    /**
+     * @dataProvider badColors
+     */
+    public function test_feed_omits_invalid_or_injected_colors($bad): void
+    {
+        $items = $this->feedWithTerms(array($this->term(5)), array(5 => $bad));
+
+        $this->assertArrayNotHasKey('color', $items[0]);
+    }
+
+    public static function badColors(): array
+    {
+        return array(
+            array('red; background:url(x)'),
+            array('#fff'),
+            array('javascript:alert(1)'),
+            array('#123456'),
+            array('#BF0711; x:y'),
+        );
+    }
+
+    public function test_feed_uses_first_term_with_a_valid_color(): void
+    {
+        $items = $this->feedWithTerms(
+            array($this->term(1), $this->term(2), $this->term(3)),
+            array(1 => 'bogus', 2 => '#6B3FA0', 3 => '#108043')
+        );
+
+        $this->assertSame('#6B3FA0', $items[0]['color']);
+    }
+
+    public function test_feed_prefers_term_inside_requested_categories(): void
+    {
+        $items = $this->feedWithTerms(
+            array($this->term(1), $this->term(2)),
+            array(1 => '#6B3FA0', 2 => '#108043'),
+            '2'
+        );
+
+        $this->assertSame('#108043', $items[0]['color']);
+    }
+
+    public function test_selected_filter_value_is_sanitized_to_ids(): void
+    {
+        $_GET['start']      = '2026-02-01';
+        $_GET['end']        = '2026-02-15';
+        $_GET['categories'] = '350';
+
+        $capturedArgs = array();
+        \Patchwork\redefine('WP_Query::__construct', function (array $args = array()) use (&$capturedArgs) {
+            $capturedArgs = $args;
+            $this->posts = array();
+        });
+        Functions\when('wp_send_json')->justReturn(null);
+
+        proud_meeting_calendar_feed();
+
+        $this->assertSame(array(350), $capturedArgs['tax_query'][0]['terms']);
 
         \Patchwork\restoreAll();
     }

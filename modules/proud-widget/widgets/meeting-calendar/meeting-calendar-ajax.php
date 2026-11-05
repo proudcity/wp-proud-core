@@ -25,7 +25,7 @@
  * configured. Anything else -- a trailing "Z" or numeric offset, or a value
  * createFromFormat() would otherwise silently normalize -- is rejected.
  *
- * Returns JSON: [ { title, start, url } ]
+ * Returns JSON: [ { title, start, url[, color, textColor] } ]
  */
 
 /**
@@ -47,6 +47,48 @@ function proud_meeting_calendar_parse_range_date( $raw, DateTimeZone $timezone )
 		}
 	}
 	return false;
+}
+
+/**
+ * The palette color for a meeting: the first of its categories with a valid
+ * stored color. Categories inside $preferred (the requested set) win over
+ * the rest.
+ *
+ * The term meta is user-editable and FullCalendar writes it into an inline
+ * style, so it only counts if it normalizes to a palette color. Every
+ * palette color has at least 4.5:1 contrast with the white text the feed
+ * pairs it with. Returns '' when no color applies or the core palette
+ * helper is missing, so the theme default applies.
+ *
+ * @param WP_Post $post
+ * @param int[]   $preferred Term ids to try first.
+ * @return string
+ */
+function proud_meeting_calendar_event_color( $post, array $preferred = array() ) {
+	if ( ! function_exists( 'Proud\Core\proud_normalize_palette_color' ) ) {
+		return '';
+	}
+
+	$terms = get_the_terms( $post, 'meeting-taxonomy' );
+	if ( empty( $terms ) || is_wp_error( $terms ) ) {
+		return '';
+	}
+
+	usort(
+		$terms,
+		static function ( $a, $b ) use ( $preferred ) {
+			return (int) in_array( (int) $b->term_id, $preferred, true ) - (int) in_array( (int) $a->term_id, $preferred, true );
+		}
+	);
+
+	foreach ( $terms as $term ) {
+		$color = \Proud\Core\proud_normalize_palette_color( get_term_meta( $term->term_id, 'color', true ) );
+		if ( $color ) {
+			return $color;
+		}
+	}
+
+	return '';
 }
 
 function proud_meeting_calendar_feed() {
@@ -140,11 +182,19 @@ function proud_meeting_calendar_feed() {
 		// Password-protected meetings are included (title/time/url only) --
 		// WordPress still gates the content itself behind the password when
 		// the link is followed.
-		$items[] = array(
+		$item = array(
 			'title' => wp_strip_all_tags( html_entity_decode( get_the_title( $post ), ENT_QUOTES ) ),
 			'start' => $start_time->format( 'Y-m-d\TH:i:s' ),
 			'url'   => esc_url_raw( get_permalink( $post ) ),
 		);
+
+		$color = proud_meeting_calendar_event_color( $post, $categories );
+		if ( $color ) {
+			$item['color']     = $color;
+			$item['textColor'] = '#ffffff';
+		}
+
+		$items[] = $item;
 	}
 
 	wp_send_json( $items );

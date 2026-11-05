@@ -60,6 +60,14 @@ class MeetingCalendarWidget extends Core\ProudWidget {
             '#description'   => '',
         );
 
+        $settings['show_filter'] = array(
+            '#title'         => __( 'Show category filter', 'wp-proud-core' ),
+            '#type'          => 'checkbox',
+            '#return_value'  => '1',
+            '#default_value' => true,
+            '#description'   => __( 'Lets visitors filter the calendar by meeting category. Hidden when fewer than two categories apply.', 'wp-proud-core' ),
+        );
+
         // No proud_teaser_settings filter here -- that filter exists to feed
         // Elastic-backed teaser widgets, and meetings are queried from MySQL
         // (see #2929), so it would only add fields this widget can't use.
@@ -115,8 +123,51 @@ class MeetingCalendarWidget extends Core\ProudWidget {
         );
         ?>
         <div class="proud-meeting-calendar-wrapper">
+            <?php $this->printCategoryFilter( $instance, $categories ); ?>
             <div class="proud-meeting-calendar" data-calendar="<?php echo esc_attr( wp_json_encode( $config ) ); ?>"></div>
         </div>
+        <?php
+    }
+
+    /**
+     * Prints the native category <select> for one calendar instance.
+     *
+     * On unless the saved instance explicitly turns it off, so instances
+     * saved before the setting existed gain it. Offers the widget's own
+     * categories, or every meeting category when there is no limit, and
+     * prints nothing when fewer than two apply. No id attributes (the content
+     * cache replays markup), so the <select> sits inside its <label>.
+     *
+     * @param array $instance   Saved values from database.
+     * @param int[]  $categories The widget's category limit, already parsed.
+     */
+    private function printCategoryFilter( $instance, $categories ) {
+        if ( isset( $instance['show_filter'] ) && ! $instance['show_filter'] ) {
+            return;
+        }
+
+        $args = array(
+            'taxonomy'   => 'meeting-taxonomy',
+            'hide_empty' => true,
+            'orderby'    => 'name',
+        );
+        if ( ! empty( $categories ) ) {
+            $args['include'] = $categories;
+        }
+        $terms = get_terms( $args );
+        if ( empty( $terms ) || is_wp_error( $terms ) || count( $terms ) < 2 ) {
+            return;
+        }
+        ?>
+        <label class="proud-meeting-calendar-filter-label">
+            <?php echo esc_html__( 'Category', 'wp-proud-core' ); ?>
+            <select class="proud-meeting-calendar-filter form-control">
+                <option value=""><?php echo esc_html__( 'All meeting categories', 'wp-proud-core' ); ?></option>
+                <?php foreach ( $terms as $term ) : ?>
+                    <option value="<?php echo esc_attr( absint( $term->term_id ) ); ?>"><?php echo esc_html( $term->name ); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </label>
         <?php
     }
 

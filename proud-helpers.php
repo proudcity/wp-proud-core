@@ -31,6 +31,73 @@ function proud_contrast_color( $hex ) {
 }
 
 /**
+ * The dark color palette shared by meeting categories and location
+ * categories (issue #2768). Every color reaches at least 4.5:1 contrast
+ * against white (WCAG AA), so white text is always legible on it.
+ *
+ * @return array hex => label
+ */
+function proud_dark_palette() {
+    return array(
+        '#BF0711' => __( 'Red', 'wp-proud-core' ),
+        '#A84B14' => __( 'Orange', 'wp-proud-core' ),
+        '#108043' => __( 'Green', 'wp-proud-core' ),
+        '#00706E' => __( 'Teal', 'wp-proud-core' ),
+        '#0071BC' => __( 'Blue', 'wp-proud-core' ),
+        '#456D9C' => __( 'Slate blue', 'wp-proud-core' ),
+        '#6B3FA0' => __( 'Purple', 'wp-proud-core' ),
+        '#212B35' => __( 'Slate', 'wp-proud-core' ),
+    );
+}
+
+/**
+ * Maps the light colors stored by the old six-color palette to their dark
+ * equivalent in proud_dark_palette().
+ *
+ * @return array old hex => new hex
+ */
+function proud_legacy_palette_map() {
+    return array(
+        '#ED9356' => '#A84B14',
+        '#456D9C' => '#456D9C',
+        '#E76C6D' => '#BF0711',
+        '#5A97C4' => '#0071BC',
+        '#4DC3FF' => '#0071BC',
+        '#9BBF6A' => '#108043',
+    );
+}
+
+/**
+ * Normalizes a stored palette color. Legacy colors map to their dark
+ * equivalent, palette colors come back as-is, and anything else (including
+ * non-strings and CSS injection attempts) returns ''.
+ *
+ * sanitize_hex_color() only accepts #rgb/#rrggbb, so nothing but a hex value
+ * can reach the palette lookup. The result is always an uppercase palette key.
+ *
+ * @param mixed $color Stored color value.
+ * @return string A proud_dark_palette() hex, or ''.
+ */
+function proud_normalize_palette_color( $color ) {
+    if ( ! is_string( $color ) ) {
+        return '';
+    }
+
+    $color = sanitize_hex_color( trim( $color ) );
+    if ( ! $color ) {
+        return '';
+    }
+    $color = strtoupper( $color );
+
+    $legacy = proud_legacy_palette_map();
+    if ( isset( $legacy[ $color ] ) ) {
+        $color = $legacy[ $color ];
+    }
+
+    return isset( proud_dark_palette()[ $color ] ) ? $color : '';
+}
+
+/**
  * Helper to return the Yoast Meta description if present or the_excerpt
  *
  * @since  2026.01.29

@@ -23,6 +23,8 @@ class MeetingCalendarWidgetTest extends TestCase
             return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8', false);
         });
         Functions\when('admin_url')->justReturn('https://example.com/wp-admin/admin-ajax.php');
+        Functions\when('get_terms')->justReturn(array());
+        Functions\when('esc_html__')->returnArg(1);
     }
 
     protected function tearDown(): void
@@ -129,6 +131,89 @@ class MeetingCalendarWidgetTest extends TestCase
 
         $this->assertSame(array(5, 9), $config['categories']);
         $this->assertSame('proud_meeting_calendar', $config['action']);
+    }
+
+    private function renderWithTerms(array $instance, array $terms, &$capturedArgs = null): string
+    {
+        Functions\when('get_terms')->alias(static function ($args) use ($terms, &$capturedArgs) {
+            $capturedArgs = $args;
+            return $terms;
+        });
+        Functions\when('esc_html')->alias(static function ($text) {
+            return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+        });
+
+        $widget = new MeetingCalendarWidget();
+        ob_start();
+        $widget->printWidget(array(), $instance);
+        return ob_get_clean();
+    }
+
+    private function twoTerms(): array
+    {
+        return array(
+            (object) array('term_id' => 4, 'name' => 'Budget'),
+            (object) array('term_id' => 9, 'name' => 'Planning'),
+        );
+    }
+
+    public function test_filter_setting_is_a_checkbox_defaulting_on(): void
+    {
+        Functions\when('get_categories')->justReturn(array());
+        $widget = new MeetingCalendarWidget();
+        $widget->initialize();
+
+        $this->assertSame('checkbox', $widget->settings['show_filter']['#type']);
+        $this->assertTrue($widget->settings['show_filter']['#default_value']);
+    }
+
+    public function test_filter_prints_for_existing_instance_without_the_setting(): void
+    {
+        $html = $this->renderWithTerms(array(), $this->twoTerms());
+
+        $this->assertStringContainsString('proud-meeting-calendar-filter', $html);
+        $this->assertStringContainsString('<option value="4">Budget</option>', $html);
+        $this->assertStringContainsString('<option value="9">Planning</option>', $html);
+        $this->assertStringContainsString('<label', $html);
+    }
+
+    public function test_filter_hidden_when_disabled(): void
+    {
+        foreach (array('0', 0, false, '') as $off) {
+            $html = $this->renderWithTerms(array('show_filter' => $off), $this->twoTerms());
+            $this->assertStringNotContainsString('proud-meeting-calendar-filter', $html);
+        }
+    }
+
+    public function test_filter_hidden_with_fewer_than_two_categories(): void
+    {
+        $html = $this->renderWithTerms(array('show_filter' => '1'), array((object) array('term_id' => 4, 'name' => 'Budget')));
+        $this->assertStringNotContainsString('proud-meeting-calendar-filter', $html);
+
+        $html = $this->renderWithTerms(array(), array());
+        $this->assertStringNotContainsString('proud-meeting-calendar-filter', $html);
+    }
+
+    public function test_filter_options_are_limited_to_widget_categories(): void
+    {
+        $this->renderWithTerms(array('categories' => array('4', '9')), $this->twoTerms(), $args);
+        $this->assertSame(array(4, 9), $args['include']);
+        $this->assertSame('meeting-taxonomy', $args['taxonomy']);
+
+        $this->renderWithTerms(array(), $this->twoTerms(), $args);
+        $this->assertArrayNotHasKey('include', $args);
+    }
+
+    public function test_filter_escapes_term_names_and_has_no_ids(): void
+    {
+        $html = $this->renderWithTerms(array(), array(
+            (object) array('term_id' => 4, 'name' => '<script>alert(1)</script>'),
+            (object) array('term_id' => 9, 'name' => 'Planning'),
+        ));
+
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('&lt;script&gt;', $html);
+        $this->assertStringNotContainsString(' id=', $html);
     }
 
     public function test_print_widget_keyed_saved_categories_encode_as_json_list(): void
