@@ -17,6 +17,43 @@
 	'use strict';
 
 	$(function () {
+		// Shows each category's color as a swatch beside its name, like the
+		// Events calendar's filter. Unlike wp-fullcalendar's version (which
+		// smuggles "#hex - " into the label and feeds it to .html()), this
+		// builds DOM nodes: the name only ever goes in as text and the color
+		// only as a validated #RRGGBB background.
+		if ($.fn.selectmenu && !$.fn.proudMeetingSelectmenu) {
+			var decorate = function ($target, item) {
+				var label = String(item.label || '');
+				var indent = label.match(/^ */)[0];
+				var color = String(item.element.attr('data-color') || '');
+
+				$target.empty().append(document.createTextNode(indent));
+				if (item.value !== '') {
+					var $swatch = $('<span class="proud-meeting-calendar-swatch" aria-hidden="true"></span>');
+					if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+						$swatch.css('background-color', color);
+					}
+					$target.append($swatch);
+				}
+				$target.append(document.createTextNode(label.slice(indent.length)));
+				return $target;
+			};
+
+			$.widget('proud.proudMeetingSelectmenu', $.ui.selectmenu, {
+				_renderItem: function (ul, item) {
+					var $li = $('<li>');
+					if (item.disabled) {
+						$li.addClass('ui-state-disabled');
+					}
+					return $li.append(decorate($('<div>'), item)).appendTo(ul);
+				},
+				_renderButtonItem: function (item) {
+					return decorate($('<span class="ui-selectmenu-text"></span>'), item);
+				}
+			});
+		}
+
 		// Built per call so each calendar owns its source object.
 		function eventSource(config, categories) {
 			return {
@@ -87,8 +124,8 @@
 					.insertAfter($toolbar);
 			}
 
-			if ($.fn.selectmenu) {
-				$filter.selectmenu({ change: applyFilter });
+			if ($.fn.proudMeetingSelectmenu) {
+				$filter.proudMeetingSelectmenu({ change: applyFilter });
 			} else {
 				$filter.on('change', applyFilter);
 			}

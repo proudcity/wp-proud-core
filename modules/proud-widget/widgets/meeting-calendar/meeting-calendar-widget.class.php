@@ -164,7 +164,14 @@ class MeetingCalendarWidget extends Core\ProudWidget {
             <select class="proud-meeting-calendar-filter">
                 <option value=""><?php echo esc_html__( 'All meeting categories', 'wp-proud-core' ); ?></option>
                 <?php foreach ( self::orderTermsHierarchically( $terms ) as $row ) : ?>
-                    <option value="<?php echo esc_attr( absint( $row['term']->term_id ) ); ?>"><?php echo str_repeat( "\u{00A0}\u{00A0}\u{00A0}", $row['depth'] ) . esc_html( $row['term']->name ); ?></option>
+                    <?php
+                    // Palette-checked, so data-color is only ever '' or #RRGGBB;
+                    // the JS swatch falls back to the theme default when empty.
+                    $color = function_exists( '\Proud\Core\proud_normalize_palette_color' )
+                        ? \Proud\Core\proud_normalize_palette_color( get_term_meta( $row['term']->term_id, 'color', true ) )
+                        : '';
+                    ?>
+                    <option value="<?php echo esc_attr( absint( $row['term']->term_id ) ); ?>" data-color="<?php echo esc_attr( $color ); ?>"><?php echo str_repeat( "\u{00A0}\u{00A0}\u{00A0}", $row['depth'] ) . esc_html( $row['term']->name ); ?></option>
                 <?php endforeach; ?>
             </select>
         </label>

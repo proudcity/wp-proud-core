@@ -133,8 +133,11 @@ class MeetingCalendarWidgetTest extends TestCase
         $this->assertSame('proud_meeting_calendar', $config['action']);
     }
 
-    private function renderWithTerms(array $instance, array $terms, &$capturedArgs = null): string
+    private function renderWithTerms(array $instance, array $terms, &$capturedArgs = null, array $colors = array()): string
     {
+        Functions\when('get_term_meta')->alias(static function ($id, $key = '', $single = false) use ($colors) {
+            return ('color' === $key && isset($colors[$id])) ? $colors[$id] : '';
+        });
         Functions\when('get_terms')->alias(static function ($args) use ($terms, &$capturedArgs) {
             $capturedArgs = $args;
             return $terms;
@@ -172,8 +175,8 @@ class MeetingCalendarWidgetTest extends TestCase
         $html = $this->renderWithTerms(array(), $this->twoTerms());
 
         $this->assertStringContainsString('proud-meeting-calendar-filter', $html);
-        $this->assertStringContainsString('<option value="4">Budget</option>', $html);
-        $this->assertStringContainsString('<option value="9">Planning</option>', $html);
+        $this->assertStringContainsString('<option value="4" data-color="">Budget</option>', $html);
+        $this->assertStringContainsString('<option value="9" data-color="">Planning</option>', $html);
         $this->assertStringContainsString('<label', $html);
     }
 
@@ -355,7 +358,7 @@ class MeetingCalendarWidgetTest extends TestCase
             (object) array('term_id' => 30, 'name' => 'Orphan child', 'parent' => 999),
         );
         $html = $this->renderWithTerms(array(), $terms);
-        preg_match_all('/<option value="(\d*)">([^<]*)<\/option>/u', $html, $m);
+        preg_match_all('/<option value="(\d*)"[^>]*>([^<]*)<\/option>/u', $html, $m);
         $pad = "\u{00A0}\u{00A0}\u{00A0}";
 
         $this->assertSame(array('', '4', '21', '9', '20', '30'), $m[1]);
@@ -373,5 +376,27 @@ class MeetingCalendarWidgetTest extends TestCase
         );
         $html = $this->renderWithTerms(array(), $terms);
         $this->assertSame(2, substr_count($html, '<option value="4"') + substr_count($html, '<option value="9"'));
+    }
+
+    public function test_filter_options_carry_only_palette_colors(): void
+    {
+        $terms = array(
+            (object) array('term_id' => 4, 'name' => 'Budget'),
+            (object) array('term_id' => 9, 'name' => 'Planning'),
+            (object) array('term_id' => 12, 'name' => 'Parks'),
+            (object) array('term_id' => 15, 'name' => 'Library'),
+        );
+        $colors = array(
+            4  => '#108043',
+            9  => '#5a97c4',                    // legacy light color, mapped
+            12 => '"><script>alert(1)</script>', // tampered, dropped
+        );
+        $html = $this->renderWithTerms(array(), $terms, $captured, $colors);
+        preg_match_all('/<option value="(\d+)" data-color="([^"]*)">/', $html, $m);
+
+        $this->assertSame(array('4', '9', '12', '15'), $m[1]);
+        $this->assertSame(array('#108043', '#0071BC', '', ''), $m[2]);
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringContainsString('<option value="">', $html, '"All" option has no swatch color.');
     }
 }
