@@ -344,4 +344,34 @@ class MeetingCalendarWidgetTest extends TestCase
 
         $this->assertSame('MeetingCalendarWidget', $registered, '\\Proud\\Meeting\\ProudMeeting and WP_FullCalendar both exist in this test run, so registration must happen.');
     }
+
+    public function test_filter_indents_children_under_their_parent(): void
+    {
+        $terms = array(
+            (object) array('term_id' => 20, 'name' => '2026 Meeting Archive', 'parent' => 9),
+            (object) array('term_id' => 4, 'name' => 'Budget', 'parent' => 0),
+            (object) array('term_id' => 21, 'name' => '2026 Meeting Archive', 'parent' => 4),
+            (object) array('term_id' => 9, 'name' => 'Planning', 'parent' => 0),
+            (object) array('term_id' => 30, 'name' => 'Orphan child', 'parent' => 999),
+        );
+        $html = $this->renderWithTerms(array(), $terms);
+        preg_match_all('/<option value="(\d*)">([^<]*)<\/option>/u', $html, $m);
+        $pad = "\u{00A0}\u{00A0}\u{00A0}";
+
+        $this->assertSame(array('', '4', '21', '9', '20', '30'), $m[1]);
+        $this->assertSame('Budget', $m[2][1]);
+        $this->assertSame($pad . '2026 Meeting Archive', $m[2][2]);
+        $this->assertSame($pad . '2026 Meeting Archive', $m[2][4]);
+        $this->assertSame('Orphan child', $m[2][5], 'Parent outside the set is treated as a root.');
+    }
+
+    public function test_filter_survives_a_parent_cycle(): void
+    {
+        $terms = array(
+            (object) array('term_id' => 4, 'name' => 'A', 'parent' => 9),
+            (object) array('term_id' => 9, 'name' => 'B', 'parent' => 4),
+        );
+        $html = $this->renderWithTerms(array(), $terms);
+        $this->assertSame(2, substr_count($html, '<option value="4"') + substr_count($html, '<option value="9"'));
+    }
 }

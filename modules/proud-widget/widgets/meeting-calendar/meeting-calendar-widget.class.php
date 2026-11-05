@@ -163,12 +163,66 @@ class MeetingCalendarWidget extends Core\ProudWidget {
             <?php echo esc_html__( 'Category', 'wp-proud-core' ); ?>
             <select class="proud-meeting-calendar-filter form-control">
                 <option value=""><?php echo esc_html__( 'All meeting categories', 'wp-proud-core' ); ?></option>
-                <?php foreach ( $terms as $term ) : ?>
-                    <option value="<?php echo esc_attr( absint( $term->term_id ) ); ?>"><?php echo esc_html( $term->name ); ?></option>
+                <?php foreach ( self::orderTermsHierarchically( $terms ) as $row ) : ?>
+                    <option value="<?php echo esc_attr( absint( $row['term']->term_id ) ); ?>"><?php echo str_repeat( "\u{00A0}\u{00A0}\u{00A0}", $row['depth'] ) . esc_html( $row['term']->name ); ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
         <?php
+    }
+
+    /**
+     * Orders terms parent-first with each child under its parent, so the
+     * native <select> can show the hierarchy by indenting (non-breaking
+     * spaces, as wp_dropdown_categories() does). A term whose parent is not
+     * in the set (e.g. excluded by the widget's limit) is treated as a root.
+     * Siblings keep the incoming (name) order.
+     *
+     * @param object[] $terms Terms with term_id, name and optional parent.
+     * @return array[] Rows of array( 'term' => object, 'depth' => int ).
+     */
+    private static function orderTermsHierarchically( $terms ) {
+        $ids      = array();
+        $children = array();
+        foreach ( $terms as $term ) {
+            $ids[ (int) $term->term_id ] = true;
+        }
+        $roots = array();
+        foreach ( $terms as $term ) {
+            $parent = isset( $term->parent ) ? (int) $term->parent : 0;
+            if ( $parent && isset( $ids[ $parent ] ) && $parent !== (int) $term->term_id ) {
+                $children[ $parent ][] = $term;
+            } else {
+                $roots[] = $term;
+            }
+        }
+
+        $rows    = array();
+        $visited = array();
+        $walk    = function ( $list, $depth ) use ( &$walk, &$rows, &$visited, $children ) {
+            foreach ( $list as $term ) {
+                $id = (int) $term->term_id;
+                if ( isset( $visited[ $id ] ) ) {
+                    continue;
+                }
+                $visited[ $id ] = true;
+                $rows[]         = array( 'term' => $term, 'depth' => $depth );
+                if ( ! empty( $children[ $id ] ) ) {
+                    $walk( $children[ $id ], $depth + 1 );
+                }
+            }
+        };
+        $walk( $roots, 0 );
+
+        // A parent cycle leaves terms unreached; list them flat at the end.
+        foreach ( $terms as $term ) {
+            if ( ! isset( $visited[ (int) $term->term_id ] ) ) {
+                $visited[ (int) $term->term_id ] = true;
+                $rows[] = array( 'term' => $term, 'depth' => 0 );
+            }
+        }
+
+        return $rows;
     }
 
     /**
