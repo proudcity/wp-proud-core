@@ -1,3 +1,8 @@
+## 2026.11.05.1505
+
+- Meeting Calendar widget (wp-proudcity#2768): the category filter shows each category's color as a swatch beside its name, like the Events calendar's dropdown, in both the open list and the selected button. The color is sent as a palette-checked `data-color` attribute (only `''` or `#RRGGBB`) and the swatch is built from DOM nodes, not wp-fullcalendar's `#hex - ` label passed to `.html()`. Categories without a valid color show the theme's Primary default. Swatch styles are in wp-proud-theme.
+- New test `test_filter_options_carry_only_palette_colors`. Suite 652 tests / 1200 assertions.
+
 ## 2026.11.05.1045
 
 - **Meeting Calendar widget, round 2** (wp-proudcity#2768, Kevin's feedback).
