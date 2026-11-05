@@ -98,6 +98,41 @@ function proud_normalize_palette_color( $color ) {
 }
 
 /**
+ * Sanitizes a Font Awesome icon class string stored in term meta.
+ *
+ * The value is saved raw from POST and printed into class attributes (and
+ * concatenated into HTML by the service-center app), so it is held to a
+ * strict allowlist: 1-4 whitespace-separated tokens of letters, digits and
+ * hyphens, 100 characters or fewer in total. Anything else returns ''.
+ *
+ * @param mixed $value Stored icon value.
+ * @return string Tokens joined by single spaces, or ''.
+ */
+function proud_sanitize_icon_class( $value ) {
+    if ( ! is_string( $value ) ) {
+        return '';
+    }
+
+    $value = trim( $value );
+    if ( '' === $value ) {
+        return '';
+    }
+
+    $tokens = preg_split( '/\s+/', $value );
+    if ( count( $tokens ) > 4 ) {
+        return '';
+    }
+    foreach ( $tokens as $token ) {
+        if ( ! preg_match( '/^[a-z0-9-]+$/i', $token ) ) {
+            return '';
+        }
+    }
+
+    $clean = implode( ' ', $tokens );
+    return strlen( $clean ) > 100 ? '' : $clean;
+}
+
+/**
  * Helper to return the Yoast Meta description if present or the_excerpt
  *
  * @since  2026.01.29
