@@ -74,6 +74,7 @@ require_once plugin_dir_path(__FILE__) . 'plugin_override/general.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/simple-staff-list/simple-staff-list.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wordpress-faq-manager/proud-wordpress-faq-manager.php';
 require_once plugin_dir_path(__FILE__) . 'plugin_override/wp-stateless/proud-wp-stateless.php';
+require_once plugin_dir_path(__FILE__) . 'plugin_override/duplicate-post/proud-duplicate-post.php';
 
 // WP-CLI commands
 // -------------------------
