@@ -1,3 +1,9 @@
+## 2026.11.10.1106
+
+- **Bold Timeline: timelines can be copied** (wp-proudcity#3014). Editors can keep one styled "template" timeline and copy it for each new timeline, colors and all. Adds `bold-timeline` to Duplicate Post's enabled types through the `duplicate_post_enabled_post_types` filter (no per-site option).
+  - Bold Timeline's list has no row-action hook, so Clone and New Draft links are built with Duplicate Post's own `duplicate_post_get_clone_post_link()` (same nonce and `copy_posts` check) and added to each row by a small admin script. Draft copies show "— Draft", and Clone shows a "Timeline copied." notice.
+  - New Draft opens the timeline builder instead of Duplicate Post's `post.php` redirect, which returns 403 for this post type. Rewrite & Republish is not offered.
+
 ## 2026.11.05.1540
 
 - **Gravity Forms autocomplete** (wp-proudcity#3021, WCAG 2.1 1.3.5 Identify Input Purpose). Name, email, phone, address and website fields now print `autocomplete` attributes so browsers and assistive technology know what each input is for. Done at render time on `gform_pre_render` (priority 50); nothing is saved to form meta.
