@@ -229,6 +229,12 @@ if (class_exists('GFCommon')) {
         // Late priority so fields added by other gform_pre_render callbacks are covered.
         add_filter('gform_pre_render', __NAMESPACE__ . '\\proud_gform_autocomplete_pre_render', 50);
 
+        // GF 3.2 syncs multi-page forms to a ?gf_page_{id} query arg and re-reads it on
+        // popstate. The Angular router in wp-proud-actions-app rewrites #gf_{id} to
+        // #/gf_{id}, which fires popstate with no query arg, so GF jumps back to page 1
+        // after Next on non-AJAX forms. Turn the page query arg off (wp-proudcity#3026).
+        add_filter('gform_disable_page_query_arg', '__return_true');
+
         add_filter('gform_add_field_buttons', __NAMESPACE__ . '\\proud_remove_gf_post_fields', 10, 1);
         add_filter('gform_disable_post_creation', '__return_true'); // stops all post creation
 

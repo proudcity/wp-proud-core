@@ -1,3 +1,9 @@
+## 2026.11.12.1417
+
+- **Gravity Forms multi-page forms stay on the right page** (wp-proudcity#3026, Zendesk 8136). On non-AJAX multi-page forms, clicking Next showed "Step 2" in the progress bar but page 1 again. Gravity Forms 3.2 keeps the current page in a `?gf_page_{id}` query arg and re-reads it on `popstate`. The Angular router loaded by wp-proud-actions-app rewrites GF's `#gf_{id}` anchor to `#/gf_{id}`, which fires `popstate` with no query arg, so GF went back to page 1.
+  - `gform_disable_page_query_arg` (GF 3.2.1+) now returns true for every form, which adds `data-gf-page-query="false"` to the form tag and turns that sync off. Forms no longer put the page number in the URL, and links with `gf_page_{id}` no longer open a specific page.
+  - Verified locally on GF 3.2.2 with a two-page non-AJAX form: Next stays on page 2, Previous returns to page 1 with values kept.
+
 ## 2026.11.10.1106
 
 - **Bold Timeline: timelines can be copied** (wp-proudcity#3014). Editors can keep one styled "template" timeline and copy it for each new timeline, colors and all. Adds `bold-timeline` to Duplicate Post's enabled types through the `duplicate_post_enabled_post_types` filter (no per-site option).
