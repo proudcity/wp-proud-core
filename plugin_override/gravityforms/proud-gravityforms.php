@@ -376,6 +376,32 @@ function proud_gform_cleanup_temp($path) {
     }
 }
 
+/**
+ * Claims one slot from the per-request compression budget. Returns false once
+ * $max images have been decoded in this request, so a multi-file field (or
+ * several fields) full of cheap-to-send, large-to-decode images cannot hold a
+ * PHP worker past max_execution_time. The count is per request, across all
+ * fields, because gform_save_field_value runs once per field.
+ *
+ * @param int  $max   Images allowed per request.
+ * @param bool $reset Reset the counter (tests only).
+ */
+function proud_gform_claim_compress_slot($max, $reset = false) {
+    static $used = 0;
+
+    if ($reset) {
+        $used = 0;
+        return true;
+    }
+
+    if ($used >= $max) {
+        return false;
+    }
+
+    $used++;
+    return true;
+}
+
 function proud_gform_log_debug($message) {
     if (class_exists('GFCommon') && is_callable(array('GFCommon', 'log_debug'))) {
         \GFCommon::log_debug($message);
@@ -446,6 +472,14 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
             return 'skipped_memory';
         }
 
+        // Counted only for images that will actually be decoded: PDFs, small
+        // images and skips above do not use up the budget.
+        $max_per_request = max(1, (int) apply_filters('proud_gform_image_max_per_request', 10));
+        if (! proud_gform_claim_compress_slot($max_per_request)) {
+            proud_gform_log_debug("proud_gform_compress_image_file(): skipping {$path}, per-request limit of {$max_per_request} images reached.");
+            return 'skipped_request_limit';
+        }
+
         $editor = wp_get_image_editor($path);
         if (is_wp_error($editor)) {
             proud_gform_log_error('proud_gform_compress_image_file(): wp_get_image_editor() failed for ' . $path . ': ' . $editor->get_error_message());
@@ -470,6 +504,13 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
         // does not match the output MIME type, so "photo.jpg.<id>.tmp" would
         // be written as "photo.jpg.<id>.jpg" and fail the path check below.
         $temp_path = trailingslashit(dirname($path)) . pathinfo($path, PATHINFO_FILENAME) . '.' . uniqid('proudgf') . '.' . $ext;
+
+        // A memory-limit fatal or timeout inside save() skips the catch block
+        // below and would leave this copy of the upload in the public uploads
+        // folder. Shutdown functions still run after a fatal. After a
+        // successful rename() the temp path no longer exists, so this is a
+        // no-op.
+        register_shutdown_function(__NAMESPACE__ . '\\proud_gform_cleanup_temp', $temp_path);
 
         $saved = $editor->save($temp_path, $info['mime']);
         if (is_wp_error($saved)) {

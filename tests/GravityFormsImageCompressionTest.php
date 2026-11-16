@@ -42,6 +42,8 @@ class GravityFormsImageCompressionTest extends TestCase
         GFFormsModel::$upload_root      = $this->uploadRoot . '/';
         GFFormsModel::$upload_url_root  = $this->uploadUrlRoot;
         GFFormsModel::$permission_calls = [];
+
+        \Proud\Gform\proud_gform_claim_compress_slot(0, true);
     }
 
     protected function tearDown(): void
@@ -188,6 +190,17 @@ class GravityFormsImageCompressionTest extends TestCase
         rename($sourcePath, $target);
 
         return [$target, $this->uploadUrlRoot . $relative];
+    }
+
+    /**
+     * Returns the given value for each named filter; every other filter
+     * passes its value through.
+     */
+    private function overrideFilters(array $overrides): void
+    {
+        Functions\when('apply_filters')->alias(static function ($tag, $value, ...$args) use ($overrides) {
+            return array_key_exists($tag, $overrides) ? $overrides[$tag] : $value;
+        });
     }
 
     private function mockField(string $type = 'fileupload', mixed $compress = null): object
@@ -728,6 +741,105 @@ class GravityFormsImageCompressionTest extends TestCase
         \Proud\Gform\proud_gform_compress_image_file($path, 200, 82);
 
         $this->assertSame([$path], GFFormsModel::$permission_calls);
+    }
+
+    // -------------------------------------------------------------------------
+    // Per-request limit and shutdown cleanup of the temp file
+    // -------------------------------------------------------------------------
+
+    public function test_compress_image_file_stops_at_per_request_limit(): void
+    {
+        $this->overrideFilters(['proud_gform_image_max_per_request' => 2]);
+        Functions\when('wp_get_image_editor')->alias(fn () => $this->mockEditor());
+
+        $statuses = [];
+        foreach (['a', 'b', 'c'] as $name) {
+            $path = $this->makeJpeg($this->uploadRoot . "/{$name}.jpg", 400, 300);
+            $statuses[] = \Proud\Gform\proud_gform_compress_image_file($path, 200, 82);
+        }
+
+        $this->assertSame(['resized', 'resized', 'skipped_request_limit'], $statuses);
+        $this->assertGreaterThan(1, filesize($this->uploadRoot . '/c.jpg'), 'The image over the limit must be left untouched.');
+    }
+
+    public function test_per_request_limit_ignores_images_that_are_not_decoded(): void
+    {
+        $this->overrideFilters(['proud_gform_image_max_per_request' => 1]);
+        Functions\when('wp_get_image_editor')->alias(fn () => $this->mockEditor());
+
+        $small = $this->makeJpeg($this->uploadRoot . '/small.jpg', 100, 80);
+        $pdf   = $this->makePdf($this->uploadRoot . '/doc.pdf');
+        $large = $this->makeJpeg($this->uploadRoot . '/large.jpg', 400, 300);
+
+        $this->assertSame('skipped_small', \Proud\Gform\proud_gform_compress_image_file($small, 200, 82));
+        $this->assertSame('skipped_not_image', \Proud\Gform\proud_gform_compress_image_file($pdf, 200, 82));
+        $this->assertSame('resized', \Proud\Gform\proud_gform_compress_image_file($large, 200, 82));
+    }
+
+    public function test_per_request_limit_spans_fields_in_one_request(): void
+    {
+        $this->overrideFilters(['proud_gform_image_max_per_request' => 1, 'proud_gform_image_max_dimension' => 200]);
+        Functions\when('wp_get_image_editor')->alias(fn () => $this->mockEditor());
+
+        [, $urlA] = $this->placeInUploadRoot($this->makeJpeg($this->tmpDir . '/a.jpg', 400, 300), '1/a.jpg');
+        [$pathB, $urlB] = $this->placeInUploadRoot($this->makeJpeg($this->tmpDir . '/b.jpg', 400, 300), '1/b.jpg');
+        $sizeB = filesize($pathB);
+
+        \Proud\Gform\gform_compress_image_upload($urlA, [], $this->mockField(), []);
+        \Proud\Gform\gform_compress_image_upload($urlB, [], $this->mockField(), []);
+
+        $this->assertSame($sizeB, filesize($pathB), 'The second field must not be compressed once the limit is used up.');
+    }
+
+    public function test_temp_file_is_removed_at_shutdown_if_request_dies_during_save(): void
+    {
+        $path = $this->makeJpeg($this->uploadRoot . '/photo.jpg', 400, 300);
+        $original = file_get_contents($path);
+
+        $registered = [];
+        Functions\when('register_shutdown_function')->alias(function ($callback, ...$args) use (&$registered) {
+            $registered[] = [$callback, $args];
+        });
+
+        // save() writes the temp file and then the request "dies": run the
+        // registered shutdown callbacks at that point, as PHP would after a
+        // memory-limit fatal, and report failure so the rest of the function
+        // does not clean up for us.
+        Functions\when('wp_get_image_editor')->justReturn($this->mockEditor([
+            'save' => function ($destination, $mime) use (&$registered) {
+                file_put_contents($destination, 'partial');
+                foreach ($registered as [$callback, $args]) {
+                    $callback(...$args);
+                }
+                return ['path' => $destination];
+            },
+        ]));
+
+        \Proud\Gform\proud_gform_compress_image_file($path, 200, 82);
+
+        $this->assertCount(1, $registered);
+        $this->assertSame($original, file_get_contents($path));
+        $this->assertSame([$path], glob($this->uploadRoot . '/*'), 'The shutdown cleanup must remove the temp file.');
+    }
+
+    public function test_shutdown_cleanup_is_a_noop_after_successful_rename(): void
+    {
+        $path = $this->makeJpeg($this->uploadRoot . '/photo.jpg', 400, 300);
+
+        $registered = [];
+        Functions\when('register_shutdown_function')->alias(function ($callback, ...$args) use (&$registered) {
+            $registered[] = [$callback, $args];
+        });
+        Functions\when('wp_get_image_editor')->justReturn($this->mockEditor());
+
+        $this->assertSame('resized', \Proud\Gform\proud_gform_compress_image_file($path, 200, 82));
+
+        foreach ($registered as [$callback, $args]) {
+            $callback(...$args);
+        }
+
+        $this->assertFileExists($path);
+        $this->assertSame(1, filesize($path), 'Running the cleanup after success must not touch the compressed file.');
     }
 
     // -------------------------------------------------------------------------
