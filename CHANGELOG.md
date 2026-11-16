@@ -1,3 +1,12 @@
+## 2026.11.16.1317
+
+- **Gravity Forms image uploads are compressed** (wp-proudcity#2912). Phone photos uploaded through File Upload fields are resized to a 2000px long edge at quality 82 before they go to Google Cloud Storage, so a 4-6MB photo lands at roughly 0.6MB. This keeps notifications under Mailgun's 25MB cap.
+  - Runs on `gform_save_field_value` at priority 5, ahead of the WP-Stateless GF addon (10) and our legacy bridge (100). The file is rewritten in place; the entry value and URL never change.
+  - New "Compress uploaded images" checkbox on File Upload fields, on by default for existing fields. Unchecked fields keep the original file.
+  - JPEG, PNG and WebP only, decided from `getimagesize()` and the extension. PDFs and other files, images already within 2000px, animated WebP/APNG and HEIC are left alone. EXIF orientation is applied, so portrait photos stay upright.
+  - Never blocks a submission: any failure keeps the original. A memory guard skips images that would not fit in the 256M image limit, at most 10 images are compressed per request, and a shutdown handler removes the temp file if PHP dies mid-save.
+  - Filters: `proud_gform_image_max_dimension` (2000), `proud_gform_image_quality` (82), `proud_gform_image_max_per_request` (10).
+
 ## 2026.11.12.1417
 
 - **Gravity Forms multi-page forms stay on the right page** (wp-proudcity#3026, Zendesk 8136). On non-AJAX multi-page forms, clicking Next showed "Step 2" in the progress bar but page 1 again. Gravity Forms 3.2 keeps the current page in a `?gf_page_{id}` query arg and re-reads it on `popstate`. The Angular router loaded by wp-proud-actions-app rewrites GF's `#gf_{id}` anchor to `#/gf_{id}`, which fires `popstate` with no query arg, so GF went back to page 1.
