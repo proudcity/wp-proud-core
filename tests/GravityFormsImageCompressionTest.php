@@ -102,6 +102,31 @@ class GravityFormsImageCompressionTest extends TestCase
         return $path;
     }
 
+    /**
+     * Inserts an APP1 Exif segment holding only IFD0 Orientation right after
+     * SOI (or after GD's APP0 JFIF segment when $afterApp0 is true).
+     */
+    private function addExifOrientation(string $path, int $orientation, bool $littleEndian = false, bool $afterApp0 = false, int $type = 3): string
+    {
+        $s = $littleEndian ? 'v' : 'n';
+        $l = $littleEndian ? 'V' : 'N';
+        $tiff = ($littleEndian ? 'II' : 'MM') . pack($s, 42) . pack($l, 8)
+            . pack($s, 1)
+            . pack($s, 0x0112) . pack($s, $type) . pack($l, 1) . pack($s, $orientation) . "\0\0"
+            . pack($l, 0);
+        $app1 = "Exif\0\0" . $tiff;
+        $segment = "\xFF\xE1" . pack('n', strlen($app1) + 2) . $app1;
+
+        $jpeg = file_get_contents($path);
+        $insertAt = 2;
+        if ($afterApp0 && "\xFF\xE0" === substr($jpeg, 2, 2)) {
+            $insertAt = 4 + unpack('n', substr($jpeg, 4, 2))[1];
+        }
+        file_put_contents($path, substr($jpeg, 0, $insertAt) . $segment . substr($jpeg, $insertAt));
+
+        return $path;
+    }
+
     private function makePng(string $path, int $width, int $height): string
     {
         $img = imagecreatetruecolor($width, $height);
@@ -503,6 +528,107 @@ class GravityFormsImageCompressionTest extends TestCase
 
         $this->assertSame('skipped_small', $status);
         $this->assertSame($originalSize, filesize($path));
+    }
+
+    // -------------------------------------------------------------------------
+    // EXIF orientation fallback (pods have no exif extension)
+    // -------------------------------------------------------------------------
+
+    public function test_jpeg_orientation_reads_big_endian(): void
+    {
+        $path = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/a.jpg', 40, 30), 6);
+        $this->assertSame(6, \Proud\Gform\proud_gform_jpeg_orientation($path));
+    }
+
+    public function test_jpeg_orientation_reads_little_endian(): void
+    {
+        $path = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/a.jpg', 40, 30), 3, true);
+        $this->assertSame(3, \Proud\Gform\proud_gform_jpeg_orientation($path));
+    }
+
+    public function test_jpeg_orientation_skips_app0_before_app1(): void
+    {
+        $path = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/a.jpg', 40, 30), 8, false, true);
+        $this->assertSame(8, \Proud\Gform\proud_gform_jpeg_orientation($path));
+    }
+
+    public function test_jpeg_orientation_matches_exif_read_data(): void
+    {
+        if (! function_exists('exif_read_data')) {
+            $this->markTestSkipped('exif extension not loaded');
+        }
+        foreach ([[2, false], [5, true], [7, false]] as [$orientation, $le]) {
+            $path = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . "/o{$orientation}.jpg", 40, 30), $orientation, $le, true);
+            $this->assertSame((int) exif_read_data($path)['Orientation'], \Proud\Gform\proud_gform_jpeg_orientation($path));
+        }
+    }
+
+    public function test_jpeg_orientation_null_without_exif(): void
+    {
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($this->makeJpeg($this->uploadRoot . '/a.jpg', 40, 30)));
+    }
+
+    public function test_jpeg_orientation_null_for_non_jpeg_and_garbage(): void
+    {
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($this->makePng($this->uploadRoot . '/a.png', 40, 30)));
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($this->makePdf($this->uploadRoot . '/a.pdf')));
+        file_put_contents($this->uploadRoot . '/trunc.jpg', "\xFF\xD8\xFF\xE1\x00\x40Exif\0\0MM\0*");
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($this->uploadRoot . '/trunc.jpg'));
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($this->uploadRoot . '/missing.jpg'));
+    }
+
+    public function test_jpeg_orientation_null_for_wrong_type_or_out_of_range(): void
+    {
+        $long = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/l.jpg', 40, 30), 6, false, false, 4);
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($long));
+        $range = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/r.jpg', 40, 30), 9);
+        $this->assertNull(\Proud\Gform\proud_gform_jpeg_orientation($range));
+    }
+
+    public function test_orientation_fallback_reads_file_only_when_exif_unavailable(): void
+    {
+        $path = $this->addExifOrientation($this->makeJpeg($this->uploadRoot . '/a.jpg', 40, 30), 6);
+
+        $this->assertSame(6, \Proud\Gform\proud_gform_exif_orientation_fallback(null, $path, false));
+        $this->assertNull(\Proud\Gform\proud_gform_exif_orientation_fallback(null, $path, true), 'With exif available WordPress already read it.');
+        $this->assertSame(3, \Proud\Gform\proud_gform_exif_orientation_fallback(3, $path, false), 'A value WordPress found is kept.');
+        $this->assertNull(\Proud\Gform\proud_gform_exif_orientation_fallback(null, $this->makePng($this->uploadRoot . '/b.png', 4, 4), false));
+    }
+
+    public function test_orientation_fallback_filter_is_only_attached_during_rotate(): void
+    {
+        $path = $this->makeJpeg($this->uploadRoot . '/photo.jpg', 400, 300);
+        $callback = 'Proud\\Gform\\proud_gform_exif_orientation_fallback';
+
+        $calls = [];
+        Functions\when('add_filter')->alias(function ($hook, $cb, $priority = 10) use (&$calls) {
+            $calls[] = ['add', $hook, $cb, $priority];
+            return true;
+        });
+        Functions\when('remove_filter')->alias(function ($hook, $cb, $priority = 10) use (&$calls) {
+            $calls[] = ['remove', $hook, $cb, $priority];
+            return true;
+        });
+
+        $editor = Mockery::mock();
+        $editor->shouldReceive('set_quality')->andReturn(true);
+        $editor->shouldReceive('resize')->andReturn(true);
+        $editor->shouldReceive('save')->andReturnUsing(static function ($destination, $mime) {
+            file_put_contents($destination, 'x');
+            return ['path' => $destination];
+        });
+        $editor->shouldReceive('maybe_exif_rotate')->once()->andReturnUsing(function () use (&$calls) {
+            $calls[] = ['rotate'];
+            return true;
+        });
+        Functions\when('wp_get_image_editor')->justReturn($editor);
+
+        $this->assertSame('resized', \Proud\Gform\proud_gform_compress_image_file($path, 200, 82));
+        $this->assertSame([
+            ['add', 'wp_image_maybe_exif_rotate', $callback, 10],
+            ['rotate'],
+            ['remove', 'wp_image_maybe_exif_rotate', $callback, 10],
+        ], $calls);
     }
 
     public function test_compress_image_file_calls_maybe_exif_rotate_after_resize(): void

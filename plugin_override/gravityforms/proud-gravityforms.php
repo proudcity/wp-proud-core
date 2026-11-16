@@ -370,6 +370,128 @@ function proud_gform_is_animated_image($path, $mime) {
     return false;
 }
 
+/**
+ * Reads the EXIF Orientation (1-8) from a JPEG without the exif extension, or
+ * returns null when there is none or the file isn't a JPEG.
+ *
+ * WP_Image_Editor::maybe_exif_rotate() only reads the tag through
+ * exif_read_data(). Without the extension it silently does nothing, and GD's
+ * re-encode drops the tag, so a portrait phone photo would be stored
+ * sideways. This walks the JPEG segments to APP1 "Exif" and reads tag 0x0112
+ * from IFD0. It reads at most the first 128KB and bails on anything
+ * malformed.
+ */
+function proud_gform_jpeg_orientation($path) {
+    $data = @file_get_contents($path, false, null, 0, 131072);
+    if (! is_string($data) || strlen($data) < 4 || "\xFF\xD8" !== substr($data, 0, 2)) {
+        return null;
+    }
+
+    $len = strlen($data);
+    $pos = 2;
+    while ($pos + 4 <= $len) {
+        if ("\xFF" !== $data[$pos]) {
+            return null;
+        }
+        $marker = ord($data[$pos + 1]);
+        if (0xFF === $marker) {
+            // Fill byte before a marker.
+            $pos++;
+            continue;
+        }
+        if (0xDA === $marker || 0xD9 === $marker) {
+            // Start of scan or end of image: no more metadata segments.
+            return null;
+        }
+
+        $segment_length = unpack('n', substr($data, $pos + 2, 2))[1];
+        if ($segment_length < 2) {
+            return null;
+        }
+
+        if (0xE1 === $marker && "Exif\0\0" === substr($data, $pos + 4, 6)) {
+            return proud_gform_tiff_orientation(substr($data, $pos + 10, $segment_length - 8));
+        }
+
+        $pos += 2 + $segment_length;
+    }
+
+    return null;
+}
+
+/**
+ * Reads Orientation (tag 0x0112, type SHORT) from IFD0 of a TIFF block.
+ */
+function proud_gform_tiff_orientation($tiff) {
+    $tiff_length = strlen($tiff);
+    if ($tiff_length < 8) {
+        return null;
+    }
+
+    $byte_order = substr($tiff, 0, 2);
+    if ('II' === $byte_order) {
+        $short = 'v';
+        $long  = 'V';
+    } elseif ('MM' === $byte_order) {
+        $short = 'n';
+        $long  = 'N';
+    } else {
+        return null;
+    }
+
+    if (42 !== unpack($short, substr($tiff, 2, 2))[1]) {
+        return null;
+    }
+
+    $ifd = unpack($long, substr($tiff, 4, 4))[1];
+    if ($ifd < 8 || $ifd + 2 > $tiff_length) {
+        return null;
+    }
+
+    $count = unpack($short, substr($tiff, $ifd, 2))[1];
+    for ($i = 0; $i < $count; $i++) {
+        $entry = $ifd + 2 + ($i * 12);
+        if ($entry + 12 > $tiff_length) {
+            return null;
+        }
+        if (0x0112 !== unpack($short, substr($tiff, $entry, 2))[1]) {
+            continue;
+        }
+        if (3 !== unpack($short, substr($tiff, $entry + 2, 2))[1]) {
+            return null;
+        }
+        $value = unpack($short, substr($tiff, $entry + 8, 2))[1];
+
+        return ($value >= 1 && $value <= 8) ? $value : null;
+    }
+
+    return null;
+}
+
+/**
+ * wp_image_maybe_exif_rotate callback, added only around our own
+ * maybe_exif_rotate() call. Supplies the orientation when WordPress could not
+ * read it because the exif extension is missing; otherwise leaves it alone.
+ *
+ * @param int|null  $orientation    Orientation WordPress read, or null.
+ * @param string    $file           Path to the image being edited.
+ * @param bool|null $exif_available Override for tests; defaults to whether
+ *                                  exif_read_data() is callable.
+ */
+function proud_gform_exif_orientation_fallback($orientation, $file, $exif_available = null) {
+    if (null === $exif_available) {
+        $exif_available = is_callable('exif_read_data');
+    }
+
+    if (! empty($orientation) || $exif_available) {
+        return $orientation;
+    }
+
+    $read = proud_gform_jpeg_orientation($file);
+
+    return null === $read ? $orientation : $read;
+}
+
 function proud_gform_cleanup_temp($path) {
     if (is_string($path) && '' !== $path && file_exists($path)) {
         @unlink($path);
@@ -497,7 +619,14 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
         // Rotate after the resize so GD copies a ~4MP image, not the full-size
         // original (a full-size rotate doubles peak memory and can fatal past
         // the guard above). The resize box is square, so the result is the same.
-        $editor->maybe_exif_rotate();
+        // The fallback filter is scoped to this one call so media library
+        // uploads keep WordPress's default behaviour.
+        add_filter('wp_image_maybe_exif_rotate', __NAMESPACE__ . '\\proud_gform_exif_orientation_fallback', 10, 2);
+        try {
+            $editor->maybe_exif_rotate();
+        } finally {
+            remove_filter('wp_image_maybe_exif_rotate', __NAMESPACE__ . '\\proud_gform_exif_orientation_fallback', 10);
+        }
 
         // The temp name must end in the original image extension.
         // WP_Image_Editor::get_output_format() replaces any extension that
