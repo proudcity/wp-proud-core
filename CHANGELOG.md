@@ -1,3 +1,7 @@
+## 2026.11.16.1347
+
+- **Gravity Forms image compression keeps portrait photos upright** (wp-proudcity#2912). Our PHP image has no `exif` extension, so WordPress couldn't read a photo's EXIF Orientation and compressed portrait phone photos were saved sideways. wp-proud-core now reads the Orientation tag from the JPEG itself and passes it to WordPress through `wp_image_maybe_exif_rotate`, only during our own compression. Media library uploads are unchanged.
+
 ## 2026.11.16.1317
 
 - **Gravity Forms image uploads are compressed** (wp-proudcity#2912). Phone photos uploaded through File Upload fields are resized to a 2000px long edge at quality 82 before they go to Google Cloud Storage, so a 4-6MB photo lands at roughly 0.6MB. This keeps notifications under Mailgun's 25MB cap.
