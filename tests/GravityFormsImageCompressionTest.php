@@ -224,6 +224,17 @@ class GravityFormsImageCompressionTest extends TestCase
         $editor->shouldReceive('save')
             ->zeroOrMoreTimes()
             ->andReturnUsing($overrides['save'] ?? static function ($destination, $mime) {
+                // Mirror WP_Image_Editor::get_output_format(): an extension
+                // that does not belong to the output MIME type is replaced.
+                $extensions = [
+                    'image/jpeg' => ['jpg', 'jpeg'],
+                    'image/png'  => ['png'],
+                    'image/webp' => ['webp'],
+                ];
+                $ext = strtolower(pathinfo($destination, PATHINFO_EXTENSION));
+                if (isset($extensions[$mime]) && ! in_array($ext, $extensions[$mime], true)) {
+                    $destination = dirname($destination) . '/' . pathinfo($destination, PATHINFO_FILENAME) . '.' . $extensions[$mime][0];
+                }
                 file_put_contents($destination, 'x');
                 return ['path' => $destination, 'file' => basename($destination), 'mime-type' => $mime];
             });

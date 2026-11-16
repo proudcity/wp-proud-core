@@ -457,7 +457,11 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
             return 'failed_resize';
         }
 
-        $temp_path = trailingslashit(dirname($path)) . basename($path) . '.' . uniqid('proudgf', true) . '.tmp';
+        // The temp name must end in the original image extension.
+        // WP_Image_Editor::get_output_format() replaces any extension that
+        // does not match the output MIME type, so "photo.jpg.<id>.tmp" would
+        // be written as "photo.jpg.<id>.jpg" and fail the path check below.
+        $temp_path = trailingslashit(dirname($path)) . pathinfo($path, PATHINFO_FILENAME) . '.' . uniqid('proudgf') . '.' . $ext;
 
         $saved = $editor->save($temp_path, $info['mime']);
         if (is_wp_error($saved)) {
