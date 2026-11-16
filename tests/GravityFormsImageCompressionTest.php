@@ -492,7 +492,7 @@ class GravityFormsImageCompressionTest extends TestCase
         $this->assertSame($originalSize, filesize($path));
     }
 
-    public function test_compress_image_file_calls_maybe_exif_rotate_before_resize(): void
+    public function test_compress_image_file_calls_maybe_exif_rotate_after_resize(): void
     {
         $path = $this->makeJpeg($this->uploadRoot . '/photo.jpg', 400, 300, 95);
 
@@ -516,7 +516,7 @@ class GravityFormsImageCompressionTest extends TestCase
 
         \Proud\Gform\proud_gform_compress_image_file($path, 200, 82);
 
-        $this->assertSame(['exif', 'resize'], $calls);
+        $this->assertSame(['resize', 'exif'], $calls);
     }
 
     // -------------------------------------------------------------------------

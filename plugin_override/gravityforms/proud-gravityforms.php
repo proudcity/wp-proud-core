@@ -316,11 +316,14 @@ function proud_gform_local_upload_path($url, $url_root, $root) {
  * only (no Imagick, so no separate native-memory pool to worry about) with a
  * 256M WP_MAX_MEMORY_LIMIT, so this single estimate is the only guard.
  *
- * ~5 bytes/pixel decoded for a GD truecolor image, source plus resized
- * output, plus 10% headroom. An unlimited memory_limit (-1, or 0) always
+ * ~5 bytes/pixel decoded for a GD truecolor image: the source plus the
+ * resized output, plus a second output-sized copy for the EXIF rotate (GD
+ * rotate/flip allocate a new image before freeing the old one), plus the
+ * raw file bytes WP_Image_Editor_GD::load() holds while decoding, plus 10%
+ * headroom. An unlimited memory_limit (-1, or 0) always
  * passes.
  */
-function proud_gform_image_fits_memory($width, $height, $max_dimension) {
+function proud_gform_image_fits_memory($width, $height, $max_dimension, $file_bytes = 0) {
     if (function_exists('wp_raise_memory_limit')) {
         wp_raise_memory_limit('image');
     }
@@ -337,7 +340,8 @@ function proud_gform_image_fits_memory($width, $height, $max_dimension) {
     $out_width  = max(1, (int) round($width * $scale));
     $out_height = max(1, (int) round($height * $scale));
 
-    $estimated = (int) round((($width * $height) + ($out_width * $out_height)) * 5 * 1.1);
+    $pixels    = ($width * $height) + (2 * $out_width * $out_height);
+    $estimated = (int) round((($pixels * 5) + max(0, (int) $file_bytes)) * 1.1);
 
     return $estimated <= $available;
 }
@@ -437,7 +441,7 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
             return 'skipped_small';
         }
 
-        if (! proud_gform_image_fits_memory($width, $height, $max_dimension)) {
+        if (! proud_gform_image_fits_memory($width, $height, $max_dimension, (int) @filesize($path))) {
             proud_gform_log_debug("proud_gform_compress_image_file(): skipping {$path}, does not fit available memory.");
             return 'skipped_memory';
         }
@@ -448,7 +452,6 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
             return 'failed_editor';
         }
 
-        $editor->maybe_exif_rotate();
         $editor->set_quality($quality);
 
         $resized = $editor->resize($max_dimension, $max_dimension, false);
@@ -456,6 +459,11 @@ function proud_gform_compress_image_file($path, $max_dimension, $quality) {
             proud_gform_log_error('proud_gform_compress_image_file(): resize() failed for ' . $path . ': ' . $resized->get_error_message());
             return 'failed_resize';
         }
+
+        // Rotate after the resize so GD copies a ~4MP image, not the full-size
+        // original (a full-size rotate doubles peak memory and can fatal past
+        // the guard above). The resize box is square, so the result is the same.
+        $editor->maybe_exif_rotate();
 
         // The temp name must end in the original image extension.
         // WP_Image_Editor::get_output_format() replaces any extension that
