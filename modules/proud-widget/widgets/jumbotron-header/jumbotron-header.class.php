@@ -410,6 +410,22 @@ class JumbotronHeader extends Core\ProudWidget {
   }
 
   /**
+   * Pause/play control and reduced-motion handling (WCAG 2.2.2), slideshow only.
+   * Not hooked through enqueueFrontend(): the base class calls it without the
+   * instance, so it can't tell slideshow from the other header types.
+   */
+  private function enqueueSlideshowAssets() {
+    static $version = null;
+    if ( null === $version ) {
+      $data    = get_file_data( WP_PLUGIN_DIR . '/wp-proud-core/wp-proud-core.php', array( 'Version' => 'Version' ) );
+      $version = ! empty( $data['Version'] ) ? $data['Version'] : false;
+    }
+    $assets_url = plugins_url( 'assets/', __FILE__ );
+    wp_enqueue_style( 'proud-jumbotron-slideshow', $assets_url . 'jumbotron-slideshow.css', array(), $version );
+    wp_enqueue_script( 'proud-jumbotron-slideshow', $assets_url . 'jumbotron-slideshow.js', array( 'jquery' ), $version, true );
+  }
+
+  /**
    * Generate HTML code from shortcode content.
    *
    * @param   array   $atts     Shortcode attributes.
@@ -547,6 +563,7 @@ class JumbotronHeader extends Core\ProudWidget {
       if( !empty( $instance['image_vertical'] ) && 'middle' !== $instance['image_vertical'] ) {
         $resp_img_classes[] = 'image-vertical-' . $instance['image_vertical'];
       }
+      $this->enqueueSlideshowAssets();
       $file .= 'jumbotron-slideshow.php';
     }
     else {

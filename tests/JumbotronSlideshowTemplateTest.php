@@ -40,6 +40,7 @@ class JumbotronSlideshowTemplateTest extends TestCase
     {
         parent::setUp();
         Monkey\setUp();
+        Functions\stubTranslationFunctions();
         $this->applyPreKsesFilter();
 
         Functions\when('esc_html')->alias(static function ($text) {
@@ -211,5 +212,48 @@ class JumbotronSlideshowTemplateTest extends TestCase
         $this->assertStringNotContainsString('<script', $output);
         $this->assertStringNotContainsString('javascript:alert(2)', $output);
         $this->assertStringContainsString('A', $output);
+    }
+
+    // -----------------------------------------------------------------
+    // #3018 pause/play control
+    // -----------------------------------------------------------------
+
+    public function test_pause_button_rendered_once_with_expected_attributes(): void
+    {
+        $output = $this->render([$this->slide(), $this->slide()]);
+
+        $this->assertSame(1, substr_count($output, 'carousel-pause-toggle'));
+        $this->assertStringContainsString('<button type="button" class="carousel-pause-toggle" hidden', $output);
+        $this->assertStringContainsString('data-label-pause="Pause slideshow"', $output);
+        $this->assertStringContainsString('data-label-play="Play slideshow"', $output);
+    }
+
+    public function test_pause_button_icon_hidden_and_label_for_screen_readers(): void
+    {
+        $output = $this->render([$this->slide()]);
+
+        $this->assertStringContainsString('<span class="fa fa-pause" aria-hidden="true"></span>', $output);
+        $this->assertStringContainsString('<span class="sr-only">Pause slideshow</span>', $output);
+    }
+
+    public function test_pause_button_precedes_indicators_in_tab_order(): void
+    {
+        $output = $this->render([$this->slide()]);
+
+        $this->assertLessThan(
+            strpos($output, 'carousel-indicators'),
+            strpos($output, 'carousel-pause-toggle')
+        );
+    }
+
+    public function test_existing_carousel_markup_is_unchanged(): void
+    {
+        $output = $this->render([$this->slide()]);
+
+        $this->assertStringContainsString('<div id="proud-header-123" class="carousel slide jumbotron-slideshow" data-ride="carousel">', $output);
+        $this->assertStringContainsString('<ol class="carousel-indicators">', $output);
+        $this->assertStringContainsString('<div class="carousel-inner" role="listbox">', $output);
+        $this->assertStringContainsString('<a class="left carousel-control" href="#proud-header-123" role="button" data-slide="prev">', $output);
+        $this->assertStringContainsString('<a class="right carousel-control" href="#proud-header-123" role="button" data-slide="next">', $output);
     }
 }

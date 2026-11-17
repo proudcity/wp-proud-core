@@ -1,4 +1,10 @@
 <div id="<?php print $random_id ?>" class="carousel slide jumbotron-slideshow" data-ride="carousel"><!-- wp-proud-core/modules/proud-widget/widgets/jumbotron-header/templates/jumbotron-slideshow.php -->
+    <button type="button" class="carousel-pause-toggle" hidden
+            data-label-pause="<?php echo esc_attr__( 'Pause slideshow', 'wp-proud-core' ); ?>"
+            data-label-play="<?php echo esc_attr__( 'Play slideshow', 'wp-proud-core' ); ?>">
+        <span class="fa fa-pause" aria-hidden="true"></span>
+        <span class="sr-only"><?php echo esc_html__( 'Pause slideshow', 'wp-proud-core' ); ?></span>
+    </button>
     <!-- Indicators -->
     <ol class="carousel-indicators">
         <?php foreach ($instance['slideshow'] as $key => $slide) : ?>
@@ -48,7 +54,7 @@
         <span class="sr-only">Previous</span>
     </a>
     <a class="right carousel-control" href="#<?php print $random_id ?>" role="button" data-slide="next">
-        <span class="fa fa-chevron-right"></span>
+        <span class="fa fa-chevron-right" aria-hidden="true"></span>
         <span class="sr-only">Next</span>
     </a>
 </div>

@@ -1,3 +1,12 @@
+## 2026.11.17.1056
+
+- **Hero unit slideshow has a Pause/Play button and respects reduced motion** (wp-proudcity#3018, WCAG 2.2.2). The slideshow auto-advanced every 5 seconds with no way to stop it for keyboard, screen reader and touch visitors.
+  - New Pause/Play button at the bottom-left of the slideshow, first in tab order. Its label switches between "Pause slideshow" and "Play slideshow".
+  - Visitors who have "reduce motion" turned on in their operating system now see a paused slideshow with a Play button. They can press Play, and the Previous/Next arrows and dots still work. Slide changes are instant cuts for them.
+  - Rotation also pauses while keyboard focus is inside the slideshow and resumes when focus leaves, unless the visitor pressed Pause.
+  - The Previous/Next arrows now show a visible focus ring.
+  - The new script and stylesheet load only on pages that have a slideshow Hero unit.
+
 ## 2026.11.16.1347
 
 - **Gravity Forms image compression keeps portrait photos upright** (wp-proudcity#2912). Our PHP image has no `exif` extension, so WordPress couldn't read a photo's EXIF Orientation and compressed portrait phone photos were saved sideways. wp-proud-core now reads the Orientation tag from the JPEG itself and passes it to WordPress through `wp_image_maybe_exif_rotate`, only during our own compression. Media library uploads are unchanged.
