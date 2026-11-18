@@ -1,4 +1,4 @@
-## 2026.11.18.1159
+## 2026.11.18.1220
 
 - **Submenu widget "Menu to use" starts with a blank option** (wp-proudcity#3029). A saved menu that is empty or no longer exists used to display as the first menu in the list, and clicking Done saved that menu by accident. It now shows blank and saves an empty value, which renders nothing. New Submenu widgets still default to the primary menu.
 
