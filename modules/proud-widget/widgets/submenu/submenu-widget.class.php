@@ -22,7 +22,7 @@ class Submenu extends Core\ProudWidget
      */
     function initialize()
     {
-        $menus = [];
+        $menus = ['' => ''];
         $primary = 'primary-links';
         $default = 'primary-links';
 

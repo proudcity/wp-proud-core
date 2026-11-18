@@ -1,3 +1,9 @@
+## 2026.11.18.1159
+
+- **Submenu widget "Menu to use" starts with a blank option** (wp-proudcity#3029). A saved menu that is empty or no longer exists used to display as the first menu in the list, and clicking Done saved that menu by accident. It now shows blank and saves an empty value, which renders nothing. New Submenu widgets still default to the primary menu.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3029
+
 ## 2026.11.17.1056
 
 - **Hero unit slideshow has a Pause/Play button and respects reduced motion** (wp-proudcity#3018, WCAG 2.2.2). The slideshow auto-advanced every 5 seconds with no way to stop it for keyboard, screen reader and touch visitors.
