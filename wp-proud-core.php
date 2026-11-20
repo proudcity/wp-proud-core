@@ -55,6 +55,7 @@ require_once plugin_dir_path(__FILE__) . 'modules/notification-shut-down.php';
 require_once plugin_dir_path(__FILE__) . 'modules/filetoweb-widget-disable.php';
 require_once plugin_dir_path(__FILE__) . 'modules/events-manager-recurrence-slug.php';
 require_once plugin_dir_path(__FILE__) . 'modules/events-manager-ical-scope.php';
+require_once plugin_dir_path(__FILE__) . 'modules/media-gallery-ids.php';
 require_once plugin_dir_path(__FILE__) . 'modules/proud-html-preview/proud-html-preview.php';
 
 

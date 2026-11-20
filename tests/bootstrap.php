@@ -130,6 +130,10 @@ require_once __DIR__ . '/../modules/events-manager-recurrence-slug.php';
 // and registers the em_calendar_template_args filter (add_filter is stubbed).
 require_once __DIR__ . '/../modules/events-manager-ical-scope.php';
 
+// media-gallery-ids.php defines proudcity_gallery_ids_to_string() and registers
+// the shortcode_atts_gallery filter (add_filter is stubbed). See #3033.
+require_once __DIR__ . '/../modules/media-gallery-ids.php';
+
 // gravityforms-stubs.php defines the \wpCloud\StatelessMedia\Module stub that
 // proud_gform_stateless_active() calls, plus StatelessModuleStub for staging
 // its return value per test.
