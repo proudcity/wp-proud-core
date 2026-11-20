@@ -1,3 +1,9 @@
+## 2026.11.19.1714
+
+- **Media Gallery widgets show every selected image again** (wp-proudcity#3033). Since WP Media Folder 6.3.0, Media Gallery widgets only showed images uploaded to the page they sit on. WPMF now casts the gallery's `include` IDs to a string, and the widget passes them as an array, so the list came out empty. A `shortcode_atts_gallery` filter now joins array `include`/`exclude` IDs into a comma-separated string before WPMF reads them. Order is kept. String IDs from `[gallery]` shortcodes and blocks are unchanged, and the filter does nothing once WPMF accepts arrays.
+
+References: https://github.com/proudcity/wp-proudcity/issues/3033
+
 ## 2026.11.18.1220
 
 - **Submenu widget "Menu to use" starts with a blank option** (wp-proudcity#3029). A saved menu that is empty or no longer exists used to display as the first menu in the list, and clicking Done saved that menu by accident. It now shows blank and saves an empty value, which renders nothing. New Submenu widgets still default to the primary menu.
